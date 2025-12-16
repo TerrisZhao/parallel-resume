@@ -7,9 +7,13 @@ import { jwtVerify } from "jose";
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
-  // 公开路径，无需认证
+  // 根路径首页：完全公开
+  if (path === "/") {
+    return NextResponse.next();
+  }
+
+  // 公开路径，无需认证（前缀匹配）
   const publicPaths = [
-    "/",
     "/sign-in",
     "/api/auth",
     "/api/auth/mobile-login",
