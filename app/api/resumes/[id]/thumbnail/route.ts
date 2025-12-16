@@ -22,7 +22,7 @@ export async function GET(
 
     // Get the base URL from the request
     const protocol = request.headers.get("x-forwarded-proto") || "http";
-    const host = request.headers.get("host") || "localhost:3000";
+    const host = request.headers.get("host") || "localhost:3100";
     const baseUrl = `${protocol}://${host}`;
 
     // Get theme color from query parameters

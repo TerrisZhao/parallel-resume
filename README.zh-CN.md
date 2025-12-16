@@ -89,7 +89,7 @@ pnpm db:migrate
 pnpm dev
 ```
 
-访问 `http://localhost:3000` 查看应用。
+访问 `http://localhost:3100` 查看应用。
 
 ## 🚀 部署
 
@@ -102,7 +102,7 @@ pnpm dev
 ### Docker
 ```bash
 docker build -t parallel-resume .
-docker run -p 3000:3000 parallel-resume
+docker run -p 3100:3100 parallel-resume
 ```
 
 ## 📝 环境变量
@@ -111,10 +111,10 @@ docker run -p 3000:3000 parallel-resume
 
 ```env
 # 数据库
-DATABASE_URL=postgresql://user:password@localhost:5432/parallel_resume
+DATABASE_URL=postgresql://user:password@localhost:5432/parallel-resume
 
 # NextAuth
-NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_URL=http://localhost:3100
 NEXTAUTH_SECRET=your-secret-key
 
 # Google OAuth（可选）

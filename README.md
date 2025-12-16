@@ -89,7 +89,7 @@ pnpm db:migrate
 pnpm dev
 ```
 
-Visit `http://localhost:3000` to see your application.
+Visit `http://localhost:3100` to see your application.
 
 ## 🚀 Deployment
 
@@ -102,7 +102,7 @@ Visit `http://localhost:3000` to see your application.
 ### Docker
 ```bash
 docker build -t parallel-resume .
-docker run -p 3000:3000 parallel-resume
+docker run -p 3100:3100 parallel-resume
 ```
 
 ## 📝 Environment Variables
@@ -114,7 +114,7 @@ Required environment variables:
 DATABASE_URL=postgresql://user:password@localhost:5432/parallel-resume
 
 # NextAuth
-NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_URL=http://localhost:3100
 NEXTAUTH_SECRET=your-secret-key
 
 # Google OAuth (Optional)
