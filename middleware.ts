@@ -9,6 +9,7 @@ export async function middleware(request: NextRequest) {
 
   // 公开路径，无需认证
   const publicPaths = [
+    "/",
     "/sign-in",
     "/api/auth",
     "/api/auth/mobile-login",
