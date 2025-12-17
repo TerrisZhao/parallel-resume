@@ -81,6 +81,23 @@ export async function GET(request: NextRequest) {
     // Create a new page
     const page = await browser.newPage();
 
+    // Capture console messages and errors from the page
+    const pageErrors: string[] = [];
+    const pageConsole: string[] = [];
+
+    page.on("console", (msg) => {
+      const text = msg.text();
+      pageConsole.push(`[${msg.type()}] ${text}`);
+      if (msg.type() === "error") {
+        pageErrors.push(text);
+      }
+    });
+
+    page.on("pageerror", (error) => {
+      pageErrors.push(`Page error: ${error.message}`);
+      console.error("Page JavaScript error:", error.message);
+    });
+
     // Set viewport to A4 size
     await page.setViewport({
       width: 794, // A4 width in pixels at 96 DPI
@@ -137,6 +154,22 @@ export async function GET(request: NextRequest) {
 
     // Extra delay to ensure everything is rendered (especially for web fonts)
     await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    // Check if the page contains an error message
+    const pageTitle = await page.title();
+    const bodyText = await page.evaluate(() => document.body.innerText);
+
+    console.log("Page title:", pageTitle);
+    console.log("Page console logs:", pageConsole.slice(0, 10)); // Log first 10 console messages
+
+    if (pageTitle.includes("Not Found") || bodyText.includes("Resume not found")) {
+      console.error("Page shows error:", bodyText.substring(0, 200));
+      throw new Error("Resume not found on page");
+    }
+
+    if (pageErrors.length > 0) {
+      console.error("Page console errors:", pageErrors);
+    }
 
     console.log("Generating PDF...");
 
