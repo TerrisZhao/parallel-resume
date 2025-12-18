@@ -94,8 +94,9 @@ export async function GET(request: NextRequest) {
     });
 
     page.on("pageerror", (error) => {
-      pageErrors.push(`Page error: ${error.message}`);
-      console.error("Page JavaScript error:", error.message);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      pageErrors.push(`Page error: ${errorMessage}`);
+      console.error("Page JavaScript error:", errorMessage);
     });
 
     // Set viewport to A4 size
