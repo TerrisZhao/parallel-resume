@@ -107,7 +107,8 @@ export async function GET(request: NextRequest) {
     });
 
     // Build print page URL
-    const baseUrl = process.env.NEXTAUTH_URL;
+    // Use internal URL if available (for better performance), otherwise use NEXTAUTH_URL
+    const baseUrl = process.env.INTERNAL_URL || process.env.NEXTAUTH_URL;
     const printUrl = new URL(`/resume/print/${resumeId}`, baseUrl);
 
     if (themeColor) {
