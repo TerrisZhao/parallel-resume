@@ -179,6 +179,9 @@ async function getResumeData(
   }
 }
 
+// Force dynamic rendering for each request (since we have dynamic params)
+export const dynamic = 'force-dynamic';
+
 export default async function PrintResumePage({
   params,
   searchParams,
@@ -189,11 +192,11 @@ export default async function PrintResumePage({
 
   if (!resumeData) {
     return (
-      <html lang="en">
+      <html lang="en" suppressHydrationWarning>
         <head>
           <title>Resume Not Found</title>
         </head>
-        <body>
+        <body suppressHydrationWarning>
           <div style={{ padding: "2rem", textAlign: "center" }}>
             <h1>Resume not found</h1>
           </div>
@@ -209,7 +212,7 @@ export default async function PrintResumePage({
   const t = getResumeTranslation(language);
 
   return (
-    <html lang={language === "zh" ? "zh-CN" : "en"}>
+    <html lang={language === "zh" ? "zh-CN" : "en"} suppressHydrationWarning>
       <head>
         <title>{`${resumeData.fullName || "Resume"} - Resume`}</title>
         <meta charSet="utf-8" />
@@ -451,7 +454,7 @@ export default async function PrintResumePage({
           }}
         />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <div className="resume-container">
           {/* Header */}
           <div className="header">
