@@ -160,11 +160,36 @@ export async function GET(request: NextRequest) {
     const bodyText = await page.evaluate(() => document.body.innerText);
 
     console.log("Page title:", pageTitle);
+    console.log("Body text length:", bodyText.length, "characters");
+    console.log("Body text preview:", bodyText.substring(0, 200));
     console.log("Page console logs:", pageConsole.slice(0, 10)); // Log first 10 console messages
+
+    // Check page structure
+    const pageStructure = await page.evaluate(() => {
+      const header = document.querySelector(".header");
+      const name = document.querySelector(".name");
+      const sections = document.querySelectorAll(".section");
+
+      return {
+        hasHeader: !!header,
+        hasName: !!name,
+        nameText: name ? name.textContent : "",
+        sectionCount: sections.length,
+        bodyOpacity: window.getComputedStyle(document.body).opacity,
+      };
+    });
+
+    console.log("Page structure:", pageStructure);
 
     if (pageTitle.includes("Not Found") || bodyText.includes("Resume not found")) {
       console.error("Page shows error:", bodyText.substring(0, 200));
       throw new Error("Resume not found on page");
+    }
+
+    if (!pageStructure.hasHeader || !pageStructure.hasName) {
+      console.warn(
+        "⚠️  Page structure seems incomplete - content may be missing",
+      );
     }
 
     if (pageErrors.length > 0) {
