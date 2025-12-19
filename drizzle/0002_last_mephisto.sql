@@ -1,0 +1,1 @@
+ALTER TABLE "resumes" ADD COLUMN "ai_optimization_enabled" boolean DEFAULT false NOT NULL;

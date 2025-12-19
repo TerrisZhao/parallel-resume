@@ -149,6 +149,7 @@ export const resumes = pgTable(
     additionalInfo: text("additional_info"),
     themeColor: varchar("theme_color", { length: 20 }).default("#000000"), // 主题颜色
     preferredLanguage: varchar("preferred_language", { length: 5 }).default("en"), // 首选语言
+    aiOptimizationEnabled: boolean("ai_optimization_enabled").notNull().default(false), // AI优化总开关
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },

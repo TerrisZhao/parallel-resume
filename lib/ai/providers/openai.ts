@@ -33,6 +33,34 @@ export async function callOpenAI(
   }
   messages.push({ role: "user", content: prompt });
 
+  // 判断是否为新模型（需要使用 max_completion_tokens）
+  // GPT-4o, o1 系列等新模型使用 max_completion_tokens
+  const isNewModel =
+    model.includes("o1") ||
+    model.includes("gpt-4o") ||
+    model.startsWith("o1-") ||
+    model.startsWith("gpt-5");
+
+  // 判断是否为 o1 系列模型（不支持自定义 temperature）
+  const isO1Model = model.includes("o1") || model.startsWith("o1-") || model.includes("mini");
+
+  const requestBody: any = {
+    model,
+    messages,
+  };
+
+  // o1 系列模型不支持自定义 temperature，只能使用默认值 1
+  if (!isO1Model) {
+    requestBody.temperature = temperature;
+  }
+
+  // 根据模型类型选择正确的参数名
+  if (isNewModel) {
+    requestBody.max_completion_tokens = maxTokens;
+  } else {
+    requestBody.max_tokens = maxTokens;
+  }
+
   try {
     const response = await fetch(`${endpoint}/chat/completions`, {
       method: "POST",
@@ -40,12 +68,7 @@ export async function callOpenAI(
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
       },
-      body: JSON.stringify({
-        model,
-        messages,
-        temperature,
-        max_tokens: maxTokens,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {

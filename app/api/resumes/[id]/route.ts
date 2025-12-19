@@ -78,6 +78,7 @@ export async function GET(
       keySkills: resume.keySkills || [],
       additionalInfo: resume.additionalInfo,
       themeColor: resume.themeColor,
+      aiOptimizationEnabled: resume.aiOptimizationEnabled ?? false,
       workExperience: workExperience.map((exp: any) => ({
         id: exp.id.toString(),
         company: exp.company,
@@ -296,6 +297,8 @@ export async function PATCH(
     if (body.name !== undefined) updateData.name = body.name;
     if (body.preferredLanguage !== undefined)
       updateData.preferredLanguage = body.preferredLanguage;
+    if (body.aiOptimizationEnabled !== undefined)
+      updateData.aiOptimizationEnabled = body.aiOptimizationEnabled;
 
     const [updatedResume] = await db
       .update(resumes)

@@ -139,8 +139,8 @@ export async function testAIConnection(
   try {
     const response = await callAI({
       config: { ...config, customProviderName: undefined },
-      prompt: "请回复'连接成功'",
-      systemPrompt: "你是一个AI助手，请简短回复。",
+      prompt: "Please reply 'Connection successful'",
+      systemPrompt: "You are an AI assistant. Please reply briefly.",
       temperature: 0.3,
       maxTokens: 50,
     });

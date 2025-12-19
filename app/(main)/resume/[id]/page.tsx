@@ -8,7 +8,15 @@ import { Input, Textarea } from "@heroui/input";
 import { Chip } from "@heroui/chip";
 import { Divider } from "@heroui/divider";
 import { Switch } from "@heroui/switch";
-import { useDisclosure } from "@heroui/modal";
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  useDisclosure,
+} from "@heroui/modal";
+import { Tooltip } from "@heroui/tooltip";
 import {
   Plus,
   X,
@@ -18,6 +26,7 @@ import {
   CheckCircle,
   Edit3,
   GripVertical,
+  Sparkles,
 } from "lucide-react";
 import { addToast } from "@heroui/toast";
 import {
@@ -51,6 +60,634 @@ import {
 import { ResumePreviewModal } from "@/components/resume-preview-modal";
 import { MonthYearPicker } from "@/components/month-year-picker";
 import { normalizeDateString } from "@/lib/utils/date";
+
+// STAR 检测组件
+interface StarCheckResult {
+  S: boolean;
+  T: boolean;
+  A: boolean;
+  R: boolean;
+}
+
+// 批量 STAR 检测组件（用于工作经历的 Responsibilities & Achievements）
+function BatchStarIndicator({
+  items,
+  onConfirmImprovements,
+}: {
+  items: Array<{ id: string; content: string }>;
+  onConfirmImprovements: (
+    improvements: Array<{ id: string; improvedContent: string }>,
+  ) => void;
+}) {
+  const [overallStarResult, setOverallStarResult] =
+    useState<StarCheckResult | null>(null);
+  const [isLoadingStar, setIsLoadingStar] = useState(false);
+  const {
+    isOpen: isConfirmOpen,
+    onOpen: onConfirmOpen,
+    onClose: onConfirmClose,
+  } = useDisclosure();
+  const [improvements, setImprovements] = useState<
+    Array<{ id: string; improvedContent: string; originalContent: string }>
+  >([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    if (items.length === 0 || items.every((item) => !item.content.trim())) {
+      addToast({
+        title: "内容为空，无法检测",
+        color: "warning",
+      });
+      return;
+    }
+
+    setIsRefreshing(true);
+    setIsLoadingStar(true);
+    try {
+      const response = await fetch("/api/ai/star-check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "检测失败");
+      }
+
+      setOverallStarResult(data.overallSatisfied || null);
+      setImprovements(
+        data.results.map((result: any) => ({
+          id: result.id,
+          improvedContent: result.improvedContent || "",
+          originalContent:
+            items.find((item) => item.id === result.id)?.content || "",
+        })),
+      );
+      onConfirmOpen();
+    } catch (error) {
+      console.error("批量STAR检测失败:", error);
+      addToast({
+        title: error instanceof Error ? error.message : "检测失败",
+        color: "danger",
+      });
+    } finally {
+      setIsRefreshing(false);
+      setIsLoadingStar(false);
+    }
+  };
+
+  const handleConfirm = () => {
+    onConfirmImprovements(
+      improvements.map((imp) => ({
+        id: imp.id,
+        improvedContent: imp.improvedContent,
+      })),
+    );
+    setOverallStarResult(null);
+    onConfirmClose();
+    addToast({
+      title: "内容已更新",
+      color: "success",
+    });
+  };
+
+  const getDotColor = (satisfied: boolean | null) => {
+    if (satisfied === null) return "bg-default-300";
+    return satisfied ? "bg-success" : "bg-danger";
+  };
+
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        <Tooltip content="AI优化">
+          <Button
+            isIconOnly
+            size="sm"
+            variant="light"
+            isLoading={isRefreshing || isLoadingStar}
+            isDisabled={
+              items.length === 0 ||
+              items.every((item) => !item.content.trim()) ||
+              isRefreshing ||
+              isLoadingStar
+            }
+            onPress={handleRefresh}
+            className={`min-w-8 w-8 h-8 ${
+              items.length > 0 &&
+              !items.every((item) => !item.content.trim()) &&
+              !isRefreshing &&
+              !isLoadingStar
+                ? "text-blue-600 dark:text-blue-400 hover:text-purple-600 dark:hover:text-purple-400"
+                : ""
+            }`}
+          >
+            <Sparkles size={14} />
+          </Button>
+        </Tooltip>
+      </div>
+
+      {/* 批量确认对话框 */}
+      <Modal isOpen={isConfirmOpen} onClose={onConfirmClose} size="3xl">
+        <ModalContent>
+          <ModalHeader>
+            <div className="flex items-center justify-between w-full">
+              <span>确认优化后的内容</span>
+              {overallStarResult && (
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
+                    <div
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                        overallStarResult.S
+                          ? "bg-success text-success-foreground"
+                          : "bg-danger text-danger-foreground"
+                      }`}
+                      title="Situation (背景情况)"
+                    >
+                      S
+                    </div>
+                    <div
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                        overallStarResult.T
+                          ? "bg-success text-success-foreground"
+                          : "bg-danger text-danger-foreground"
+                      }`}
+                      title="Task (任务目标)"
+                    >
+                      T
+                    </div>
+                    <div
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                        overallStarResult.A
+                          ? "bg-success text-success-foreground"
+                          : "bg-danger text-danger-foreground"
+                      }`}
+                      title="Action (具体行动)"
+                    >
+                      A
+                    </div>
+                    <div
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                        overallStarResult.R
+                          ? "bg-success text-success-foreground"
+                          : "bg-danger text-danger-foreground"
+                      }`}
+                      title="Result (成果影响)"
+                    >
+                      R
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </ModalHeader>
+          <ModalBody>
+            <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+              {improvements.map((imp, index) => (
+                <div key={imp.id} className="space-y-2 border-b pb-4 last:border-0">
+                  <p className="text-sm font-medium">条目 {index + 1}</p>
+                  <div>
+                    <p className="text-xs text-default-500 mb-1">原内容：</p>
+                    <p className="text-sm text-default-600 bg-default-100 p-2 rounded">
+                      {imp.originalContent}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-default-500 mb-1">优化后内容：</p>
+                    <Textarea
+                      value={imp.improvedContent}
+                      onChange={(e) => {
+                        const newImprovements = [...improvements];
+                        newImprovements[index].improvedContent = e.target.value;
+                        setImprovements(newImprovements);
+                      }}
+                      minRows={3}
+                      placeholder="优化后的内容..."
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="light" onPress={onConfirmClose}>
+              取消
+            </Button>
+            <Button color="primary" onPress={handleConfirm}>
+              确认使用全部
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
+  );
+}
+
+// 项目描述 STAR 检测组件（独立状态）
+function ProjectStarIndicator({
+  isEnabled,
+  content,
+  onConfirmImprovement,
+  onContentChange,
+}: {
+  isEnabled: boolean;
+  content: string;
+  onConfirmImprovement: (improvedContent: string) => void;
+  onContentChange?: (value: string) => void;
+}) {
+  const [starResult, setStarResult] = useState<StarCheckResult | null>(null);
+  const [isLoadingStar, setIsLoadingStar] = useState(false);
+  const {
+    isOpen: isConfirmOpen,
+    onOpen: onConfirmOpen,
+    onClose: onConfirmClose,
+  } = useDisclosure();
+  const [improvedContent, setImprovedContent] = useState("");
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    if (!content.trim()) {
+      addToast({
+        title: "内容为空，无法检测",
+        color: "warning",
+      });
+      return;
+    }
+
+    setIsRefreshing(true);
+    setIsLoadingStar(true);
+    try {
+      const response = await fetch("/api/ai/star-check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "检测失败");
+      }
+
+      setStarResult(data.satisfied);
+      setImprovedContent(data.improvedContent || "");
+      onConfirmOpen();
+    } catch (error) {
+      console.error("STAR检测失败:", error);
+      addToast({
+        title: error instanceof Error ? error.message : "检测失败",
+        color: "danger",
+      });
+    } finally {
+      setIsRefreshing(false);
+      setIsLoadingStar(false);
+    }
+  };
+
+  const handleConfirm = () => {
+    if (improvedContent.trim()) {
+      onConfirmImprovement(improvedContent);
+      onConfirmClose();
+      addToast({
+        title: "内容已更新",
+        color: "success",
+      });
+    }
+  };
+
+  if (!isEnabled) {
+    return (
+      <Textarea
+        label="Description"
+        minRows={3}
+        placeholder="Describe the project and your contributions..."
+        value={content}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          onContentChange?.(e.target.value)
+        }
+      />
+    );
+  }
+
+  const getDotColor = (satisfied: boolean | null) => {
+    if (satisfied === null) return "bg-default-300";
+    return satisfied ? "bg-success" : "bg-danger";
+  };
+
+  return (
+    <>
+      <Textarea
+        endContent={
+          <Tooltip content="AI优化">
+            <Button
+              isIconOnly
+              size="sm"
+              variant="light"
+              isLoading={isRefreshing || isLoadingStar}
+              isDisabled={!content.trim() || isRefreshing || isLoadingStar}
+              onPress={handleRefresh}
+              className={`min-w-8 w-8 h-8 ${
+                content.trim() && !isRefreshing && !isLoadingStar
+                  ? "text-blue-600 dark:text-blue-400 hover:text-purple-600 dark:hover:text-purple-400"
+                  : ""
+              }`}
+            >
+              <Sparkles size={14} />
+            </Button>
+          </Tooltip>
+        }
+        label="Description"
+        minRows={3}
+        placeholder="Describe the project and your contributions..."
+        value={content}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          onContentChange?.(e.target.value)
+        }
+      />
+      {/* 确认对话框 */}
+      <Modal isOpen={isConfirmOpen} onClose={onConfirmClose} size="2xl">
+        <ModalContent>
+          <ModalHeader>
+            <div className="flex items-center justify-between w-full">
+              <span>确认优化后的内容</span>
+              {starResult && (
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
+                    <div
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                        starResult.S
+                          ? "bg-success text-success-foreground"
+                          : "bg-danger text-danger-foreground"
+                      }`}
+                      title="Situation (背景情况)"
+                    >
+                      S
+                    </div>
+                    <div
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                        starResult.T
+                          ? "bg-success text-success-foreground"
+                          : "bg-danger text-danger-foreground"
+                      }`}
+                      title="Task (任务目标)"
+                    >
+                      T
+                    </div>
+                    <div
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                        starResult.A
+                          ? "bg-success text-success-foreground"
+                          : "bg-danger text-danger-foreground"
+                      }`}
+                      title="Action (具体行动)"
+                    >
+                      A
+                    </div>
+                    <div
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                        starResult.R
+                          ? "bg-success text-success-foreground"
+                          : "bg-danger text-danger-foreground"
+                      }`}
+                      title="Result (成果影响)"
+                    >
+                      R
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </ModalHeader>
+          <ModalBody>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm font-medium mb-2">原内容：</p>
+                <p className="text-sm text-default-600 bg-default-100 p-3 rounded">
+                  {content}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium mb-2">优化后内容：</p>
+                <Textarea
+                  value={improvedContent}
+                  onChange={(e) => setImprovedContent(e.target.value)}
+                  minRows={5}
+                  placeholder="优化后的内容..."
+                />
+              </div>
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="light" onPress={onConfirmClose}>
+              取消
+            </Button>
+            <Button color="primary" onPress={handleConfirm}>
+              确认使用
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
+  );
+}
+
+function StarIndicator({
+  isEnabled,
+  starResult,
+  isLoading,
+  onRefresh,
+  content,
+  onConfirmImprovement,
+}: {
+  isEnabled: boolean;
+  starResult: StarCheckResult | null;
+  isLoading: boolean;
+  onRefresh: () => void;
+  content: string;
+  onConfirmImprovement: (improvedContent: string) => void;
+}) {
+  const {
+    isOpen: isConfirmOpen,
+    onOpen: onConfirmOpen,
+    onClose: onConfirmClose,
+  } = useDisclosure();
+  const [improvedContent, setImprovedContent] = useState("");
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [localStarResult, setLocalStarResult] = useState<StarCheckResult | null>(starResult);
+
+  // 同步外部 starResult
+  useEffect(() => {
+    setLocalStarResult(starResult);
+  }, [starResult]);
+
+  const handleRefresh = async () => {
+    if (!content.trim()) {
+      addToast({
+        title: "内容为空，无法检测",
+        color: "warning",
+      });
+      return;
+    }
+
+    setIsRefreshing(true);
+    onRefresh(); // 通知父组件开始加载
+    try {
+      const response = await fetch("/api/ai/star-check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "检测失败");
+      }
+
+      setLocalStarResult(data.satisfied);
+      setImprovedContent(data.improvedContent || "");
+      onConfirmOpen(); // 打开确认对话框
+    } catch (error) {
+      console.error("STAR检测失败:", error);
+      addToast({
+        title: error instanceof Error ? error.message : "检测失败",
+        color: "danger",
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  const handleConfirm = () => {
+    if (improvedContent.trim()) {
+      onConfirmImprovement(improvedContent);
+      setLocalStarResult(null); // 重置检测结果，让用户重新检测新内容
+      onConfirmClose();
+      addToast({
+        title: "内容已更新",
+        color: "success",
+      });
+    }
+  };
+
+  if (!isEnabled) {
+    return null;
+  }
+
+  const getDotColor = (satisfied: boolean | null) => {
+    if (satisfied === null) return "bg-default-300";
+    return satisfied ? "bg-success" : "bg-danger";
+  };
+
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        <Tooltip content="AI优化">
+          <Button
+            isIconOnly
+            size="sm"
+            variant="light"
+            isLoading={isRefreshing || isLoading}
+            isDisabled={!content.trim() || isRefreshing || isLoading}
+            onPress={handleRefresh}
+            className={`min-w-8 w-8 h-8 ${
+              content.trim() && !isRefreshing && !isLoading
+                ? "text-blue-600 dark:text-blue-400 hover:text-purple-600 dark:hover:text-purple-400"
+                : ""
+            }`}
+          >
+            <Sparkles size={14} />
+          </Button>
+        </Tooltip>
+      </div>
+
+      {/* 确认对话框 */}
+      <Modal isOpen={isConfirmOpen} onClose={onConfirmClose} size="2xl">
+        <ModalContent>
+          <ModalHeader>
+            <div className="flex items-center justify-between w-full">
+              <span>确认优化后的内容</span>
+              {localStarResult && (
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
+                    <div
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                        localStarResult.S
+                          ? "bg-success text-success-foreground"
+                          : "bg-danger text-danger-foreground"
+                      }`}
+                      title="Situation (背景情况)"
+                    >
+                      S
+                    </div>
+                    <div
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                        localStarResult.T
+                          ? "bg-success text-success-foreground"
+                          : "bg-danger text-danger-foreground"
+                      }`}
+                      title="Task (任务目标)"
+                    >
+                      T
+                    </div>
+                    <div
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                        localStarResult.A
+                          ? "bg-success text-success-foreground"
+                          : "bg-danger text-danger-foreground"
+                      }`}
+                      title="Action (具体行动)"
+                    >
+                      A
+                    </div>
+                    <div
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                        localStarResult.R
+                          ? "bg-success text-success-foreground"
+                          : "bg-danger text-danger-foreground"
+                      }`}
+                      title="Result (成果影响)"
+                    >
+                      R
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </ModalHeader>
+          <ModalBody>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm font-medium mb-2">原内容：</p>
+                <p className="text-sm text-default-600 bg-default-100 p-3 rounded">
+                  {content}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium mb-2">优化后内容：</p>
+                <Textarea
+                  value={improvedContent}
+                  onChange={(e) => setImprovedContent(e.target.value)}
+                  minRows={5}
+                  placeholder="优化后的内容..."
+                />
+              </div>
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="light" onPress={onConfirmClose}>
+              取消
+            </Button>
+            <Button color="primary" onPress={handleConfirm}>
+              确认使用
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
+  );
+}
 
 // Sortable Skill Item Component
 function SortableSkillItem({
@@ -401,6 +1038,7 @@ export default function ResumeEditPage({
             themeColor: resume.themeColor || "#000000",
             preferredLanguage: resume.preferredLanguage || "en",
           });
+          setIsAiOptimizationEnabled(resume.aiOptimizationEnabled ?? false);
           setLastSaved(new Date(resume.updatedAt));
         } else {
           addToast({
@@ -992,7 +1630,41 @@ export default function ResumeEditPage({
             <span className="text-sm text-default-600">AI优化</span>
             <Switch
               isSelected={isAiOptimizationEnabled}
-              onValueChange={setIsAiOptimizationEnabled}
+              onValueChange={async (value) => {
+                setIsAiOptimizationEnabled(value);
+                try {
+                  const response = await fetch(
+                    `/api/resumes/${resolvedParams.id}`,
+                    {
+                      method: "PATCH",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({
+                        aiOptimizationEnabled: value,
+                      }),
+                    },
+                  );
+
+                  if (!response.ok) {
+                    const error = await response.json();
+                    addToast({
+                      title: error.error || "Failed to update AI optimization setting",
+                      color: "danger",
+                    });
+                    // Revert state on error
+                    setIsAiOptimizationEnabled(!value);
+                  }
+                } catch (error) {
+                  console.error("Error updating AI optimization setting:", error);
+                  addToast({
+                    title: "Failed to update AI optimization setting",
+                    color: "danger",
+                  });
+                  // Revert state on error
+                  setIsAiOptimizationEnabled(!value);
+                }
+              }}
               size="sm"
             />
           </div>
@@ -1343,8 +2015,59 @@ export default function ResumeEditPage({
                   <Divider />
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
-                      <div className="text-sm font-medium">
-                        Responsibilities & Achievements
+                      <div className="flex items-center gap-3">
+                        <div className="text-sm font-medium">
+                          Responsibilities & Achievements
+                        </div>
+                        {isAiOptimizationEnabled && exp.responsibilities.length > 0 && (
+                          <BatchStarIndicator
+                            items={exp.responsibilities.map((resp, idx) => ({
+                              id: `${exp.id}-resp-${idx}`,
+                              content: resp,
+                            }))}
+                            onConfirmImprovements={(improvements) => {
+                              // 批量更新所有条目，避免状态更新冲突
+                              const updates = improvements
+                                .map((improvement) => {
+                                  const match = improvement.id.match(
+                                    /^(.+)-resp-(\d+)$/,
+                                  );
+                                  if (match && match[1] === exp.id) {
+                                    return {
+                                      index: parseInt(match[2], 10),
+                                      value: improvement.improvedContent,
+                                    };
+                                  }
+                                  return null;
+                                })
+                                .filter(
+                                  (update): update is { index: number; value: string } =>
+                                    update !== null,
+                                );
+
+                              if (updates.length > 0) {
+                                setResumeData((prevData) => ({
+                                  ...prevData,
+                                  workExperience: prevData.workExperience.map((workExp) =>
+                                    workExp.id === exp.id
+                                      ? {
+                                          ...workExp,
+                                          responsibilities: workExp.responsibilities.map(
+                                            (resp, i) => {
+                                              const update = updates.find(
+                                                (u) => u.index === i,
+                                              );
+                                              return update ? update.value : resp;
+                                            },
+                                          ),
+                                        }
+                                      : workExp,
+                                  ),
+                                }));
+                              }
+                            }}
+                          />
+                        )}
                       </div>
                       <Button
                         size="sm"
@@ -1579,19 +2302,18 @@ export default function ResumeEditPage({
                     />
                     <span className="text-sm">Ongoing Project</span>
                   </label>
-                  <Textarea
-                    label="Description"
-                    minRows={3}
-                    placeholder="Describe the project and your contributions..."
-                    value={proj.description}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      handleUpdateProject(
-                        proj.id,
-                        "description",
-                        e.target.value,
-                      )
-                    }
-                  />
+                  <div className="space-y-2">
+                    <ProjectStarIndicator
+                      isEnabled={isAiOptimizationEnabled}
+                      content={proj.description}
+                      onContentChange={(value) =>
+                        handleUpdateProject(proj.id, "description", value)
+                      }
+                      onConfirmImprovement={(improvedContent) =>
+                        handleUpdateProject(proj.id, "description", improvedContent)
+                      }
+                    />
+                  </div>
                   <Divider />
                   <div className="space-y-2">
                     <div className="text-sm font-medium">Technologies</div>
