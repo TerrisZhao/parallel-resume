@@ -3,11 +3,11 @@ import { getServerSession } from "next-auth";
 import { z } from "zod";
 
 import { authOptions } from "@/lib/auth/config";
-import { getUserAIConfig, testAIConnection } from "@/lib/ai/client";
+import { listAIModels } from "@/lib/ai/models";
+import { getUserAIConfig } from "@/lib/ai/client";
 
-const testConnectionSchema = z.object({
+const listModelsSchema = z.object({
   provider: z.enum(["openai", "deepseek", "claude", "gemini", "custom"]),
-  model: z.string(),
   apiKey: z.string().optional(),
   apiEndpoint: z.string().url().optional(),
 });
@@ -21,9 +21,9 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const config = testConnectionSchema.parse(body);
+    const config = listModelsSchema.parse(body);
 
-    // 如果没传 apiKey，则尝试使用数据库中已保存的配置
+    // 如果没传 apiKey，则从数据库读取并解密已保存的配置
     let apiKey = config.apiKey;
     let apiEndpoint = config.apiEndpoint;
 
@@ -40,35 +40,22 @@ export async function POST(request: NextRequest) {
 
       apiKey = savedConfig.apiKey;
 
+      // 如果前端没传 endpoint，则优先使用已保存的 endpoint
       if (!apiEndpoint && savedConfig.apiEndpoint) {
         apiEndpoint = savedConfig.apiEndpoint;
       }
     }
 
-    // 调用AI测试连接函数
-    const result = await testAIConnection({
+    const models = await listAIModels({
       provider: config.provider,
-      model: config.model,
       apiKey,
       apiEndpoint,
     });
 
-    if (result.success) {
-      return NextResponse.json({
-        success: true,
-        message: "连接成功",
-        details: result.details,
-      });
-    } else {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "连接失败",
-          error: result.error,
-        },
-        { status: 400 },
-      );
-    }
+    return NextResponse.json({
+      success: true,
+      models: models.map((id) => ({ id, name: id })),
+    });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -77,14 +64,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.error("测试连接失败:", error);
+    console.error("获取模型列表失败:", error);
 
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "未知错误",
+        error: error instanceof Error ? error.message : "获取模型列表失败",
       },
       { status: 500 },
     );
   }
 }
+
+

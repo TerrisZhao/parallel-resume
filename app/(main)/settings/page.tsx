@@ -28,6 +28,7 @@ import {
   Monitor as MonitorIcon,
   Eye,
   EyeOff,
+  RotateCw,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 
@@ -77,31 +78,30 @@ export default function SettingsPage() {
   const [isTestingConnection, setIsTestingConnection] = useState(false);
   const [isUpdatingAiConfig, setIsUpdatingAiConfig] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
+  const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [isLoadingModels, setIsLoadingModels] = useState(false);
+  const [isApiKeyMasked, setIsApiKeyMasked] = useState(false);
 
   // AI提供商配置
   const AI_PROVIDERS = [
     {
       value: "openai",
       label: "OpenAI",
-      models: ["gpt-4", "gpt-4-turbo", "gpt-3.5-turbo"],
       defaultEndpoint: "https://api.openai.com/v1",
     },
     {
       value: "deepseek",
       label: "DeepSeek",
-      models: ["deepseek-chat", "deepseek-coder"],
       defaultEndpoint: "https://api.deepseek.com/v1",
     },
     {
       value: "claude",
       label: "Anthropic Claude",
-      models: ["claude-3-opus", "claude-3-sonnet", "claude-3-haiku"],
       defaultEndpoint: "https://api.anthropic.com/v1",
     },
     {
       value: "gemini",
       label: "Google Gemini",
-      models: ["gemini-pro", "gemini-pro-vision"],
       defaultEndpoint: "https://generativelanguage.googleapis.com/v1",
     },
     {
@@ -120,7 +120,7 @@ export default function SettingsPage() {
     });
   };
 
-  // 初始化姓名和主题模式
+  // 初始化姓名和主题模式（基于 session）
   useEffect(() => {
     if (session?.user?.name) {
       setName(session.user.name);
@@ -128,20 +128,48 @@ export default function SettingsPage() {
     if (session?.user && (session.user as any)?.themeMode) {
       setThemeMode((session.user as any).themeMode);
     }
-    // 初始化AI配置
-    if (session?.user) {
-      const user = session.user as any;
-
-      if (user.aiProvider) {
-        setAiProvider(user.aiProvider);
-        setAiModel(user.aiModel || "");
-        setAiApiEndpoint(user.aiApiEndpoint || "");
-        setCustomProviderName(user.aiCustomProviderName || "");
-        // 使用遮盖后的API Key
-        setAiApiKey(user.aiApiKeyMasked || "");
-      }
-    }
   }, [session?.user]);
+
+  // 初始化 AI 配置（基于 /api/user/profile，确保能拿到遮罩后的 API Key）
+  useEffect(() => {
+    const initAIConfig = async () => {
+      if (status !== "authenticated") return;
+
+      try {
+        const response = await fetch("/api/user/profile");
+        if (!response.ok) {
+          return;
+        }
+
+        const data = await response.json();
+        const user = data.user as any;
+
+        if (user?.aiProvider) {
+          setAiProvider(user.aiProvider);
+
+          const userModel = user.aiModel || "";
+          setAiModel(userModel);
+          setAiApiEndpoint(user.aiApiEndpoint || "");
+          setCustomProviderName(user.aiCustomProviderName || "");
+
+          // 使用遮罩后的 API Key（如果存在）
+          if (user.aiApiKeyMasked) {
+            setAiApiKey(user.aiApiKeyMasked);
+            setIsApiKeyMasked(true);
+          }
+
+          // 初始时至少让当前模型出现在下拉列表中，避免下拉为空
+          if (userModel) {
+            setAvailableModels([userModel]);
+          }
+        }
+      } catch (error) {
+        console.error("初始化AI配置失败:", error);
+      }
+    };
+
+    void initAIConfig();
+  }, [status]);
 
   // 点击外部区域取消编辑
   useEffect(() => {
@@ -210,6 +238,63 @@ export default function SettingsPage() {
       showToast(error instanceof Error ? error.message : "更新失败", "error");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // 加载指定提供商的模型列表
+  const handleLoadModels = async () => {
+    if (!aiProvider || (!aiApiKey && !isApiKeyMasked)) {
+      showToast("请先选择AI提供商并填写API Key", "error");
+
+      return;
+    }
+
+    setIsLoadingModels(true);
+    try {
+      const response = await fetch("/api/ai/models", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider: aiProvider,
+          // 如果当前是遮罩值，则不发送 apiKey，后端会使用已保存的真实 key
+          apiKey: !isApiKeyMasked && aiApiKey ? aiApiKey : undefined,
+          apiEndpoint: aiApiEndpoint || undefined,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "获取模型列表失败");
+      }
+
+      const models: string[] = (data.models || []).map(
+        (m: { id?: string; name?: string }) => m.id || m.name,
+      );
+
+      if (!models.length) {
+        showToast("未获取到可用模型，请检查配置是否正确", "error");
+      }
+
+      // 确保当前已选模型在列表中
+      const merged = new Set(models);
+
+      if (aiModel) {
+        merged.add(aiModel);
+      }
+
+      const sortedModels = Array.from(merged).sort();
+
+      setAvailableModels(sortedModels);
+      showToast("模型列表已更新", "success");
+    } catch (error) {
+      console.error("获取模型列表失败:", error);
+      showToast(
+        error instanceof Error ? error.message : "获取模型列表失败",
+        "error",
+      );
+    } finally {
+      setIsLoadingModels(false);
     }
   };
 
@@ -290,7 +375,7 @@ export default function SettingsPage() {
 
   // 保存AI配置
   const handleSaveAiConfig = async () => {
-    if (!aiProvider || !aiModel || !aiApiKey) {
+    if (!aiProvider || !aiModel || (!aiApiKey && !isApiKeyMasked)) {
       showToast("请填写完整的AI配置信息", "error");
 
       return;
@@ -304,7 +389,8 @@ export default function SettingsPage() {
         body: JSON.stringify({
           aiProvider,
           aiModel,
-          aiApiKey,
+          // 只有在用户输入了新的明文 key 时才更新后端
+          aiApiKey: isApiKeyMasked ? undefined : aiApiKey,
           aiApiEndpoint: aiApiEndpoint || undefined,
           aiCustomProviderName:
             aiProvider === "custom" ? customProviderName : undefined,
@@ -333,6 +419,7 @@ export default function SettingsPage() {
       showToast("AI配置保存成功", "success");
       // 更新为遮盖后的Key
       setAiApiKey(data.user.aiApiKeyMasked || "");
+      setIsApiKeyMasked(Boolean(data.user.aiApiKeyMasked));
     } catch (error) {
       console.error("保存AI配置失败:", error);
       showToast(error instanceof Error ? error.message : "保存失败", "error");
@@ -343,7 +430,7 @@ export default function SettingsPage() {
 
   // 测试连接
   const handleTestConnection = async () => {
-    if (!aiProvider || !aiModel || !aiApiKey) {
+    if (!aiProvider || !aiModel) {
       showToast("请填写完整的AI配置信息", "error");
 
       return;
@@ -357,7 +444,8 @@ export default function SettingsPage() {
         body: JSON.stringify({
           provider: aiProvider,
           model: aiModel,
-          apiKey: aiApiKey,
+          // 如果是遮罩 key，则不发送，后端使用已保存的真实 key
+          apiKey: !isApiKeyMasked && aiApiKey ? aiApiKey : undefined,
           apiEndpoint: aiApiEndpoint || undefined,
         }),
       });
@@ -418,6 +506,7 @@ export default function SettingsPage() {
       setAiApiKey("");
       setAiApiEndpoint("");
       setCustomProviderName("");
+      setIsApiKeyMasked(false);
 
       showToast("AI配置已清除", "success");
     } catch (error) {
@@ -564,6 +653,7 @@ export default function SettingsPage() {
                 setAiProvider(selected);
                 // 重置相关字段
                 setAiModel("");
+                setAvailableModels([]);
                 if (selected !== "custom") {
                   const provider = AI_PROVIDERS.find(
                     (p) => p.value === selected,
@@ -574,9 +664,7 @@ export default function SettingsPage() {
               }}
             >
               {AI_PROVIDERS.map((provider) => (
-                <SelectItem key={provider.value}>
-                  {provider.label}
-                </SelectItem>
+                <SelectItem key={provider.value}>{provider.label}</SelectItem>
               ))}
             </Select>
 
@@ -588,26 +676,6 @@ export default function SettingsPage() {
                 value={customProviderName}
                 onChange={(e) => setCustomProviderName(e.target.value)}
               />
-            )}
-
-            {/* 模型选择 */}
-            {aiProvider && aiProvider !== "custom" && (
-              <Select
-                label="模型"
-                placeholder="选择模型"
-                selectedKeys={aiModel ? [aiModel] : []}
-                onSelectionChange={(keys) =>
-                  setAiModel(Array.from(keys)[0] as string)
-                }
-              >
-                {(
-                  AI_PROVIDERS.find((p) => p.value === aiProvider)?.models || []
-                ).map((model) => (
-                  <SelectItem key={model}>
-                    {model}
-                  </SelectItem>
-                ))}
-              </Select>
             )}
 
             {/* 自定义模型名称 */}
@@ -638,19 +706,59 @@ export default function SettingsPage() {
                 placeholder="输入API Key"
                 type={showApiKey ? "text" : "password"}
                 value={aiApiKey}
-                onChange={(e) => setAiApiKey(e.target.value)}
+                onChange={(e) => {
+                  setAiApiKey(e.target.value);
+                  // 一旦用户修改输入，就认为当前值是明文 key
+                  setIsApiKeyMasked(false);
+                }}
               />
             )}
 
             {/* API端点 */}
             {aiProvider && (
               <Input
-                description="留空使用默认端点"
                 label="API端点"
                 placeholder="输入API端点地址"
                 value={aiApiEndpoint}
                 onChange={(e) => setAiApiEndpoint(e.target.value)}
               />
+            )}
+
+            {/* 模型选择 */}
+            {aiProvider && aiProvider !== "custom" && (
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <Select
+                    isDisabled={availableModels.length === 0}
+                    label="模型"
+                    placeholder="选择模型"
+                    selectedKeys={aiModel ? [aiModel] : []}
+                    onSelectionChange={(keys) =>
+                      setAiModel(Array.from(keys)[0] as string)
+                    }
+                  >
+                    {availableModels.map((model) => (
+                      <SelectItem key={model}>{model}</SelectItem>
+                    ))}
+                  </Select>
+                </div>
+                <Button
+                  isIconOnly
+                  color="primary"
+                  size="lg"
+                  className="p-2"
+                  isDisabled={
+                    isLoadingModels ||
+                    !aiProvider ||
+                    (!aiApiKey && !isApiKeyMasked)
+                  }
+                  isLoading={isLoadingModels}
+                  variant="flat"
+                  onPress={handleLoadModels}
+                >
+                  <RotateCw />
+                </Button>
+              </div>
             )}
 
             {/* 操作按钮 */}
