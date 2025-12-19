@@ -8,8 +8,6 @@ const connectionString = process.env.DATABASE_URL;
 
 let db: any;
 
-type Database = any;
-
 if (!connectionString) {
   console.warn(
     "DATABASE_URL environment variable is not set. Database features will be disabled.",
@@ -27,4 +25,3 @@ if (!connectionString) {
 }
 
 export { db };
-export type { Database };
