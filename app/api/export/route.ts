@@ -81,7 +81,11 @@ export async function GET(request: NextRequest) {
     // Create a new page
     const page = await browser.newPage();
 
-    // Capture console messages and errors from the page
+    // Disable JavaScript to avoid React hydration errors
+    // PDF generation only needs rendered HTML/CSS, not client-side JS
+    await page.setJavaScriptEnabled(false);
+
+    // Capture console messages and errors from the page (for debugging)
     const pageErrors: string[] = [];
     const pageConsole: string[] = [];
 
@@ -124,37 +128,11 @@ export async function GET(request: NextRequest) {
       timeout: 30000,
     });
 
-    // Wait for fonts to load (with timeout and fallback)
-    try {
-      await page.waitForFunction(
-        () => {
-          if (document.fonts && document.fonts.ready) {
-            return document.fonts.ready.then(() => true);
-          }
+    // Since JavaScript is disabled, we don't need to wait for JS-based signals
+    // Just wait for network idle and give fonts time to load
+    console.log("Waiting for fonts to load...");
 
-          return true; // Fallback if fonts API not available
-        },
-        { timeout: 8000 },
-      );
-      console.log("Fonts loaded successfully");
-    } catch (error) {
-      console.log("Font loading timeout, proceeding anyway");
-    }
-
-    // Wait for the ready signal from the page (with timeout and fallback)
-    try {
-      await page.waitForFunction(
-        () => {
-          return document.body.getAttribute("data-ready") === "true";
-        },
-        { timeout: 5000 },
-      );
-      console.log("Page ready signal received");
-    } catch (error) {
-      console.log("Ready signal timeout, proceeding with fixed delay");
-    }
-
-    // Extra delay to ensure everything is rendered (especially for web fonts)
+    // Wait a bit for fonts to load (they're loaded via CSS, not JS)
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Check if the page contains an error message

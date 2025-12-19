@@ -8,10 +8,7 @@
     "start": "next start -p 3100",
     "lint": "eslint --fix",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "check:env": "node scripts/check-env.js",
-    "test:puppeteer": "node scripts/test-puppeteer.js",
-    "test:pdf": "node scripts/test-pdf-generation.js"
+    "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.887.0",
