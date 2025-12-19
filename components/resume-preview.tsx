@@ -3,6 +3,7 @@ import { Mail, Phone, MapPin, Linkedin, Github, Globe } from "lucide-react";
 
 import { ResumeData } from "@/types/resume";
 import { Language, getResumeTranslation } from "@/lib/resume-i18n";
+import { formatResumeDate } from "@/lib/utils/date";
 
 interface ResumePreviewProps {
   data: ResumeData;
@@ -159,8 +160,10 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                     </p>
                   </div>
                   <div className="text-sm text-gray-600">
-                    {exp.startDate} -{" "}
-                    {exp.current ? t.present : exp.endDate || "End Date"}
+                    {formatResumeDate(exp.startDate, language)} -{" "}
+                    {exp.current
+                      ? t.present
+                      : formatResumeDate(exp.endDate, language) || "End Date"}
                   </div>
                 </div>
                 {exp.description && (
@@ -212,8 +215,10 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                     </p>
                   </div>
                   <div className="text-sm text-gray-600">
-                    {edu.startDate} -{" "}
-                    {edu.current ? t.present : edu.endDate || "End Date"}
+                    {formatResumeDate(edu.startDate, language)} -{" "}
+                    {edu.current
+                      ? t.present
+                      : formatResumeDate(edu.endDate, language) || "End Date"}
                   </div>
                 </div>
               </div>
@@ -247,8 +252,10 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                     </p>
                   </div>
                   <div className="text-sm text-gray-600">
-                    {proj.startDate} -{" "}
-                    {proj.current ? t.present : proj.endDate || "End Date"}
+                    {formatResumeDate(proj.startDate, language)} -{" "}
+                    {proj.current
+                      ? t.present
+                      : formatResumeDate(proj.endDate, language) || "End Date"}
                   </div>
                 </div>
                 {proj.description && (

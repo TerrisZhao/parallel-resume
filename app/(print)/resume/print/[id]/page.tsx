@@ -11,6 +11,7 @@ import {
   resumeProjects,
 } from "@/lib/db/schema";
 import { Language, getResumeTranslation } from "@/lib/resume-i18n";
+import { formatResumeDate } from "@/lib/utils/date";
 
 type WorkExperience = InferSelectModel<typeof resumeWorkExperiences>;
 type Education = InferSelectModel<typeof resumeEducation>;
@@ -587,8 +588,11 @@ export default async function PrintResumePage({
                         </div>
                       </div>
                       <div className="entry-date">
-                        {exp.startDate} -{" "}
-                        {exp.current ? t.present : exp.endDate || "End Date"}
+                        {formatResumeDate(exp.startDate, language)} -{" "}
+                        {exp.current
+                          ? t.present
+                          : formatResumeDate(exp.endDate, language) ||
+                            "End Date"}
                       </div>
                     </div>
                     {exp.responsibilities.filter((r) => r.trim()).length >
@@ -626,8 +630,11 @@ export default async function PrintResumePage({
                         </div>
                       </div>
                       <div className="entry-date">
-                        {edu.startDate} -{" "}
-                        {edu.current ? t.present : edu.endDate || "End Date"}
+                        {formatResumeDate(edu.startDate, language)} -{" "}
+                        {edu.current
+                          ? t.present
+                          : formatResumeDate(edu.endDate, language) ||
+                            "End Date"}
                       </div>
                     </div>
                   </div>
@@ -653,8 +660,11 @@ export default async function PrintResumePage({
                         </div>
                       </div>
                       <div className="entry-date">
-                        {proj.startDate} -{" "}
-                        {proj.current ? t.present : proj.endDate || "End Date"}
+                        {formatResumeDate(proj.startDate, language)} -{" "}
+                        {proj.current
+                          ? t.present
+                          : formatResumeDate(proj.endDate, language) ||
+                            "End Date"}
                       </div>
                     </div>
                     {proj.description && (

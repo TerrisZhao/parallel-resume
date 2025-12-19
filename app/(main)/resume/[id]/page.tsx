@@ -48,6 +48,8 @@ import {
   SkillGroup,
 } from "@/types/resume";
 import { ResumePreviewModal } from "@/components/resume-preview-modal";
+import { MonthYearPicker } from "@/components/month-year-picker";
+import { normalizeDateString } from "@/lib/utils/date";
 
 // Sortable Skill Item Component
 function SortableSkillItem({
@@ -319,7 +321,9 @@ export default function ResumeEditPage({
   const resolvedParams = use(params);
   const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [resumeData, setResumeData] = useState<ResumeData & { name?: string }>({
+  const [resumeData, setResumeData] = useState<
+    ResumeData & { name?: string; preferredLanguage?: string }
+  >({
     name: "",
     fullName: "",
     preferredName: "",
@@ -336,6 +340,7 @@ export default function ResumeEditPage({
     projects: [],
     additionalInfo: "",
     themeColor: "#000000",
+    preferredLanguage: "en",
   });
 
   const [currentSkill, setCurrentSkill] = useState("");
@@ -392,6 +397,7 @@ export default function ResumeEditPage({
             projects: resume.projects || [],
             additionalInfo: resume.additionalInfo || "",
             themeColor: resume.themeColor || "#000000",
+            preferredLanguage: resume.preferredLanguage || "en",
           });
           setLastSaved(new Date(resume.updatedAt));
         } else {
@@ -1272,29 +1278,25 @@ export default function ResumeEditPage({
                         )
                       }
                     />
-                    <Input
+                    <MonthYearPicker
                       label="Start Date"
-                      placeholder="Jan 2020"
-                      value={exp.startDate}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        handleUpdateWorkExperience(
-                          exp.id,
-                          "startDate",
-                          e.target.value,
-                        )
+                      language={
+                        (resumeData.preferredLanguage as "en" | "zh") || "en"
+                      }
+                      value={normalizeDateString(exp.startDate) || ""}
+                      onChange={(value) =>
+                        handleUpdateWorkExperience(exp.id, "startDate", value)
                       }
                     />
-                    <Input
+                    <MonthYearPicker
                       isDisabled={exp.current}
                       label="End Date"
-                      placeholder="Dec 2022"
-                      value={exp.endDate || ""}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        handleUpdateWorkExperience(
-                          exp.id,
-                          "endDate",
-                          e.target.value,
-                        )
+                      language={
+                        (resumeData.preferredLanguage as "en" | "zh") || "en"
+                      }
+                      value={normalizeDateString(exp.endDate || "") || ""}
+                      onChange={(value) =>
+                        handleUpdateWorkExperience(exp.id, "endDate", value)
                       }
                     />
                   </div>
@@ -1440,25 +1442,25 @@ export default function ResumeEditPage({
                         handleUpdateEducation(edu.id, "gpa", e.target.value)
                       }
                     />
-                    <Input
+                    <MonthYearPicker
                       label="Start Date"
-                      placeholder="Sep 2016"
-                      value={edu.startDate}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        handleUpdateEducation(
-                          edu.id,
-                          "startDate",
-                          e.target.value,
-                        )
+                      language={
+                        (resumeData.preferredLanguage as "en" | "zh") || "en"
+                      }
+                      value={normalizeDateString(edu.startDate) || ""}
+                      onChange={(value) =>
+                        handleUpdateEducation(edu.id, "startDate", value)
                       }
                     />
-                    <Input
+                    <MonthYearPicker
                       isDisabled={edu.current}
                       label="End Date"
-                      placeholder="Jun 2020"
-                      value={edu.endDate || ""}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        handleUpdateEducation(edu.id, "endDate", e.target.value)
+                      language={
+                        (resumeData.preferredLanguage as "en" | "zh") || "en"
+                      }
+                      value={normalizeDateString(edu.endDate || "") || ""}
+                      onChange={(value) =>
+                        handleUpdateEducation(edu.id, "endDate", value)
                       }
                     />
                   </div>
@@ -1531,25 +1533,25 @@ export default function ResumeEditPage({
                         handleUpdateProject(proj.id, "role", e.target.value)
                       }
                     />
-                    <Input
+                    <MonthYearPicker
                       label="Start Date"
-                      placeholder="Jan 2023"
-                      value={proj.startDate}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        handleUpdateProject(
-                          proj.id,
-                          "startDate",
-                          e.target.value,
-                        )
+                      language={
+                        (resumeData.preferredLanguage as "en" | "zh") || "en"
+                      }
+                      value={normalizeDateString(proj.startDate) || ""}
+                      onChange={(value) =>
+                        handleUpdateProject(proj.id, "startDate", value)
                       }
                     />
-                    <Input
+                    <MonthYearPicker
                       isDisabled={proj.current}
                       label="End Date"
-                      placeholder="Jun 2023"
-                      value={proj.endDate || ""}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        handleUpdateProject(proj.id, "endDate", e.target.value)
+                      language={
+                        (resumeData.preferredLanguage as "en" | "zh") || "en"
+                      }
+                      value={normalizeDateString(proj.endDate || "") || ""}
+                      onChange={(value) =>
+                        handleUpdateProject(proj.id, "endDate", value)
                       }
                     />
                   </div>
