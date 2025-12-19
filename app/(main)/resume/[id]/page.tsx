@@ -7,6 +7,7 @@ import { Card, CardBody } from "@heroui/card";
 import { Input, Textarea } from "@heroui/input";
 import { Chip } from "@heroui/chip";
 import { Divider } from "@heroui/divider";
+import { Switch } from "@heroui/switch";
 import { useDisclosure } from "@heroui/modal";
 import {
   Plus,
@@ -352,6 +353,7 @@ export default function ResumeEditPage({
   const [isEditingName, setIsEditingName] = useState(false);
   const [activeSkillId, setActiveSkillId] = useState<string | null>(null);
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
+  const [isAiOptimizationEnabled, setIsAiOptimizationEnabled] = useState(false);
 
   // Configure drag sensors
   const sensors = useSensors(
@@ -974,7 +976,7 @@ export default function ResumeEditPage({
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2 min-h-10 mr-4">
+        <div className="flex items-center gap-4 min-h-10 mr-4">
           {isSaving ? (
             <div className="text-sm text-default-500 flex items-center gap-1">
               <Save className="animate-pulse" size={14} />
@@ -986,6 +988,14 @@ export default function ResumeEditPage({
               Saved {lastSaved.toLocaleTimeString()}
             </div>
           ) : null}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-default-600">AI优化</span>
+            <Switch
+              isSelected={isAiOptimizationEnabled}
+              onValueChange={setIsAiOptimizationEnabled}
+              size="sm"
+            />
+          </div>
         </div>
       </div>
 
