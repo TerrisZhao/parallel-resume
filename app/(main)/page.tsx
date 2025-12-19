@@ -36,23 +36,25 @@ export default function Home() {
       {/* Hero Section */}
       <MotionDiv
         animate="visible"
-        className="flex flex-col items-center justify-center gap-6 text-center w-full px-6 min-h-[calc(100vh-9rem)] bg-gradient-to-br from-blue-200 via-purple-200 to-blue-100 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-blue-950/20 rounded-3xl"
+        className="flex flex-col items-center justify-center gap-6 text-center w-full px-6 min-h-[calc(100vh-9rem)] bg-gradient-to-br from-indigo-50 via-blue-50 to-cyan-50 dark:from-slate-900 dark:via-indigo-950/50 dark:to-slate-900 rounded-3xl"
         initial="hidden"
         variants={containerVariants}
       >
         <MotionDiv className="inline-block" variants={itemVariants}>
           <h1 className={title({ size: "lg" })}>
-            打造专业简历，从&nbsp;
-            <span className={title({ color: "blue", size: "lg" })}>这里</span>
-            &nbsp;开始
+            Create Your Professional Resume,&nbsp;
+            <span className={title({ color: "blue", size: "lg" })}>
+              Start Here
+            </span>
           </h1>
         </MotionDiv>
 
         <MotionDiv variants={itemVariants}>
           <p className={subtitle({ class: "mt-4" })}>
-            轻松创建、管理和导出你的专业简历。
+            Easily create, manage, and export your professional resume.
             <br />
-            现代化设计、一键导出PDF，助你在求职中脱颖而出。
+            Modern design, one-click PDF export, helping you stand out in your
+            job search.
           </p>
         </MotionDiv>
 
@@ -65,7 +67,7 @@ export default function Home() {
               size="lg"
               startContent={<FileText size={20} />}
             >
-              开始创建简历
+              Create Resume
             </Button>
           </Link>
         </MotionDiv>
