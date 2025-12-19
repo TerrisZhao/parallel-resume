@@ -37,6 +37,7 @@ export async function GET(
 
     // Use saved language preference, or auto-detect as fallback
     let language = "en";
+
     if (resume) {
       if (resume.preferredLanguage) {
         language = resume.preferredLanguage;
@@ -58,6 +59,7 @@ export async function GET(
 
     // URL of the print preview page
     const printUrl = new URL(`${baseUrl}/resume/print/${id}`);
+
     if (themeColor) {
       printUrl.searchParams.set("themeColor", themeColor);
     }

@@ -481,7 +481,7 @@ export default function ResumeListPage() {
                 </div>
                 <Image
                   alt={resume.name}
-                  className="object-cover cursor-pointer"
+                  className="object-cover object-top cursor-pointer"
                   height={280}
                   src={`/api/resumes/${resume.id}/thumbnail?color=${encodeURIComponent(resume.themeColor || "#1e40af")}`}
                   width="100%"
@@ -492,49 +492,49 @@ export default function ResumeListPage() {
                     <p className="text-sm font-semibold text-gray-900">
                       {resume.name}
                     </p>
-                    {resume.fullName && (
-                      <p className="text-xs text-gray-600">
-                        {resume.fullName}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-1 mt-1">
+                    {/*{resume.fullName && (*/}
+                    {/*  <p className="text-xs text-gray-600">{resume.fullName}</p>*/}
+                    {/*)}*/}
+                  </div>
+                  <div className="flex justify-between items-center w-full">
+                    <div className="flex items-center gap-1">
                       <Calendar className="text-gray-500" size={12} />
                       <p className="text-xs text-gray-500">
                         {formatDate(resume.updatedAt)}
                       </p>
                     </div>
-                  </div>
-                  <div className="flex gap-1 w-full">
-                    <Button
-                      className="flex-1 bg-blue-100 text-blue-700 hover:bg-blue-200"
-                      radius="lg"
-                      size="sm"
-                      variant="flat"
-                      onPress={() => router.push(`/resume/${resume.id}`)}
-                    >
-                      <Edit size={14} />
-                      Edit
-                    </Button>
-                    <Button
-                      isIconOnly
-                      className="bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      radius="lg"
-                      size="sm"
-                      variant="flat"
-                      onPress={() => handleDuplicate(resume.id)}
-                    >
-                      <Copy size={14} />
-                    </Button>
-                    <Button
-                      isIconOnly
-                      className="bg-red-100 text-red-700 hover:bg-red-200"
-                      radius="lg"
-                      size="sm"
-                      variant="flat"
-                      onPress={() => handleDelete(resume.id)}
-                    >
-                      <Trash2 size={14} />
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button
+                        isIconOnly
+                        className="bg-blue-100 text-blue-700 hover:bg-blue-200"
+                        radius="lg"
+                        size="sm"
+                        variant="flat"
+                        onPress={() => router.push(`/resume/${resume.id}`)}
+                      >
+                        <Edit size={14} />
+                      </Button>
+                      <Button
+                        isIconOnly
+                        className="bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        radius="lg"
+                        size="sm"
+                        variant="flat"
+                        onPress={() => handleDuplicate(resume.id)}
+                      >
+                        <Copy size={14} />
+                      </Button>
+                      <Button
+                        isIconOnly
+                        className="bg-red-100 text-red-700 hover:bg-red-200"
+                        radius="lg"
+                        size="sm"
+                        variant="flat"
+                        onPress={() => handleDelete(resume.id)}
+                      >
+                        <Trash2 size={14} />
+                      </Button>
+                    </div>
                   </div>
                 </CardFooter>
               </Card>
