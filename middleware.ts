@@ -12,13 +12,23 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // 打印页面特殊处理：只允许 PDF 生成访问，浏览器访问重定向
+  if (path.startsWith("/resume/print/")) {
+    const isPdfGeneration = request.nextUrl.searchParams.get("_pdf") === "true";
+
+    if (!isPdfGeneration) {
+      // 浏览器直接访问，重定向到简历编辑页面
+      const resumeId = path.split("/").pop();
+
+      return NextResponse.redirect(new URL(`/resume/${resumeId}`, request.url));
+    }
+
+    // PDF 生成请求，允许访问
+    return NextResponse.next();
+  }
+
   // 公开路径，无需认证（前缀匹配）
-  const publicPaths = [
-    "/sign-in",
-    "/api/auth",
-    "/api/auth/mobile-login",
-    "/resume/print/", // PDF 打印页面（Puppeteer 内部访问，需公开）
-  ];
+  const publicPaths = ["/sign-in", "/api/auth", "/api/auth/mobile-login"];
 
   const isPublicPath = publicPaths.some((publicPath) =>
     path.startsWith(publicPath),

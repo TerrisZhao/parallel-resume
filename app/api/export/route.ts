@@ -119,6 +119,8 @@ export async function GET(request: NextRequest) {
       printUrl.searchParams.set("themeColor", themeColor);
     }
     printUrl.searchParams.set("language", language);
+    // Mark this as PDF generation request to bypass browser access check
+    printUrl.searchParams.set("_pdf", "true");
 
     console.log(`Navigating to: ${printUrl.toString()}`);
 

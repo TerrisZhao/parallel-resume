@@ -18,22 +18,32 @@ type Project = InferSelectModel<typeof resumeProjects>;
 
 interface ResumePageProps {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ themeColor?: string; language?: string }>;
+  searchParams: Promise<{
+    themeColor?: string;
+    language?: string;
+    _pdf?: string;
+  }>;
 }
 
 // Simple SVG icon components for print page (to avoid client-side React components)
-const Icon = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+const Icon = ({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => (
   <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
+    className={className}
     fill="none"
+    height="14"
     stroke="currentColor"
-    strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
-    className={className}
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+    width="14"
+    xmlns="http://www.w3.org/2000/svg"
   >
     {children}
   </svg>
@@ -41,7 +51,7 @@ const Icon = ({ children, className = "" }: { children: React.ReactNode; classNa
 
 const MailIcon = ({ className }: { className?: string }) => (
   <Icon className={className}>
-    <rect width="20" height="16" x="2" y="4" rx="2" />
+    <rect height="16" rx="2" width="20" x="2" y="4" />
     <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
   </Icon>
 );
@@ -62,7 +72,7 @@ const MapPinIcon = ({ className }: { className?: string }) => (
 const LinkedinIcon = ({ className }: { className?: string }) => (
   <Icon className={className}>
     <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-    <rect width="4" height="12" x="2" y="9" />
+    <rect height="12" width="4" x="2" y="9" />
     <circle cx="4" cy="4" r="2" />
   </Icon>
 );
@@ -180,7 +190,7 @@ async function getResumeData(
 }
 
 // Force dynamic rendering for each request (since we have dynamic params)
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function PrintResumePage({
   params,
@@ -190,9 +200,11 @@ export default async function PrintResumePage({
   const resolvedSearchParams = await searchParams;
   const resumeData = await getResumeData(resolvedParams.id);
 
+  // Note: Browser access is redirected by middleware, this page only renders for PDF generation
+
   if (!resumeData) {
     return (
-      <html lang="en" suppressHydrationWarning>
+      <html suppressHydrationWarning lang="en">
         <head>
           <title>Resume Not Found</title>
         </head>
@@ -207,18 +219,21 @@ export default async function PrintResumePage({
 
   const themeColor =
     resolvedSearchParams.themeColor || resumeData.themeColor || "#000000";
-  const language =
-    (resolvedSearchParams.language as Language) || "en";
+  const language = (resolvedSearchParams.language as Language) || "en";
   const t = getResumeTranslation(language);
 
   return (
-    <html lang={language === "zh" ? "zh-CN" : "en"} suppressHydrationWarning>
+    <html suppressHydrationWarning lang={language === "zh" ? "zh-CN" : "en"}>
       <head>
         <title>{`${resumeData.fullName || "Resume"} - Resume`}</title>
         <meta charSet="utf-8" />
         <meta content="width=device-width, initial-scale=1" name="viewport" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com" rel="preconnect" />
+        <link
+          crossOrigin="anonymous"
+          href="https://fonts.gstatic.com"
+          rel="preconnect"
+        />
         <link
           href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600;700&display=swap"
           rel="stylesheet"
@@ -237,9 +252,11 @@ export default async function PrintResumePage({
           }
 
           body {
-            font-family: ${language === "zh"
-              ? "'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', 'SimHei', sans-serif"
-              : "-apple-system, BlinkMacSystemFont, 'Noto Sans', 'Inter', 'Segoe UI', 'Roboto', sans-serif"};
+            font-family: ${
+              language === "zh"
+                ? "'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', 'SimHei', sans-serif"
+                : "-apple-system, BlinkMacSystemFont, 'Noto Sans', 'Inter', 'Segoe UI', 'Roboto', sans-serif"
+            };
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             background: white !important;
