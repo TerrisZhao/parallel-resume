@@ -26,6 +26,8 @@ import {
   MapPin,
   Smartphone,
   Monitor as MonitorIcon,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 
@@ -66,6 +68,50 @@ export default function SettingsPage() {
   const [isLoginHistoryOpen, setIsLoginHistoryOpen] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
+  // AI配置状态
+  const [aiProvider, setAiProvider] = useState<string>("");
+  const [aiModel, setAiModel] = useState("");
+  const [aiApiKey, setAiApiKey] = useState("");
+  const [aiApiEndpoint, setAiApiEndpoint] = useState("");
+  const [customProviderName, setCustomProviderName] = useState("");
+  const [isTestingConnection, setIsTestingConnection] = useState(false);
+  const [isUpdatingAiConfig, setIsUpdatingAiConfig] = useState(false);
+  const [showApiKey, setShowApiKey] = useState(false);
+
+  // AI提供商配置
+  const AI_PROVIDERS = [
+    {
+      value: "openai",
+      label: "OpenAI",
+      models: ["gpt-4", "gpt-4-turbo", "gpt-3.5-turbo"],
+      defaultEndpoint: "https://api.openai.com/v1",
+    },
+    {
+      value: "deepseek",
+      label: "DeepSeek",
+      models: ["deepseek-chat", "deepseek-coder"],
+      defaultEndpoint: "https://api.deepseek.com/v1",
+    },
+    {
+      value: "claude",
+      label: "Anthropic Claude",
+      models: ["claude-3-opus", "claude-3-sonnet", "claude-3-haiku"],
+      defaultEndpoint: "https://api.anthropic.com/v1",
+    },
+    {
+      value: "gemini",
+      label: "Google Gemini",
+      models: ["gemini-pro", "gemini-pro-vision"],
+      defaultEndpoint: "https://generativelanguage.googleapis.com/v1",
+    },
+    {
+      value: "custom",
+      label: "自定义模型",
+      models: [],
+      defaultEndpoint: "",
+    },
+  ];
+
   // 显示toast消息
   const showToast = (message: string, type: "success" | "error") => {
     addToast({
@@ -81,6 +127,19 @@ export default function SettingsPage() {
     }
     if (session?.user && (session.user as any)?.themeMode) {
       setThemeMode((session.user as any).themeMode);
+    }
+    // 初始化AI配置
+    if (session?.user) {
+      const user = session.user as any;
+
+      if (user.aiProvider) {
+        setAiProvider(user.aiProvider);
+        setAiModel(user.aiModel || "");
+        setAiApiEndpoint(user.aiApiEndpoint || "");
+        setCustomProviderName(user.aiCustomProviderName || "");
+        // 使用遮盖后的API Key
+        setAiApiKey(user.aiApiKeyMasked || "");
+      }
     }
   }, [session?.user]);
 
@@ -229,6 +288,146 @@ export default function SettingsPage() {
     fetchLoginHistory();
   };
 
+  // 保存AI配置
+  const handleSaveAiConfig = async () => {
+    if (!aiProvider || !aiModel || !aiApiKey) {
+      showToast("请填写完整的AI配置信息", "error");
+
+      return;
+    }
+
+    setIsUpdatingAiConfig(true);
+    try {
+      const response = await fetch("/api/user/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          aiProvider,
+          aiModel,
+          aiApiKey,
+          aiApiEndpoint: aiApiEndpoint || undefined,
+          aiCustomProviderName:
+            aiProvider === "custom" ? customProviderName : undefined,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "保存失败");
+      }
+
+      // 更新session
+      await update({
+        ...session,
+        user: {
+          ...session?.user,
+          aiProvider,
+          aiModel,
+          aiApiKeyMasked: data.user.aiApiKeyMasked,
+          aiApiEndpoint,
+          aiCustomProviderName: customProviderName,
+        },
+      });
+
+      showToast("AI配置保存成功", "success");
+      // 更新为遮盖后的Key
+      setAiApiKey(data.user.aiApiKeyMasked || "");
+    } catch (error) {
+      console.error("保存AI配置失败:", error);
+      showToast(error instanceof Error ? error.message : "保存失败", "error");
+    } finally {
+      setIsUpdatingAiConfig(false);
+    }
+  };
+
+  // 测试连接
+  const handleTestConnection = async () => {
+    if (!aiProvider || !aiModel || !aiApiKey) {
+      showToast("请填写完整的AI配置信息", "error");
+
+      return;
+    }
+
+    setIsTestingConnection(true);
+    try {
+      const response = await fetch("/api/ai/test-connection", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider: aiProvider,
+          model: aiModel,
+          apiKey: aiApiKey,
+          apiEndpoint: aiApiEndpoint || undefined,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        showToast("连接测试成功", "success");
+      } else {
+        showToast(`连接测试失败: ${data.error}`, "error");
+      }
+    } catch (error) {
+      console.error("测试连接失败:", error);
+      showToast("测试连接失败", "error");
+    } finally {
+      setIsTestingConnection(false);
+    }
+  };
+
+  // 清除AI配置
+  const handleClearAiConfig = async () => {
+    setIsUpdatingAiConfig(true);
+    try {
+      const response = await fetch("/api/user/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          aiProvider: null,
+          aiModel: null,
+          aiApiKey: null,
+          aiApiEndpoint: null,
+          aiCustomProviderName: null,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "清除失败");
+      }
+
+      // 更新session
+      await update({
+        ...session,
+        user: {
+          ...session?.user,
+          aiProvider: undefined,
+          aiModel: undefined,
+          aiApiKeyMasked: undefined,
+          aiApiEndpoint: undefined,
+          aiCustomProviderName: undefined,
+        },
+      });
+
+      // 重置状态
+      setAiProvider("");
+      setAiModel("");
+      setAiApiKey("");
+      setAiApiEndpoint("");
+      setCustomProviderName("");
+
+      showToast("AI配置已清除", "success");
+    } catch (error) {
+      console.error("清除AI配置失败:", error);
+      showToast(error instanceof Error ? error.message : "清除失败", "error");
+    } finally {
+      setIsUpdatingAiConfig(false);
+    }
+  };
+
   // 格式化日期
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -346,6 +545,144 @@ export default function SettingsPage() {
               label="邮箱"
               placeholder="输入您的邮箱"
             />
+          </CardBody>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <h3 className="text-lg font-semibold">AI模型配置</h3>
+          </CardHeader>
+          <CardBody className="space-y-4">
+            {/* AI提供商选择 */}
+            <Select
+              label="AI提供商"
+              placeholder="选择AI提供商"
+              selectedKeys={aiProvider ? [aiProvider] : []}
+              onSelectionChange={(keys) => {
+                const selected = Array.from(keys)[0] as string;
+
+                setAiProvider(selected);
+                // 重置相关字段
+                setAiModel("");
+                if (selected !== "custom") {
+                  const provider = AI_PROVIDERS.find(
+                    (p) => p.value === selected,
+                  );
+
+                  setAiApiEndpoint(provider?.defaultEndpoint || "");
+                }
+              }}
+            >
+              {AI_PROVIDERS.map((provider) => (
+                <SelectItem key={provider.value}>
+                  {provider.label}
+                </SelectItem>
+              ))}
+            </Select>
+
+            {/* 自定义提供商名称 */}
+            {aiProvider === "custom" && (
+              <Input
+                label="提供商名称"
+                placeholder="输入自定义提供商名称"
+                value={customProviderName}
+                onChange={(e) => setCustomProviderName(e.target.value)}
+              />
+            )}
+
+            {/* 模型选择 */}
+            {aiProvider && aiProvider !== "custom" && (
+              <Select
+                label="模型"
+                placeholder="选择模型"
+                selectedKeys={aiModel ? [aiModel] : []}
+                onSelectionChange={(keys) =>
+                  setAiModel(Array.from(keys)[0] as string)
+                }
+              >
+                {(
+                  AI_PROVIDERS.find((p) => p.value === aiProvider)?.models || []
+                ).map((model) => (
+                  <SelectItem key={model}>
+                    {model}
+                  </SelectItem>
+                ))}
+              </Select>
+            )}
+
+            {/* 自定义模型名称 */}
+            {aiProvider === "custom" && (
+              <Input
+                label="模型名称"
+                placeholder="输入模型名称"
+                value={aiModel}
+                onChange={(e) => setAiModel(e.target.value)}
+              />
+            )}
+
+            {/* API Key输入 */}
+            {aiProvider && (
+              <Input
+                endContent={
+                  <Button
+                    isIconOnly
+                    className="min-w-8 w-8 h-8"
+                    size="sm"
+                    variant="light"
+                    onPress={() => setShowApiKey(!showApiKey)}
+                  >
+                    {showApiKey ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </Button>
+                }
+                label="API Key"
+                placeholder="输入API Key"
+                type={showApiKey ? "text" : "password"}
+                value={aiApiKey}
+                onChange={(e) => setAiApiKey(e.target.value)}
+              />
+            )}
+
+            {/* API端点 */}
+            {aiProvider && (
+              <Input
+                description="留空使用默认端点"
+                label="API端点"
+                placeholder="输入API端点地址"
+                value={aiApiEndpoint}
+                onChange={(e) => setAiApiEndpoint(e.target.value)}
+              />
+            )}
+
+            {/* 操作按钮 */}
+            {aiProvider && (
+              <div className="flex gap-2">
+                <Button
+                  color="primary"
+                  isLoading={isTestingConnection}
+                  variant="bordered"
+                  onPress={handleTestConnection}
+                >
+                  测试连接
+                </Button>
+                <Button
+                  color="primary"
+                  isLoading={isUpdatingAiConfig}
+                  onPress={handleSaveAiConfig}
+                >
+                  保存配置
+                </Button>
+                {(session?.user as any)?.aiProvider && (
+                  <Button
+                    color="danger"
+                    isLoading={isUpdatingAiConfig}
+                    variant="light"
+                    onPress={handleClearAiConfig}
+                  >
+                    清除配置
+                  </Button>
+                )}
+              </div>
+            )}
           </CardBody>
         </Card>
 

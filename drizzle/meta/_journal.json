@@ -8,6 +8,13 @@
       "when": 1765884621024,
       "tag": "0000_rapid_pixie",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1766133428943,
+      "tag": "0001_sparkling_darwin",
+      "breakpoints": true
     }
   ]
 }

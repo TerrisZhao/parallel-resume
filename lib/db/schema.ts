@@ -18,6 +18,15 @@ export const userRoleEnum = pgEnum("user_role", ["owner", "admin", "user"]);
 // 主题模式枚举
 export const themeModeEnum = pgEnum("theme_mode", ["light", "dark", "system"]);
 
+// AI提供商枚举
+export const aiProviderEnum = pgEnum("ai_provider", [
+  "openai",
+  "deepseek",
+  "claude",
+  "gemini",
+  "custom",
+]);
+
 // 用户表
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -30,6 +39,13 @@ export const users = pgTable("users", {
   emailVerified: boolean("email_verified").notNull().default(false),
   isActive: boolean("is_active").notNull().default(true),
   themeMode: themeModeEnum("theme_mode").notNull().default("system"),
+  // AI配置字段
+  aiProvider: aiProviderEnum("ai_provider"), // AI提供商
+  aiModel: varchar("ai_model", { length: 100 }), // 模型名称
+  aiApiKey: text("ai_api_key"), // 加密后的API Key
+  aiApiEndpoint: varchar("ai_api_endpoint", { length: 500 }), // API端点
+  aiCustomProviderName: varchar("ai_custom_provider_name", { length: 100 }), // 自定义提供商名称
+  aiConfigUpdatedAt: timestamp("ai_config_updated_at"), // AI配置更新时间
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
   deletedAt: timestamp("deleted_at"), // 软删除

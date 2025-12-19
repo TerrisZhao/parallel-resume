@@ -201,6 +201,11 @@ const authOptions = {
             token.name = dbUser[0].name;
             token.email = dbUser[0].email;
             token.themeMode = dbUser[0].themeMode;
+            // AI配置（不包含API Key）
+            token.aiProvider = dbUser[0].aiProvider;
+            token.aiModel = dbUser[0].aiModel;
+            token.aiApiEndpoint = dbUser[0].aiApiEndpoint;
+            token.aiCustomProviderName = dbUser[0].aiCustomProviderName;
           }
         } else {
           // 对于credentials登录，需要从数据库获取用户角色
@@ -216,6 +221,11 @@ const authOptions = {
             token.name = dbUser[0].name;
             token.email = dbUser[0].email;
             token.themeMode = dbUser[0].themeMode;
+            // AI配置（不包含API Key）
+            token.aiProvider = dbUser[0].aiProvider;
+            token.aiModel = dbUser[0].aiModel;
+            token.aiApiEndpoint = dbUser[0].aiApiEndpoint;
+            token.aiCustomProviderName = dbUser[0].aiCustomProviderName;
           }
         }
       } else if (token?.sub) {
@@ -233,6 +243,11 @@ const authOptions = {
           token.email = dbUser[0].email;
           token.role = dbUser[0].role;
           token.themeMode = dbUser[0].themeMode;
+          // AI配置（不包含API Key）
+          token.aiProvider = dbUser[0].aiProvider;
+          token.aiModel = dbUser[0].aiModel;
+          token.aiApiEndpoint = dbUser[0].aiApiEndpoint;
+          token.aiCustomProviderName = dbUser[0].aiCustomProviderName;
         }
       }
 
@@ -247,6 +262,15 @@ const authOptions = {
         if (token.name) session.user.name = token.name;
         if (token.email) session.user.email = token.email;
         if (token.themeMode) (session.user as any).themeMode = token.themeMode;
+        // AI配置（不包含API Key）
+        if (token.aiProvider)
+          (session.user as any).aiProvider = token.aiProvider;
+        if (token.aiModel) (session.user as any).aiModel = token.aiModel;
+        if (token.aiApiEndpoint)
+          (session.user as any).aiApiEndpoint = token.aiApiEndpoint;
+        if (token.aiCustomProviderName)
+          (session.user as any).aiCustomProviderName =
+            token.aiCustomProviderName;
       }
 
       return session;
