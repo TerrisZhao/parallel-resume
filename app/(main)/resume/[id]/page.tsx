@@ -971,6 +971,7 @@ export default function ResumeEditPage({
     linkedin: "",
     github: "",
     website: "",
+    jobDescription: "",
     summary: "",
     keySkills: [],
     workExperience: [],
@@ -1029,6 +1030,7 @@ export default function ResumeEditPage({
             linkedin: resume.linkedin || "",
             github: resume.github || "",
             website: resume.website || "",
+            jobDescription: resume.jobDescription || "",
             summary: resume.summary || "",
             keySkills: skills,
             workExperience: resume.workExperience || [],
@@ -1083,6 +1085,7 @@ export default function ResumeEditPage({
               linkedin: data.linkedin,
               github: data.github,
               website: data.website,
+              jobDescription: data.jobDescription,
               summary: data.summary,
               keySkills: data.keySkills,
               workExperience: data.workExperience,
@@ -1672,6 +1675,28 @@ export default function ResumeEditPage({
       </div>
 
       <div className="space-y-6 pb-5">
+        {/* Job Description - Only show when AI optimization is enabled */}
+        {isAiOptimizationEnabled && (
+          <Card>
+            <CardBody className="space-y-4">
+              <h3 className="text-lg font-semibold">Job Description</h3>
+              <Textarea
+                label="Job Description"
+                placeholder="Enter the job description you're applying for. This will help AI optimize your resume content."
+                value={resumeData.jobDescription || ""}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setResumeData({
+                    ...resumeData,
+                    jobDescription: e.target.value,
+                  })
+                }
+                minRows={4}
+                description="This information helps AI tailor your resume content to match the job requirements."
+              />
+            </CardBody>
+          </Card>
+        )}
+
         {/* Personal Information */}
         <Card>
           <CardBody className="space-y-4">

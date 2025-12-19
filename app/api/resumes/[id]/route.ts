@@ -79,6 +79,7 @@ export async function GET(
       additionalInfo: resume.additionalInfo,
       themeColor: resume.themeColor,
       aiOptimizationEnabled: resume.aiOptimizationEnabled ?? false,
+      jobDescription: resume.jobDescription || "",
       workExperience: workExperience.map((exp: any) => ({
         id: exp.id.toString(),
         company: exp.company,
@@ -172,6 +173,7 @@ export async function PUT(
         keySkills: data?.keySkills || [],
         additionalInfo: data?.additionalInfo,
         themeColor: data?.themeColor || "#1e40af",
+        jobDescription: data?.jobDescription,
         updatedAt: new Date(),
       })
       .where(eq(resumes.id, resumeId))
@@ -299,6 +301,8 @@ export async function PATCH(
       updateData.preferredLanguage = body.preferredLanguage;
     if (body.aiOptimizationEnabled !== undefined)
       updateData.aiOptimizationEnabled = body.aiOptimizationEnabled;
+    if (body.jobDescription !== undefined)
+      updateData.jobDescription = body.jobDescription;
 
     const [updatedResume] = await db
       .update(resumes)

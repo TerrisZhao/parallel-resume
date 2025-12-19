@@ -49,6 +49,9 @@ export interface ResumeData {
   github?: string;
   website?: string;
 
+  // Job Description (for AI optimization)
+  jobDescription?: string;
+
   // Summary
   summary: string;
 
