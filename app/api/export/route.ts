@@ -91,6 +91,7 @@ export async function GET(request: NextRequest) {
 
     page.on("console", (msg) => {
       const text = msg.text();
+
       pageConsole.push(`[${msg.type()}] ${text}`);
       if (msg.type() === "error") {
         pageErrors.push(text);
@@ -98,7 +99,9 @@ export async function GET(request: NextRequest) {
     });
 
     page.on("pageerror", (error) => {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+
       pageErrors.push(`Page error: ${errorMessage}`);
       console.error("Page JavaScript error:", errorMessage);
     });
@@ -163,7 +166,10 @@ export async function GET(request: NextRequest) {
 
     console.log("Page structure:", pageStructure);
 
-    if (pageTitle.includes("Not Found") || bodyText.includes("Resume not found")) {
+    if (
+      pageTitle.includes("Not Found") ||
+      bodyText.includes("Resume not found")
+    ) {
       console.error("Page shows error:", bodyText.substring(0, 200));
       throw new Error("Resume not found on page");
     }
