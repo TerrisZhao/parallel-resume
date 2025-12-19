@@ -62,6 +62,8 @@ export async function GET(
       printUrl.searchParams.set("themeColor", themeColor);
     }
     printUrl.searchParams.set("language", language);
+    // Mark as PDF/thumbnail generation to bypass browser redirect
+    printUrl.searchParams.set("_pdf", "true");
 
     console.log("Generating thumbnail for resume:", id);
     console.log("Detected language:", language);
@@ -80,6 +82,9 @@ export async function GET(
 
     const page = await browser.newPage();
 
+    // Disable JavaScript to avoid React hydration errors
+    await page.setJavaScriptEnabled(false);
+
     // Set viewport to A4 proportions (210mm x 297mm) scaled down
     await page.setViewport({
       width: 794, // A4 width in pixels at 96 DPI (210mm)
@@ -94,8 +99,8 @@ export async function GET(
         timeout: 30000,
       });
 
-      // Wait for the data-ready attribute to be set (fonts loaded)
-      await page.waitForSelector('[data-ready="true"]', { timeout: 5000 });
+      // Wait for page to render (no JS signal since JS is disabled)
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
       // Take screenshot
       const screenshot = await page.screenshot({
