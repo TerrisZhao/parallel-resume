@@ -60,7 +60,9 @@ async function listOpenAIModels(params: ListAIModelsParams): Promise<string[]> {
   const data = await response.json();
   const rawModels = (data as any)?.data || (data as any)?.models || [];
 
-  return normalizeModelIds(rawModels);
+  const allModels = normalizeModelIds(rawModels);
+
+  return filterResumeOptimizationModels(allModels, "openai");
 }
 
 async function listDeepSeekModels(
@@ -91,7 +93,9 @@ async function listDeepSeekModels(
   const data = await response.json();
   const rawModels = (data as any)?.data || (data as any)?.models || [];
 
-  return normalizeModelIds(rawModels);
+  const allModels = normalizeModelIds(rawModels);
+
+  return filterResumeOptimizationModels(allModels, "deepseek");
 }
 
 async function listClaudeModels(
@@ -123,7 +127,9 @@ async function listClaudeModels(
   const data = await response.json();
   const rawModels = (data as any)?.data || (data as any)?.models || [];
 
-  return normalizeModelIds(rawModels);
+  const allModels = normalizeModelIds(rawModels);
+
+  return filterResumeOptimizationModels(allModels, "claude");
 }
 
 async function listGeminiModels(
@@ -155,7 +161,9 @@ async function listGeminiModels(
   const rawModels =
     (data as any)?.models || (data as any)?.data || (data as any) || [];
 
-  return normalizeModelIds(rawModels);
+  const allModels = normalizeModelIds(rawModels);
+
+  return filterResumeOptimizationModels(allModels, "gemini");
 }
 
 async function safeJson(response: Response) {
@@ -177,6 +185,71 @@ function normalizeModelIds(rawModels: any[]): string[] {
 
   // 去重 + 排序，避免前端展示杂乱
   return Array.from(new Set(ids)).sort();
+}
+
+/**
+ * 筛选适合简历优化的模型
+ * 简历优化需要文本生成和理解能力，排除 embedding、moderation、whisper 等专用模型
+ */
+function filterResumeOptimizationModels(
+  models: string[],
+  provider: AIProvider,
+): string[] {
+  return models.filter((model) => {
+    const modelLower = model.toLowerCase();
+
+    switch (provider) {
+      case "openai":
+        // 只保留 GPT-4 和 GPT-3.5 Turbo 系列（chat/completion 模型）
+        // 排除: embedding, moderation, whisper, davinci-002, text-embedding, ada, babbage, curie, davinci
+        return (
+          (modelLower.startsWith("gpt-5") || modelLower.startsWith("gpt-4") ||
+            modelLower.startsWith("gpt-3.5-turbo")) &&
+          !modelLower.includes("embedding") &&
+          !modelLower.includes("moderation") &&
+          !modelLower.includes("audio") &&
+          !modelLower.includes("codex") &&
+          !modelLower.includes("tts") &&
+          !modelLower.includes("search") &&
+          !modelLower.includes("transcribe") &&
+          !modelLower.includes("chat") &&
+          !modelLower.includes("whisper") &&
+          !modelLower.includes("preview") &&
+          !modelLower.includes("davinci-002") &&
+          !modelLower.includes("instruct")
+        );
+
+      case "deepseek":
+        // 只保留 chat 和 coder 模型
+        return (
+          modelLower.includes("deepseek-chat")
+        );
+
+      case "claude":
+        // 只保留 Claude 3 和 Claude 2 系列（chat 模型）
+        // 排除: claude-instant-1（旧版本）
+        return (
+          modelLower.startsWith("claude-4") ||
+          modelLower.startsWith("claude-3")
+        );
+
+      case "gemini":
+        // 只保留 gemini-pro 和 gemini-1.5 系列（生成模型）
+        // 排除: embedding, embedding-001, embedding-002 等
+        return (
+          (modelLower.startsWith("gemini-pro") ||
+            modelLower.startsWith("gemini-2.5")) &&
+          !modelLower.includes("embedding")
+        );
+
+      case "custom":
+        // 自定义模型不过滤，全部返回
+        return true;
+
+      default:
+        return false;
+    }
+  });
 }
 
 
