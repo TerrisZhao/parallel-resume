@@ -22,11 +22,21 @@ Important Guidelines:
 /**
  * User prompt template for STAR principle detection (single item)
  */
-export function getStarCheckPrompt(content: string): string {
+export function getStarCheckPrompt(
+  content: string,
+  jobDescription?: string,
+): string {
+  const jobDescriptionSection = jobDescription
+    ? `\n\nJob Description (for reference):
+"${jobDescription}"
+
+When optimizing, consider the job description above. If the content is relevant to the job requirements, align the optimized content appropriately with the job description. However, if there is no clear relevance, do not force alignment - maintain the authenticity and naturalness of the original content. Only adjust when there is genuine relevance.`
+    : "";
+
   return `Please analyze the following project description. Please evaluate whether it satisfies the STAR principle and optimize it:
 
 Content:
-"${content}"
+"${content}"${jobDescriptionSection}
 
 Important Notes:
 - The content does not need to individually satisfy the complete STAR principle
@@ -66,14 +76,22 @@ Notes:
  */
 export function getBatchStarCheckPrompt(
   items: Array<{ id: string; content: string }>,
+  jobDescription?: string,
 ): string {
   const itemsList = items
     .map((item, index) => `Item ${index + 1} (ID: ${item.id}):\n"${item.content}"`)
     .join("\n\n");
 
+  const jobDescriptionSection = jobDescription
+    ? `\n\nJob Description (for reference):
+"${jobDescription}"
+
+When optimizing, consider the job description above. If the content is relevant to the job requirements, align the optimized content appropriately with the job description. However, if there is no clear relevance, do not force alignment - maintain the authenticity and naturalness of the original content. Only adjust when there is genuine relevance.`
+    : "";
+
   return `Please analyze the following multiple responsibility and achievement descriptions from the same work experience. These items belong to the same work experience. Please evaluate from an overall perspective whether they collectively satisfy the STAR principle and optimize them:
 
-${itemsList}
+${itemsList}${jobDescriptionSection}
 
 Important Notes:
 - Each item does not need to individually satisfy the complete STAR principle

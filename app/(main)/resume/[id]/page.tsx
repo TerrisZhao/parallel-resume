@@ -73,11 +73,13 @@ interface StarCheckResult {
 function BatchStarIndicator({
   items,
   onConfirmImprovements,
+  jobDescription,
 }: {
   items: Array<{ id: string; content: string }>;
   onConfirmImprovements: (
     improvements: Array<{ id: string; improvedContent: string }>,
   ) => void;
+  jobDescription?: string;
 }) {
   const [overallStarResult, setOverallStarResult] =
     useState<StarCheckResult | null>(null);
@@ -107,7 +109,10 @@ function BatchStarIndicator({
       const response = await fetch("/api/ai/star-check", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items }),
+        body: JSON.stringify({
+          items,
+          jobDescription: jobDescription || undefined,
+        }),
       });
 
       const data = await response.json();
@@ -192,55 +197,7 @@ function BatchStarIndicator({
       <Modal isOpen={isConfirmOpen} onClose={onConfirmClose} size="3xl">
         <ModalContent>
           <ModalHeader>
-            <div className="flex items-center justify-between w-full">
-              <span>确认优化后的内容</span>
-              {overallStarResult && (
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1">
-                    <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
-                        overallStarResult.S
-                          ? "bg-success text-success-foreground"
-                          : "bg-danger text-danger-foreground"
-                      }`}
-                      title="Situation (背景情况)"
-                    >
-                      S
-                    </div>
-                    <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
-                        overallStarResult.T
-                          ? "bg-success text-success-foreground"
-                          : "bg-danger text-danger-foreground"
-                      }`}
-                      title="Task (任务目标)"
-                    >
-                      T
-                    </div>
-                    <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
-                        overallStarResult.A
-                          ? "bg-success text-success-foreground"
-                          : "bg-danger text-danger-foreground"
-                      }`}
-                      title="Action (具体行动)"
-                    >
-                      A
-                    </div>
-                    <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
-                        overallStarResult.R
-                          ? "bg-success text-success-foreground"
-                          : "bg-danger text-danger-foreground"
-                      }`}
-                      title="Result (成果影响)"
-                    >
-                      R
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+            <span>确认优化后的内容</span>
           </ModalHeader>
           <ModalBody>
             <div className="space-y-4 max-h-[60vh] overflow-y-auto">
@@ -270,13 +227,59 @@ function BatchStarIndicator({
               ))}
             </div>
           </ModalBody>
-          <ModalFooter>
-            <Button variant="light" onPress={onConfirmClose}>
-              取消
-            </Button>
-            <Button color="primary" onPress={handleConfirm}>
-              确认使用全部
-            </Button>
+          <ModalFooter className="flex items-center justify-between">
+            {overallStarResult && (
+              <div className="flex items-center gap-1">
+                <div
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                    overallStarResult.S
+                      ? "bg-success text-success-foreground"
+                      : "bg-danger text-danger-foreground"
+                  }`}
+                  title="Situation (背景情况)"
+                >
+                  S
+                </div>
+                <div
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                    overallStarResult.T
+                      ? "bg-success text-success-foreground"
+                      : "bg-danger text-danger-foreground"
+                  }`}
+                  title="Task (任务目标)"
+                >
+                  T
+                </div>
+                <div
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                    overallStarResult.A
+                      ? "bg-success text-success-foreground"
+                      : "bg-danger text-danger-foreground"
+                  }`}
+                  title="Action (具体行动)"
+                >
+                  A
+                </div>
+                <div
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                    overallStarResult.R
+                      ? "bg-success text-success-foreground"
+                      : "bg-danger text-danger-foreground"
+                  }`}
+                  title="Result (成果影响)"
+                >
+                  R
+                </div>
+              </div>
+            )}
+            <div className="flex items-center gap-2 ml-auto">
+              <Button variant="light" onPress={onConfirmClose}>
+                取消
+              </Button>
+              <Button color="primary" onPress={handleConfirm}>
+                确认使用全部
+              </Button>
+            </div>
           </ModalFooter>
         </ModalContent>
       </Modal>
@@ -290,11 +293,13 @@ function ProjectStarIndicator({
   content,
   onConfirmImprovement,
   onContentChange,
+  jobDescription,
 }: {
   isEnabled: boolean;
   content: string;
   onConfirmImprovement: (improvedContent: string) => void;
   onContentChange?: (value: string) => void;
+  jobDescription?: string;
 }) {
   const [starResult, setStarResult] = useState<StarCheckResult | null>(null);
   const [isLoadingStar, setIsLoadingStar] = useState(false);
@@ -321,7 +326,10 @@ function ProjectStarIndicator({
       const response = await fetch("/api/ai/star-check", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify({
+          content,
+          jobDescription: jobDescription || undefined,
+        }),
       });
 
       const data = await response.json();
@@ -409,55 +417,7 @@ function ProjectStarIndicator({
       <Modal isOpen={isConfirmOpen} onClose={onConfirmClose} size="2xl">
         <ModalContent>
           <ModalHeader>
-            <div className="flex items-center justify-between w-full">
-              <span>确认优化后的内容</span>
-              {starResult && (
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1">
-                    <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
-                        starResult.S
-                          ? "bg-success text-success-foreground"
-                          : "bg-danger text-danger-foreground"
-                      }`}
-                      title="Situation (背景情况)"
-                    >
-                      S
-                    </div>
-                    <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
-                        starResult.T
-                          ? "bg-success text-success-foreground"
-                          : "bg-danger text-danger-foreground"
-                      }`}
-                      title="Task (任务目标)"
-                    >
-                      T
-                    </div>
-                    <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
-                        starResult.A
-                          ? "bg-success text-success-foreground"
-                          : "bg-danger text-danger-foreground"
-                      }`}
-                      title="Action (具体行动)"
-                    >
-                      A
-                    </div>
-                    <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
-                        starResult.R
-                          ? "bg-success text-success-foreground"
-                          : "bg-danger text-danger-foreground"
-                      }`}
-                      title="Result (成果影响)"
-                    >
-                      R
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+            <span>确认优化后的内容</span>
           </ModalHeader>
           <ModalBody>
             <div className="space-y-4">
@@ -478,13 +438,59 @@ function ProjectStarIndicator({
               </div>
             </div>
           </ModalBody>
-          <ModalFooter>
-            <Button variant="light" onPress={onConfirmClose}>
-              取消
-            </Button>
-            <Button color="primary" onPress={handleConfirm}>
-              确认使用
-            </Button>
+          <ModalFooter className="flex items-center justify-between">
+            {starResult && (
+              <div className="flex items-center gap-1">
+                <div
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                    starResult.S
+                      ? "bg-success text-success-foreground"
+                      : "bg-danger text-danger-foreground"
+                  }`}
+                  title="Situation (背景情况)"
+                >
+                  S
+                </div>
+                <div
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                    starResult.T
+                      ? "bg-success text-success-foreground"
+                      : "bg-danger text-danger-foreground"
+                  }`}
+                  title="Task (任务目标)"
+                >
+                  T
+                </div>
+                <div
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                    starResult.A
+                      ? "bg-success text-success-foreground"
+                      : "bg-danger text-danger-foreground"
+                  }`}
+                  title="Action (具体行动)"
+                >
+                  A
+                </div>
+                <div
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                    starResult.R
+                      ? "bg-success text-success-foreground"
+                      : "bg-danger text-danger-foreground"
+                  }`}
+                  title="Result (成果影响)"
+                >
+                  R
+                </div>
+              </div>
+            )}
+            <div className="flex items-center gap-2 ml-auto">
+              <Button variant="light" onPress={onConfirmClose}>
+                取消
+              </Button>
+              <Button color="primary" onPress={handleConfirm}>
+                确认使用
+              </Button>
+            </div>
           </ModalFooter>
         </ModalContent>
       </Modal>
@@ -499,6 +505,7 @@ function StarIndicator({
   onRefresh,
   content,
   onConfirmImprovement,
+  jobDescription,
 }: {
   isEnabled: boolean;
   starResult: StarCheckResult | null;
@@ -506,6 +513,7 @@ function StarIndicator({
   onRefresh: () => void;
   content: string;
   onConfirmImprovement: (improvedContent: string) => void;
+  jobDescription?: string;
 }) {
   const {
     isOpen: isConfirmOpen,
@@ -536,7 +544,10 @@ function StarIndicator({
       const response = await fetch("/api/ai/star-check", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify({
+          content,
+          jobDescription: jobDescription || undefined,
+        }),
       });
 
       const data = await response.json();
@@ -606,55 +617,7 @@ function StarIndicator({
       <Modal isOpen={isConfirmOpen} onClose={onConfirmClose} size="2xl">
         <ModalContent>
           <ModalHeader>
-            <div className="flex items-center justify-between w-full">
-              <span>确认优化后的内容</span>
-              {localStarResult && (
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1">
-                    <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
-                        localStarResult.S
-                          ? "bg-success text-success-foreground"
-                          : "bg-danger text-danger-foreground"
-                      }`}
-                      title="Situation (背景情况)"
-                    >
-                      S
-                    </div>
-                    <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
-                        localStarResult.T
-                          ? "bg-success text-success-foreground"
-                          : "bg-danger text-danger-foreground"
-                      }`}
-                      title="Task (任务目标)"
-                    >
-                      T
-                    </div>
-                    <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
-                        localStarResult.A
-                          ? "bg-success text-success-foreground"
-                          : "bg-danger text-danger-foreground"
-                      }`}
-                      title="Action (具体行动)"
-                    >
-                      A
-                    </div>
-                    <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
-                        localStarResult.R
-                          ? "bg-success text-success-foreground"
-                          : "bg-danger text-danger-foreground"
-                      }`}
-                      title="Result (成果影响)"
-                    >
-                      R
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+            <span>确认优化后的内容</span>
           </ModalHeader>
           <ModalBody>
             <div className="space-y-4">
@@ -675,13 +638,59 @@ function StarIndicator({
               </div>
             </div>
           </ModalBody>
-          <ModalFooter>
-            <Button variant="light" onPress={onConfirmClose}>
-              取消
-            </Button>
-            <Button color="primary" onPress={handleConfirm}>
-              确认使用
-            </Button>
+          <ModalFooter className="flex items-center justify-between">
+            {localStarResult && (
+              <div className="flex items-center gap-1">
+                <div
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                    localStarResult.S
+                      ? "bg-success text-success-foreground"
+                      : "bg-danger text-danger-foreground"
+                  }`}
+                  title="Situation (背景情况)"
+                >
+                  S
+                </div>
+                <div
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                    localStarResult.T
+                      ? "bg-success text-success-foreground"
+                      : "bg-danger text-danger-foreground"
+                  }`}
+                  title="Task (任务目标)"
+                >
+                  T
+                </div>
+                <div
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                    localStarResult.A
+                      ? "bg-success text-success-foreground"
+                      : "bg-danger text-danger-foreground"
+                  }`}
+                  title="Action (具体行动)"
+                >
+                  A
+                </div>
+                <div
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                    localStarResult.R
+                      ? "bg-success text-success-foreground"
+                      : "bg-danger text-danger-foreground"
+                  }`}
+                  title="Result (成果影响)"
+                >
+                  R
+                </div>
+              </div>
+            )}
+            <div className="flex items-center gap-2 ml-auto">
+              <Button variant="light" onPress={onConfirmClose}>
+                取消
+              </Button>
+              <Button color="primary" onPress={handleConfirm}>
+                确认使用
+              </Button>
+            </div>
           </ModalFooter>
         </ModalContent>
       </Modal>
@@ -2331,6 +2340,7 @@ export default function ResumeEditPage({
                     <ProjectStarIndicator
                       isEnabled={isAiOptimizationEnabled}
                       content={proj.description}
+                      jobDescription={resumeData.jobDescription}
                       onContentChange={(value) =>
                         handleUpdateProject(proj.id, "description", value)
                       }

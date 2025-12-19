@@ -20,6 +20,7 @@ const starCheckSchema = z.object({
       }),
     )
     .optional(),
+  jobDescription: z.string().optional(), // 职位描述（可选）
 });
 
 /**
@@ -44,13 +45,13 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { content, items } = starCheckSchema.parse(body);
+    const { content, items, jobDescription } = starCheckSchema.parse(body);
 
     // 判断是批量检测还是单条检测
     const isBatch = items && items.length > 0;
     const prompt = isBatch
-      ? getBatchStarCheckPrompt(items)
-      : getStarCheckPrompt(content!);
+      ? getBatchStarCheckPrompt(items, jobDescription)
+      : getStarCheckPrompt(content!, jobDescription);
 
     // 调用AI进行STAR检测和优化
     const response = await callAI({
