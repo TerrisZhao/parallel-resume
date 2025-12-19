@@ -25,10 +25,11 @@ export function encryptApiKey(apiKey: string): string {
   const iv = crypto.randomBytes(16);
 
   // 创建加密器
+  const key = Buffer.from(ENCRYPTION_KEY, "hex");
   const cipher = crypto.createCipheriv(
     ALGORITHM,
-    Buffer.from(ENCRYPTION_KEY, "hex"),
-    iv,
+    key as unknown as crypto.CipherKey,
+    iv as unknown as crypto.BinaryLike,
   );
 
   // 加密数据
@@ -70,14 +71,15 @@ export function decryptApiKey(encryptedData: string): string {
     const authTag = Buffer.from(authTagHex, "hex");
 
     // 创建解密器
+    const key = Buffer.from(ENCRYPTION_KEY, "hex");
     const decipher = crypto.createDecipheriv(
       ALGORITHM,
-      Buffer.from(ENCRYPTION_KEY, "hex"),
-      iv,
+      key as unknown as crypto.CipherKey,
+      iv as unknown as crypto.BinaryLike,
     );
 
     // 设置认证标签
-    decipher.setAuthTag(authTag);
+    decipher.setAuthTag(authTag as unknown as NodeJS.ArrayBufferView);
 
     // 解密数据
     let decrypted = decipher.update(encrypted, "hex", "utf8");
