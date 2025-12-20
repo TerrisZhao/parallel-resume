@@ -18,7 +18,9 @@ export function encryptApiKey(apiKey: string): string {
   }
 
   if (ENCRYPTION_KEY.length !== 64) {
-    throw new Error("ENCRYPTION_KEY must be 64 hexadecimal characters (32 bytes)");
+    throw new Error(
+      "ENCRYPTION_KEY must be 64 hexadecimal characters (32 bytes)",
+    );
   }
 
   // 生成随机IV (初始化向量)
@@ -55,7 +57,9 @@ export function decryptApiKey(encryptedData: string): string {
   }
 
   if (ENCRYPTION_KEY.length !== 64) {
-    throw new Error("ENCRYPTION_KEY must be 64 hexadecimal characters (32 bytes)");
+    throw new Error(
+      "ENCRYPTION_KEY must be 64 hexadecimal characters (32 bytes)",
+    );
   }
 
   try {

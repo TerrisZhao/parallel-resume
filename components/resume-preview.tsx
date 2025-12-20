@@ -17,9 +17,10 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
   language = "en",
 }) => {
   const t = getResumeTranslation(language);
-  const fontFamily = language === "zh"
-    ? "'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', 'SimHei', sans-serif"
-    : "-apple-system, BlinkMacSystemFont, 'Noto Sans', 'Inter', 'Segoe UI', 'Roboto', 'Arial', sans-serif";
+  const fontFamily =
+    language === "zh"
+      ? "'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', 'SimHei', sans-serif"
+      : "-apple-system, BlinkMacSystemFont, 'Noto Sans', 'Inter', 'Segoe UI', 'Roboto', 'Arial', sans-serif";
 
   return (
     <div

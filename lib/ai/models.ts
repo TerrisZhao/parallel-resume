@@ -98,9 +98,7 @@ async function listDeepSeekModels(
   return filterResumeOptimizationModels(allModels, "deepseek");
 }
 
-async function listClaudeModels(
-  params: ListAIModelsParams,
-): Promise<string[]> {
+async function listClaudeModels(params: ListAIModelsParams): Promise<string[]> {
   const base =
     params.apiEndpoint && params.apiEndpoint.length > 0
       ? trimTrailingSlash(params.apiEndpoint)
@@ -132,9 +130,7 @@ async function listClaudeModels(
   return filterResumeOptimizationModels(allModels, "claude");
 }
 
-async function listGeminiModels(
-  params: ListAIModelsParams,
-): Promise<string[]> {
+async function listGeminiModels(params: ListAIModelsParams): Promise<string[]> {
   const base =
     params.apiEndpoint && params.apiEndpoint.length > 0
       ? trimTrailingSlash(params.apiEndpoint)
@@ -203,7 +199,8 @@ function filterResumeOptimizationModels(
         // 只保留 GPT-4 和 GPT-3.5 Turbo 系列（chat/completion 模型）
         // 排除: embedding, moderation, whisper, davinci-002, text-embedding, ada, babbage, curie, davinci
         return (
-          (modelLower.startsWith("gpt-5") || modelLower.startsWith("gpt-4") ||
+          (modelLower.startsWith("gpt-5") ||
+            modelLower.startsWith("gpt-4") ||
             modelLower.startsWith("gpt-3.5-turbo")) &&
           !modelLower.includes("embedding") &&
           !modelLower.includes("moderation") &&
@@ -221,16 +218,13 @@ function filterResumeOptimizationModels(
 
       case "deepseek":
         // 只保留 chat 和 coder 模型
-        return (
-          modelLower.includes("deepseek-chat")
-        );
+        return modelLower.includes("deepseek-chat");
 
       case "claude":
         // 只保留 Claude 3 和 Claude 2 系列（chat 模型）
         // 排除: claude-instant-1（旧版本）
         return (
-          modelLower.startsWith("claude-4") ||
-          modelLower.startsWith("claude-3")
+          modelLower.startsWith("claude-4") || modelLower.startsWith("claude-3")
         );
 
       case "gemini":
@@ -251,5 +245,3 @@ function filterResumeOptimizationModels(
     }
   });
 }
-
-

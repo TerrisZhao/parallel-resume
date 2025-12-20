@@ -10,6 +10,7 @@ import {
   index,
   primaryKey,
   json,
+  decimal,
 } from "drizzle-orm/pg-core";
 
 // 用户角色枚举
@@ -25,6 +26,43 @@ export const aiProviderEnum = pgEnum("ai_provider", [
   "claude",
   "gemini",
   "custom",
+]);
+
+// 订阅套餐类型枚举
+export const planTypeEnum = pgEnum("plan_type", [
+  "free",
+  "credits",
+  "subscription",
+]);
+
+// 订阅状态枚举
+export const subscriptionStatusEnum = pgEnum("subscription_status", [
+  "active",
+  "canceled",
+  "past_due",
+  "trialing",
+  "incomplete",
+  "incomplete_expired",
+  "unpaid",
+]);
+
+// 积分交易类型枚举
+export const creditTransactionTypeEnum = pgEnum("credit_transaction_type", [
+  "purchase",
+  "usage",
+  "refund",
+  "bonus",
+  "subscription_grant",
+]);
+
+// 支付状态枚举
+export const paymentStatusEnum = pgEnum("payment_status", [
+  "pending",
+  "processing",
+  "succeeded",
+  "failed",
+  "canceled",
+  "refunded",
 ]);
 
 // 用户表
@@ -46,6 +84,8 @@ export const users = pgTable("users", {
   aiApiEndpoint: varchar("ai_api_endpoint", { length: 500 }), // API端点
   aiCustomProviderName: varchar("ai_custom_provider_name", { length: 100 }), // 自定义提供商名称
   aiConfigUpdatedAt: timestamp("ai_config_updated_at"), // AI配置更新时间
+  // Stripe相关
+  stripeCustomerId: varchar("stripe_customer_id", { length: 255 }), // Stripe客户ID
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
   deletedAt: timestamp("deleted_at"), // 软删除
@@ -148,8 +188,12 @@ export const resumes = pgTable(
     keySkills: json("key_skills").$type<string[]>().default([]), // JSON array
     additionalInfo: text("additional_info"),
     themeColor: varchar("theme_color", { length: 20 }).default("#000000"), // 主题颜色
-    preferredLanguage: varchar("preferred_language", { length: 5 }).default("en"), // 首选语言
-    aiOptimizationEnabled: boolean("ai_optimization_enabled").notNull().default(false), // AI优化总开关
+    preferredLanguage: varchar("preferred_language", { length: 5 }).default(
+      "en",
+    ), // 首选语言
+    aiOptimizationEnabled: boolean("ai_optimization_enabled")
+      .notNull()
+      .default(false), // AI优化总开关
     jobDescription: text("job_description"), // 职位描述（AI优化时使用）
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -243,6 +287,127 @@ export const resumeProjects = pgTable(
   }),
 );
 
+// ==================== 订阅和支付相关表 ====================
+
+// 订阅套餐表
+export const subscriptionPlans = pgTable("subscription_plans", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(), // 套餐名称：Free, Starter, Pro等
+  type: planTypeEnum("type").notNull(), // 套餐类型
+  price: decimal("price", { precision: 10, scale: 2 }).notNull().default("0"), // 价格
+  credits: integer("credits"), // 充值套餐给予的积分数量
+  interval: varchar("interval", { length: 20 }), // month, year, one_time
+  intervalCount: integer("interval_count").default(1), // 间隔数量
+  features: json("features").$type<string[]>().default([]), // 功能列表
+  stripePriceId: varchar("stripe_price_id", { length: 255 }), // Stripe价格ID
+  isActive: boolean("is_active").notNull().default(true), // 是否可用
+  displayOrder: integer("display_order").notNull().default(0), // 显示顺序
+  description: text("description"), // 套餐描述
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// 用户订阅表
+export const subscriptions = pgTable(
+  "subscriptions",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull(),
+    planId: integer("plan_id").notNull(),
+    stripeSubscriptionId: varchar("stripe_subscription_id", {
+      length: 255,
+    }).unique(), // Stripe订阅ID
+    status: subscriptionStatusEnum("status").notNull().default("active"),
+    currentPeriodStart: timestamp("current_period_start"), // 当前周期开始
+    currentPeriodEnd: timestamp("current_period_end"), // 当前周期结束
+    cancelAtPeriodEnd: boolean("cancel_at_period_end").notNull().default(false), // 是否周期结束后取消
+    canceledAt: timestamp("canceled_at"), // 取消时间
+    trialStart: timestamp("trial_start"), // 试用开始
+    trialEnd: timestamp("trial_end"), // 试用结束
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    userIdIdx: index("subscriptions_user_id_idx").on(table.userId),
+    statusIdx: index("subscriptions_status_idx").on(table.status),
+    stripeSubscriptionIdIdx: index(
+      "subscriptions_stripe_subscription_id_idx",
+    ).on(table.stripeSubscriptionId),
+  }),
+);
+
+// 用户积分表
+export const userCredits = pgTable(
+  "user_credits",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull().unique(),
+    balance: integer("balance").notNull().default(0), // 当前积分余额
+    totalEarned: integer("total_earned").notNull().default(0), // 总获得积分
+    totalSpent: integer("total_spent").notNull().default(0), // 总消费积分
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    userIdIdx: index("user_credits_user_id_idx").on(table.userId),
+  }),
+);
+
+// 积分交易记录表
+export const creditTransactions = pgTable(
+  "credit_transactions",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull(),
+    amount: integer("amount").notNull(), // 积分数量（正数为获得，负数为消费）
+    type: creditTransactionTypeEnum("type").notNull(),
+    description: text("description"), // 交易描述
+    relatedId: integer("related_id"), // 关联的ID（如订单ID、简历ID等）
+    relatedType: varchar("related_type", { length: 50 }), // 关联类型：payment, resume, etc
+    balanceAfter: integer("balance_after").notNull(), // 交易后的余额
+    metadata: json("metadata"), // 额外的元数据
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    userIdIdx: index("credit_transactions_user_id_idx").on(table.userId),
+    typeIdx: index("credit_transactions_type_idx").on(table.type),
+    createdAtIdx: index("credit_transactions_created_at_idx").on(
+      table.createdAt,
+    ),
+  }),
+);
+
+// 支付记录表
+export const payments = pgTable(
+  "payments",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull(),
+    planId: integer("plan_id"), // 关联的套餐ID
+    stripePaymentIntentId: varchar("stripe_payment_intent_id", {
+      length: 255,
+    }), // Stripe支付意图ID
+    stripeChargeId: varchar("stripe_charge_id", { length: 255 }), // Stripe收费ID
+    stripeInvoiceId: varchar("stripe_invoice_id", { length: 255 }), // Stripe发票ID
+    amount: decimal("amount", { precision: 10, scale: 2 }).notNull(), // 金额
+    currency: varchar("currency", { length: 3 }).notNull().default("usd"), // 货币
+    status: paymentStatusEnum("status").notNull().default("pending"),
+    creditsGranted: integer("credits_granted"), // 授予的积分数量
+    description: text("description"),
+    metadata: json("metadata"), // 额外的元数据
+    failureReason: text("failure_reason"), // 失败原因
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    userIdIdx: index("payments_user_id_idx").on(table.userId),
+    statusIdx: index("payments_status_idx").on(table.status),
+    stripePaymentIntentIdIdx: index("payments_stripe_payment_intent_id_idx").on(
+      table.stripePaymentIntentId,
+    ),
+    createdAtIdx: index("payments_created_at_idx").on(table.createdAt),
+  }),
+);
+
 // 导出所有表
 export const schema = {
   users,
@@ -254,4 +419,9 @@ export const schema = {
   resumeWorkExperiences,
   resumeEducation,
   resumeProjects,
+  subscriptionPlans,
+  subscriptions,
+  userCredits,
+  creditTransactions,
+  payments,
 };

@@ -10,16 +10,13 @@ import {
   NavbarMenuItem,
 } from "@heroui/navbar";
 import { Link } from "@heroui/link";
-import { link as linkStyles } from "@heroui/theme";
 import NextLink from "next/link";
-import clsx from "clsx";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 
 import { siteConfig } from "@/config/site";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { AuthButton } from "@/components/auth-button";
-import { GithubIcon } from "@/components/icons";
 import { Logo } from "@/components/logo";
 
 interface NavbarProps {

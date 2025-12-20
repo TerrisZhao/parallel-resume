@@ -130,8 +130,7 @@ export async function PUT(request: NextRequest) {
     }
 
     if (validatedData.aiApiEndpoint !== undefined) {
-      updateData.aiApiEndpoint =
-        validatedData.aiApiEndpoint || null;
+      updateData.aiApiEndpoint = validatedData.aiApiEndpoint || null;
     }
 
     if (validatedData.aiCustomProviderName !== undefined) {

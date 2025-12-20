@@ -137,6 +137,7 @@ export default function SettingsPage() {
 
       try {
         const response = await fetch("/api/user/profile");
+
         if (!response.ok) {
           return;
         }
@@ -148,6 +149,7 @@ export default function SettingsPage() {
           setAiProvider(user.aiProvider);
 
           const userModel = user.aiModel || "";
+
           setAiModel(userModel);
           setAiApiEndpoint(user.aiApiEndpoint || "");
           setCustomProviderName(user.aiCustomProviderName || "");
@@ -744,15 +746,15 @@ export default function SettingsPage() {
                 </div>
                 <Button
                   isIconOnly
-                  color="primary"
-                  size="lg"
                   className="p-2"
+                  color="primary"
                   isDisabled={
                     isLoadingModels ||
                     !aiProvider ||
                     (!aiApiKey && !isApiKeyMasked)
                   }
                   isLoading={isLoadingModels}
+                  size="lg"
                   variant="flat"
                   onPress={handleLoadModels}
                 >

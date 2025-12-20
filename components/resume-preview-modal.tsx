@@ -13,10 +13,10 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@heroui/popover";
 import { Download, Edit, Palette } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { CloseIcon } from "@heroui/shared-icons";
 
 import { ResumeData } from "@/types/resume";
 import { ResumePreview } from "@/components/resume-preview";
-import {CloseIcon} from "@heroui/shared-icons";
 
 interface ResumePreviewModalProps {
   isOpen: boolean;
@@ -114,6 +114,7 @@ export function ResumePreviewModal({
 
             // Initialize language from saved preference
             const savedLanguage = resume.preferredLanguage || "en";
+
             setPreviewLanguage(savedLanguage as "en" | "zh");
             setLanguageInitialized(true);
           }
@@ -247,7 +248,7 @@ export function ResumePreviewModal({
             >
               中文
             </Button>
-            <Button variant="flat" size="sm" onPress={onClose}>
+            <Button size="sm" variant="flat" onPress={onClose}>
               <CloseIcon />
             </Button>
           </div>

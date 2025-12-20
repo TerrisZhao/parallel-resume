@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, use, useRef } from "react";
+import { useState, useEffect, useCallback, use } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@heroui/button";
 import { Card, CardBody } from "@heroui/card";
@@ -100,6 +100,7 @@ function BatchStarIndicator({
         title: "内容为空，无法检测",
         color: "warning",
       });
+
       return;
     }
 
@@ -160,6 +161,7 @@ function BatchStarIndicator({
 
   const getDotColor = (satisfied: boolean | null) => {
     if (satisfied === null) return "bg-default-300";
+
     return satisfied ? "bg-success" : "bg-danger";
   };
 
@@ -169,16 +171,6 @@ function BatchStarIndicator({
         <Tooltip content="AI优化">
           <Button
             isIconOnly
-            size="sm"
-            variant="light"
-            isLoading={isRefreshing || isLoadingStar}
-            isDisabled={
-              items.length === 0 ||
-              items.every((item) => !item.content.trim()) ||
-              isRefreshing ||
-              isLoadingStar
-            }
-            onPress={handleRefresh}
             className={`min-w-8 w-8 h-8 ${
               items.length > 0 &&
               !items.every((item) => !item.content.trim()) &&
@@ -187,6 +179,16 @@ function BatchStarIndicator({
                 ? "text-blue-600 dark:text-blue-400 hover:text-purple-600 dark:hover:text-purple-400"
                 : ""
             }`}
+            isDisabled={
+              items.length === 0 ||
+              items.every((item) => !item.content.trim()) ||
+              isRefreshing ||
+              isLoadingStar
+            }
+            isLoading={isRefreshing || isLoadingStar}
+            size="sm"
+            variant="light"
+            onPress={handleRefresh}
           >
             <Sparkles size={14} />
           </Button>
@@ -194,7 +196,7 @@ function BatchStarIndicator({
       </div>
 
       {/* 批量确认对话框 */}
-      <Modal isOpen={isConfirmOpen} onClose={onConfirmClose} size="3xl">
+      <Modal isOpen={isConfirmOpen} size="3xl" onClose={onConfirmClose}>
         <ModalContent>
           <ModalHeader>
             <span>确认优化后的内容</span>
@@ -202,7 +204,10 @@ function BatchStarIndicator({
           <ModalBody>
             <div className="space-y-4 max-h-[60vh] overflow-y-auto">
               {improvements.map((imp, index) => (
-                <div key={imp.id} className="space-y-2 border-b pb-4 last:border-0">
+                <div
+                  key={imp.id}
+                  className="space-y-2 border-b pb-4 last:border-0"
+                >
                   <p className="text-sm font-medium">条目 {index + 1}</p>
                   <div>
                     <p className="text-xs text-default-500 mb-1">原内容：</p>
@@ -211,16 +216,19 @@ function BatchStarIndicator({
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-default-500 mb-1">优化后内容：</p>
+                    <p className="text-xs text-default-500 mb-1">
+                      优化后内容：
+                    </p>
                     <Textarea
+                      minRows={3}
+                      placeholder="优化后的内容..."
                       value={imp.improvedContent}
                       onChange={(e) => {
                         const newImprovements = [...improvements];
+
                         newImprovements[index].improvedContent = e.target.value;
                         setImprovements(newImprovements);
                       }}
-                      minRows={3}
-                      placeholder="优化后的内容..."
                     />
                   </div>
                 </div>
@@ -317,6 +325,7 @@ function ProjectStarIndicator({
         title: "内容为空，无法检测",
         color: "warning",
       });
+
       return;
     }
 
@@ -380,6 +389,7 @@ function ProjectStarIndicator({
 
   const getDotColor = (satisfied: boolean | null) => {
     if (satisfied === null) return "bg-default-300";
+
     return satisfied ? "bg-success" : "bg-danger";
   };
 
@@ -390,16 +400,16 @@ function ProjectStarIndicator({
           <Tooltip content="AI优化">
             <Button
               isIconOnly
-              size="sm"
-              variant="light"
-              isLoading={isRefreshing || isLoadingStar}
-              isDisabled={!content.trim() || isRefreshing || isLoadingStar}
-              onPress={handleRefresh}
               className={`min-w-8 w-8 h-8 ${
                 content.trim() && !isRefreshing && !isLoadingStar
                   ? "text-blue-600 dark:text-blue-400 hover:text-purple-600 dark:hover:text-purple-400"
                   : ""
               }`}
+              isDisabled={!content.trim() || isRefreshing || isLoadingStar}
+              isLoading={isRefreshing || isLoadingStar}
+              size="sm"
+              variant="light"
+              onPress={handleRefresh}
             >
               <Sparkles size={14} />
             </Button>
@@ -414,7 +424,7 @@ function ProjectStarIndicator({
         }
       />
       {/* 确认对话框 */}
-      <Modal isOpen={isConfirmOpen} onClose={onConfirmClose} size="2xl">
+      <Modal isOpen={isConfirmOpen} size="2xl" onClose={onConfirmClose}>
         <ModalContent>
           <ModalHeader>
             <span>确认优化后的内容</span>
@@ -430,10 +440,10 @@ function ProjectStarIndicator({
               <div>
                 <p className="text-sm font-medium mb-2">优化后内容：</p>
                 <Textarea
-                  value={improvedContent}
-                  onChange={(e) => setImprovedContent(e.target.value)}
                   minRows={5}
                   placeholder="优化后的内容..."
+                  value={improvedContent}
+                  onChange={(e) => setImprovedContent(e.target.value)}
                 />
               </div>
             </div>
@@ -522,7 +532,8 @@ function StarIndicator({
   } = useDisclosure();
   const [improvedContent, setImprovedContent] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [localStarResult, setLocalStarResult] = useState<StarCheckResult | null>(starResult);
+  const [localStarResult, setLocalStarResult] =
+    useState<StarCheckResult | null>(starResult);
 
   // 同步外部 starResult
   useEffect(() => {
@@ -535,6 +546,7 @@ function StarIndicator({
         title: "内容为空，无法检测",
         color: "warning",
       });
+
       return;
     }
 
@@ -588,6 +600,7 @@ function StarIndicator({
 
   const getDotColor = (satisfied: boolean | null) => {
     if (satisfied === null) return "bg-default-300";
+
     return satisfied ? "bg-success" : "bg-danger";
   };
 
@@ -597,16 +610,16 @@ function StarIndicator({
         <Tooltip content="AI优化">
           <Button
             isIconOnly
-            size="sm"
-            variant="light"
-            isLoading={isRefreshing || isLoading}
-            isDisabled={!content.trim() || isRefreshing || isLoading}
-            onPress={handleRefresh}
             className={`min-w-8 w-8 h-8 ${
               content.trim() && !isRefreshing && !isLoading
                 ? "text-blue-600 dark:text-blue-400 hover:text-purple-600 dark:hover:text-purple-400"
                 : ""
             }`}
+            isDisabled={!content.trim() || isRefreshing || isLoading}
+            isLoading={isRefreshing || isLoading}
+            size="sm"
+            variant="light"
+            onPress={handleRefresh}
           >
             <Sparkles size={14} />
           </Button>
@@ -614,7 +627,7 @@ function StarIndicator({
       </div>
 
       {/* 确认对话框 */}
-      <Modal isOpen={isConfirmOpen} onClose={onConfirmClose} size="2xl">
+      <Modal isOpen={isConfirmOpen} size="2xl" onClose={onConfirmClose}>
         <ModalContent>
           <ModalHeader>
             <span>确认优化后的内容</span>
@@ -630,10 +643,10 @@ function StarIndicator({
               <div>
                 <p className="text-sm font-medium mb-2">优化后内容：</p>
                 <Textarea
-                  value={improvedContent}
-                  onChange={(e) => setImprovedContent(e.target.value)}
                   minRows={5}
                   placeholder="优化后的内容..."
+                  value={improvedContent}
+                  onChange={(e) => setImprovedContent(e.target.value)}
                 />
               </div>
             </div>
@@ -731,11 +744,7 @@ function SortableSkillItem({
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      className="inline-flex items-center"
-      style={style}
-    >
+    <div ref={setNodeRef} className="inline-flex items-center" style={style}>
       <Chip
         endContent={
           <button className="ml-1" onClick={onRemove}>
@@ -795,7 +804,7 @@ function SortableResponsibilityItem({
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="flex gap-2">
+    <div ref={setNodeRef} className="flex gap-2" style={style}>
       <div className="flex items-start pt-2">
         <div
           {...attributes}
@@ -809,7 +818,9 @@ function SortableResponsibilityItem({
         minRows={2}
         placeholder="Describe your responsibility or achievement..."
         value={responsibility}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdate(e.target.value)}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          onUpdate(e.target.value)
+        }
       />
       <Button
         isIconOnly
@@ -858,7 +869,9 @@ function SortableGroup({
     },
   });
 
-  const [localActiveSkillId, setLocalActiveSkillId] = useState<string | null>(null);
+  const [localActiveSkillId, setLocalActiveSkillId] = useState<string | null>(
+    null,
+  );
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -883,7 +896,9 @@ function SortableGroup({
                 className="flex-1"
                 size="sm"
                 value={group.groupName}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdateName(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  onUpdateName(e.target.value)
+                }
               />
             </div>
             <Button
@@ -921,13 +936,13 @@ function SortableGroup({
                 coordinateGetter: sortableKeyboardCoordinates,
               }),
             )}
-            onDragStart={(e) => {
-              setLocalActiveSkillId(e.active.id as string);
-              onSkillDragStart(e);
-            }}
             onDragEnd={(e) => {
               setLocalActiveSkillId(null);
               onSkillDragEnd(e);
+            }}
+            onDragStart={(e) => {
+              setLocalActiveSkillId(e.active.id as string);
+              onSkillDragStart(e);
             }}
           >
             <SortableContext
@@ -947,9 +962,7 @@ function SortableGroup({
             <DragOverlay>
               {localActiveSkillId ? (
                 <div className="flex items-center">
-                  <Chip>
-                    {localActiveSkillId}
-                  </Chip>
+                  <Chip>{localActiveSkillId}</Chip>
                 </div>
               ) : null}
             </DragOverlay>
@@ -1451,12 +1464,18 @@ export default function ResumeEditPage({
         workExperience: resumeData.workExperience.map((exp) => {
           if (exp.id !== expId) return exp;
 
-          const activeIndex = parseInt((active.id as string).split("-resp-")[1]);
+          const activeIndex = parseInt(
+            (active.id as string).split("-resp-")[1],
+          );
           const overIndex = parseInt((over.id as string).split("-resp-")[1]);
 
           return {
             ...exp,
-            responsibilities: arrayMove(exp.responsibilities, activeIndex, overIndex),
+            responsibilities: arrayMove(
+              exp.responsibilities,
+              activeIndex,
+              overIndex,
+            ),
           };
         }),
       });
@@ -1642,6 +1661,7 @@ export default function ResumeEditPage({
             <span className="text-sm text-default-600">AI优化</span>
             <Switch
               isSelected={isAiOptimizationEnabled}
+              size="sm"
               onValueChange={async (value) => {
                 setIsAiOptimizationEnabled(value);
                 try {
@@ -1660,15 +1680,21 @@ export default function ResumeEditPage({
 
                   if (!response.ok) {
                     const error = await response.json();
+
                     addToast({
-                      title: error.error || "Failed to update AI optimization setting",
+                      title:
+                        error.error ||
+                        "Failed to update AI optimization setting",
                       color: "danger",
                     });
                     // Revert state on error
                     setIsAiOptimizationEnabled(!value);
                   }
                 } catch (error) {
-                  console.error("Error updating AI optimization setting:", error);
+                  console.error(
+                    "Error updating AI optimization setting:",
+                    error,
+                  );
                   addToast({
                     title: "Failed to update AI optimization setting",
                     color: "danger",
@@ -1677,7 +1703,6 @@ export default function ResumeEditPage({
                   setIsAiOptimizationEnabled(!value);
                 }
               }}
-              size="sm"
             />
           </div>
         </div>
@@ -1690,7 +1715,9 @@ export default function ResumeEditPage({
             <CardBody className="space-y-4">
               <h3 className="text-lg font-semibold">Job Description</h3>
               <Textarea
+                description="This information helps AI tailor your resume content to match the job requirements."
                 label="Job Description"
+                minRows={4}
                 placeholder="Enter the job description you're applying for. This will help AI optimize your resume content."
                 value={resumeData.jobDescription || ""}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -1699,8 +1726,6 @@ export default function ResumeEditPage({
                     jobDescription: e.target.value,
                   })
                 }
-                minRows={4}
-                description="This information helps AI tailor your resume content to match the job requirements."
               />
             </CardBody>
           </Card>
@@ -1820,7 +1845,9 @@ export default function ResumeEditPage({
                   <Input
                     placeholder="Add a skill and press Enter"
                     value={currentSkill}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCurrentSkill(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setCurrentSkill(e.target.value)
+                    }
                     onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                       if (e.key === "Enter") {
                         e.preventDefault();
@@ -1839,8 +1866,8 @@ export default function ResumeEditPage({
                 <DndContext
                   collisionDetection={closestCenter}
                   sensors={sensors}
-                  onDragStart={handleSkillDragStart}
                   onDragEnd={handleSkillDragEnd}
+                  onDragStart={handleSkillDragStart}
                 >
                   <SortableContext
                     items={resumeData.keySkills as string[]}
@@ -1861,9 +1888,7 @@ export default function ResumeEditPage({
                   <DragOverlay>
                     {activeSkillId ? (
                       <div className="flex items-center">
-                        <Chip>
-                          {activeSkillId}
-                        </Chip>
+                        <Chip>{activeSkillId}</Chip>
                       </div>
                     ) : null}
                   </DragOverlay>
@@ -1884,8 +1909,8 @@ export default function ResumeEditPage({
                 <DndContext
                   collisionDetection={closestCenter}
                   sensors={sensors}
-                  onDragStart={handleGroupDragStart}
                   onDragEnd={handleGroupDragEnd}
+                  onDragStart={handleGroupDragStart}
                 >
                   <SortableContext
                     items={(resumeData.keySkills as SkillGroup[]).map(
@@ -1905,10 +1930,10 @@ export default function ResumeEditPage({
                           onRemoveSkill={(skillIndex) =>
                             handleRemoveSkillFromGroup(group.id, skillIndex)
                           }
-                          onSkillDragStart={handleSkillInGroupDragStart}
                           onSkillDragEnd={(event) =>
                             handleSkillInGroupDragEnd(group.id, event)
                           }
+                          onSkillDragStart={handleSkillInGroupDragStart}
                           onUpdateName={(name) =>
                             handleUpdateGroupName(group.id, name)
                           }
@@ -2032,7 +2057,9 @@ export default function ResumeEditPage({
                   </label>
                   <Divider />
                   <div className="space-y-2">
-                    <div className="text-sm font-medium">Company/Project Description</div>
+                    <div className="text-sm font-medium">
+                      Company/Project Description
+                    </div>
                     <Textarea
                       minRows={2}
                       placeholder="Brief description of the company or project (e.g., company background, industry, or project overview)..."
@@ -2053,55 +2080,66 @@ export default function ResumeEditPage({
                         <div className="text-sm font-medium">
                           Responsibilities & Achievements
                         </div>
-                        {isAiOptimizationEnabled && exp.responsibilities.length > 0 && (
-                          <BatchStarIndicator
-                            items={exp.responsibilities.map((resp, idx) => ({
-                              id: `${exp.id}-resp-${idx}`,
-                              content: resp,
-                            }))}
-                            onConfirmImprovements={(improvements) => {
-                              // 批量更新所有条目，避免状态更新冲突
-                              const updates = improvements
-                                .map((improvement) => {
-                                  const match = improvement.id.match(
-                                    /^(.+)-resp-(\d+)$/,
-                                  );
-                                  if (match && match[1] === exp.id) {
-                                    return {
-                                      index: parseInt(match[2], 10),
-                                      value: improvement.improvedContent,
-                                    };
-                                  }
-                                  return null;
-                                })
-                                .filter(
-                                  (update): update is { index: number; value: string } =>
-                                    update !== null,
-                                );
+                        {isAiOptimizationEnabled &&
+                          exp.responsibilities.length > 0 && (
+                            <BatchStarIndicator
+                              items={exp.responsibilities.map((resp, idx) => ({
+                                id: `${exp.id}-resp-${idx}`,
+                                content: resp,
+                              }))}
+                              onConfirmImprovements={(improvements) => {
+                                // 批量更新所有条目，避免状态更新冲突
+                                const updates = improvements
+                                  .map((improvement) => {
+                                    const match =
+                                      improvement.id.match(/^(.+)-resp-(\d+)$/);
 
-                              if (updates.length > 0) {
-                                setResumeData((prevData) => ({
-                                  ...prevData,
-                                  workExperience: prevData.workExperience.map((workExp) =>
-                                    workExp.id === exp.id
-                                      ? {
-                                          ...workExp,
-                                          responsibilities: workExp.responsibilities.map(
-                                            (resp, i) => {
-                                              const update = updates.find(
-                                                (u) => u.index === i,
-                                              );
-                                              return update ? update.value : resp;
-                                            },
-                                          ),
-                                        }
-                                      : workExp,
-                                  ),
-                                }));
-                              }
-                            }}
-                          />
-                        )}
+                                    if (match && match[1] === exp.id) {
+                                      return {
+                                        index: parseInt(match[2], 10),
+                                        value: improvement.improvedContent,
+                                      };
+                                    }
+
+                                    return null;
+                                  })
+                                  .filter(
+                                    (
+                                      update,
+                                    ): update is {
+                                      index: number;
+                                      value: string;
+                                    } => update !== null,
+                                  );
+
+                                if (updates.length > 0) {
+                                  setResumeData((prevData) => ({
+                                    ...prevData,
+                                    workExperience: prevData.workExperience.map(
+                                      (workExp) =>
+                                        workExp.id === exp.id
+                                          ? {
+                                              ...workExp,
+                                              responsibilities:
+                                                workExp.responsibilities.map(
+                                                  (resp, i) => {
+                                                    const update = updates.find(
+                                                      (u) => u.index === i,
+                                                    );
+
+                                                    return update
+                                                      ? update.value
+                                                      : resp;
+                                                  },
+                                                ),
+                                            }
+                                          : workExp,
+                                    ),
+                                  }));
+                                }
+                              }}
+                            />
+                          )}
                       </div>
                       <Button
                         size="sm"
@@ -2115,23 +2153,31 @@ export default function ResumeEditPage({
                     <DndContext
                       collisionDetection={closestCenter}
                       sensors={sensors}
-                      onDragEnd={(event: DragEndEvent) => handleResponsibilityDragEnd(exp.id, event)}
+                      onDragEnd={(event: DragEndEvent) =>
+                        handleResponsibilityDragEnd(exp.id, event)
+                      }
                     >
                       <SortableContext
-                        items={exp.responsibilities.map((_, i) => `${exp.id}-resp-${i}`)}
+                        items={exp.responsibilities.map(
+                          (_, i) => `${exp.id}-resp-${i}`,
+                        )}
                         strategy={verticalListSortingStrategy}
                       >
                         {exp.responsibilities.map((resp, respIndex) => (
                           <SortableResponsibilityItem
                             key={`${exp.id}-resp-${respIndex}`}
-                            responsibility={resp}
-                            index={respIndex}
                             expId={exp.id}
-                            onUpdate={(value) =>
-                              handleUpdateResponsibility(exp.id, respIndex, value)
-                            }
+                            index={respIndex}
+                            responsibility={resp}
                             onRemove={() =>
                               handleRemoveResponsibility(exp.id, respIndex)
+                            }
+                            onUpdate={(value) =>
+                              handleUpdateResponsibility(
+                                exp.id,
+                                respIndex,
+                                value,
+                              )
                             }
                           />
                         ))}
@@ -2338,14 +2384,18 @@ export default function ResumeEditPage({
                   </label>
                   <div className="space-y-2">
                     <ProjectStarIndicator
-                      isEnabled={isAiOptimizationEnabled}
                       content={proj.description}
+                      isEnabled={isAiOptimizationEnabled}
                       jobDescription={resumeData.jobDescription}
+                      onConfirmImprovement={(improvedContent) =>
+                        handleUpdateProject(
+                          proj.id,
+                          "description",
+                          improvedContent,
+                        )
+                      }
                       onContentChange={(value) =>
                         handleUpdateProject(proj.id, "description", value)
-                      }
-                      onConfirmImprovement={(improvedContent) =>
-                        handleUpdateProject(proj.id, "description", improvedContent)
                       }
                     />
                   </div>
@@ -2355,7 +2405,9 @@ export default function ResumeEditPage({
                     <div className="flex gap-2">
                       <Input
                         placeholder="Add technology and press Enter"
-                        onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                        onKeyDown={(
+                          e: React.KeyboardEvent<HTMLInputElement>,
+                        ) => {
                           if (e.key === "Enter") {
                             e.preventDefault();
                             const input = e.target as HTMLInputElement;

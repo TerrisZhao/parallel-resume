@@ -42,7 +42,8 @@ export async function callOpenAI(
     model.startsWith("gpt-5");
 
   // 判断是否为 o1 系列模型（不支持自定义 temperature）
-  const isO1Model = model.includes("o1") || model.startsWith("o1-") || model.includes("mini");
+  const isO1Model =
+    model.includes("o1") || model.startsWith("o1-") || model.includes("mini");
 
   const requestBody: any = {
     model,

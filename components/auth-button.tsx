@@ -53,6 +53,12 @@ export function AuthButton() {
             设置
           </DropdownItem>
           <DropdownItem
+            key="subscription"
+            onPress={() => router.push("/subscription")}
+          >
+            Subscription
+          </DropdownItem>
+          <DropdownItem
             key="logout"
             color="danger"
             onPress={() => signOut({ callbackUrl: "/" })}

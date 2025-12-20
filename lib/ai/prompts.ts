@@ -79,7 +79,9 @@ export function getBatchStarCheckPrompt(
   jobDescription?: string,
 ): string {
   const itemsList = items
-    .map((item, index) => `Item ${index + 1} (ID: ${item.id}):\n"${item.content}"`)
+    .map(
+      (item, index) => `Item ${index + 1} (ID: ${item.id}):\n"${item.content}"`,
+    )
     .join("\n\n");
 
   const jobDescriptionSection = jobDescription
@@ -156,4 +158,3 @@ Please return JSON in the following format:
 
 Only return the detection results, no need to optimize the content.`;
 }
-

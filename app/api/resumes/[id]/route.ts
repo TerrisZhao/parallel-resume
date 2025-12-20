@@ -295,6 +295,7 @@ export async function PATCH(
 
     // 只更新提供的字段
     const updateData: any = { updatedAt: new Date() };
+
     if (body.themeColor !== undefined) updateData.themeColor = body.themeColor;
     if (body.name !== undefined) updateData.name = body.name;
     if (body.preferredLanguage !== undefined)

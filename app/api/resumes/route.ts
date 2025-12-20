@@ -168,7 +168,14 @@ export async function PUT(request: NextRequest) {
     }
 
     // 只允许更新特定字段
-    const allowedFields = ["phone", "email", "location", "linkedin", "github", "website"];
+    const allowedFields = [
+      "phone",
+      "email",
+      "location",
+      "linkedin",
+      "github",
+      "website",
+    ];
     const updateData: any = {};
 
     for (const field of allowedFields) {

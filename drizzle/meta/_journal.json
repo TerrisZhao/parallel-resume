@@ -29,6 +29,13 @@
       "when": 1766150096510,
       "tag": "0003_yummy_random",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1766152444535,
+      "tag": "0004_stiff_maggott",
+      "breakpoints": true
     }
   ]
 }

@@ -28,10 +28,7 @@ export async function POST(request: NextRequest) {
     const aiConfig = await getUserAIConfig(parseInt(session.user.id));
 
     if (!aiConfig) {
-      return NextResponse.json(
-        { error: "请先配置AI模型" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "请先配置AI模型" }, { status: 400 });
     }
 
     const body = await request.json();

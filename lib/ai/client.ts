@@ -1,8 +1,6 @@
-import { eq, and, isNull } from "drizzle-orm";
+import type { AIConfig, AICallParams, AIResponse } from "./types";
 
-import { db } from "@/lib/db/drizzle";
-import { users } from "@/lib/db/schema";
-import { decryptApiKey } from "@/lib/utils/crypto";
+import { eq, and, isNull } from "drizzle-orm";
 
 import {
   callOpenAI,
@@ -11,7 +9,10 @@ import {
   callGemini,
   callCustomModel,
 } from "./providers";
-import type { AIConfig, AICallParams, AIResponse } from "./types";
+
+import { db } from "@/lib/db/drizzle";
+import { users } from "@/lib/db/schema";
+import { decryptApiKey } from "@/lib/utils/crypto";
 
 /**
  * 从数据库获取用户的AI配置

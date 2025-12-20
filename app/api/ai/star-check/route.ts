@@ -64,15 +64,18 @@ export async function POST(request: NextRequest) {
 
     // 尝试解析AI返回的JSON
     let result;
+
     try {
       // AI可能返回纯JSON或带markdown代码块的JSON
       const cleanedResponse = response.content
         .replace(/```json\n?/g, "")
         .replace(/```\n?/g, "")
         .trim();
+
       result = JSON.parse(cleanedResponse);
     } catch (parseError) {
       console.error("解析AI返回结果失败:", parseError);
+
       // 如果解析失败，返回错误
       return NextResponse.json(
         {
@@ -175,4 +178,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
