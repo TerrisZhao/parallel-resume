@@ -7,6 +7,8 @@ import { db } from "@/lib/db/drizzle";
 import { users, subscriptions } from "@/lib/db/schema";
 import { stripe } from "@/lib/payments/stripe";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);

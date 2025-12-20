@@ -120,7 +120,7 @@ async function handleCheckoutSessionCompleted(event: Stripe.Event) {
 
 // 处理 customer.subscription.created 事件
 async function handleSubscriptionCreated(event: Stripe.Event) {
-  const subscription = event.data.object as Stripe.Subscription;
+  const subscription = event.data.object as any;
   const userId = parseInt(subscription.metadata?.userId || "0");
   const planId = subscription.metadata?.planId;
 
@@ -165,7 +165,7 @@ async function handleSubscriptionCreated(event: Stripe.Event) {
 
 // 处理 customer.subscription.updated 事件
 async function handleSubscriptionUpdated(event: Stripe.Event) {
-  const subscription = event.data.object as Stripe.Subscription;
+  const subscription = event.data.object as any;
   const stripeSubscriptionId = subscription.id;
 
   // 查找订阅记录
@@ -203,7 +203,7 @@ async function handleSubscriptionUpdated(event: Stripe.Event) {
 
 // 处理 customer.subscription.deleted 事件
 async function handleSubscriptionDeleted(event: Stripe.Event) {
-  const subscription = event.data.object as Stripe.Subscription;
+  const subscription = event.data.object as any;
   const stripeSubscriptionId = subscription.id;
 
   // 查找订阅记录

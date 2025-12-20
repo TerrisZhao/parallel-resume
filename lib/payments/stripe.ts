@@ -1,7 +1,9 @@
 import Stripe from "stripe";
 
 // 初始化 Stripe
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+// 在构建时使用虚拟密钥，运行时使用真实密钥
+const stripeKey = process.env.STRIPE_SECRET_KEY || "sk_test_placeholder_key_for_build";
+export const stripe = new Stripe(stripeKey, {
   apiVersion: "2025-12-15.clover",
   typescript: true,
 });
