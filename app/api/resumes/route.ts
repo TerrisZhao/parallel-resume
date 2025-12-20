@@ -88,6 +88,7 @@ export async function POST(request: NextRequest) {
           startDate: exp.startDate || "",
           endDate: exp.endDate || "",
           current: exp.current || false,
+          description: exp.description || "",
           responsibilities: exp.responsibilities || [],
           order: index,
         }),

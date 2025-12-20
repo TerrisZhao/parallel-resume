@@ -1,0 +1,27 @@
+/**
+ * Content Script Styles
+ * 注入到网页中的样式
+ */
+
+.pr-extension-filled {
+  animation: pr-fill-highlight 2s ease-in-out;
+}
+
+@keyframes pr-fill-highlight {
+  0%, 100% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: #e0f2fe;
+  }
+}
+
+.pr-extension-highlight {
+  outline: 2px solid #3b82f6 !important;
+  outline-offset: 2px;
+}
+
+.pr-extension-error {
+  outline: 2px solid #ef4444 !important;
+  outline-offset: 2px;
+}

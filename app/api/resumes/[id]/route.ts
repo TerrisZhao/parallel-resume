@@ -87,6 +87,7 @@ export async function GET(
         startDate: exp.startDate,
         endDate: exp.endDate,
         current: exp.current,
+        description: exp.description,
         responsibilities: exp.responsibilities || [],
       })),
       education: education.map((edu: any) => ({
@@ -194,6 +195,7 @@ export async function PUT(
             startDate: exp.startDate || "",
             endDate: exp.endDate || "",
             current: exp.current || false,
+            description: exp.description || "",
             responsibilities: exp.responsibilities || [],
             order: index,
           }),

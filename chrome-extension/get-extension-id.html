@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>获取扩展 ID</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .info-box {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .code {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        .step {
+            margin: 20px 0;
+        }
+        .highlight {
+            background: yellow;
+            padding: 2px 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>获取 Chrome 扩展 ID 和配置重定向 URI</h1>
+
+    <div class="step">
+        <h2>步骤 1: 找到扩展 ID</h2>
+        <ol>
+            <li>打开 Chrome 浏览器</li>
+            <li>在地址栏输入: <code>chrome://extensions/</code></li>
+            <li>确保右上角的"开发者模式"已开启</li>
+            <li>找到 "Parallel Resume - Smart Auto-fill" 扩展</li>
+            <li>在扩展名称下方，你会看到 <span class="highlight">ID: xxxxxxxxxx</span></li>
+            <li>复制这个 ID（类似：abcdefghijklmnopqrstuvwxyz123456）</li>
+        </ol>
+    </div>
+
+    <div class="step">
+        <h2>步骤 2: 构建重定向 URI</h2>
+        <p>使用你复制的扩展 ID，构建重定向 URI：</p>
+        <div class="code">
+https://你的扩展ID.chromiumapp.org/
+        </div>
+        <p><strong>示例：</strong></p>
+        <div class="code">
+https://abcdefghijklmnopqrstuvwxyz123456.chromiumapp.org/
+        </div>
+    </div>
+
+    <div class="step">
+        <h2>步骤 3: 在 Google Cloud Console 添加重定向 URI</h2>
+        <ol>
+            <li>访问: <a href="https://console.cloud.google.com/apis/credentials" target="_blank">https://console.cloud.google.com/apis/credentials</a></li>
+            <li>找到你的 OAuth 2.0 客户端 ID: <code>852912293818-5lnjv4abpq0ls8gjdml5evb2vfag061p</code></li>
+            <li>点击编辑按钮（铅笔图标）</li>
+            <li>滚动到 <strong>"已获授权的重定向 URI"</strong> 部分</li>
+            <li>点击 <strong>"添加 URI"</strong></li>
+            <li>粘贴你构建的重定向 URI（步骤 2）</li>
+            <li>点击 <strong>"保存"</strong></li>
+        </ol>
+
+        <div class="info-box">
+            <strong>注意：</strong> URI 必须以斜杠 <code>/</code> 结尾！
+        </div>
+    </div>
+
+    <div class="step">
+        <h2>步骤 4: 测试登录</h2>
+        <ol>
+            <li>保存 Google Cloud Console 的更改后，<strong>等待 5-10 秒</strong>（让 Google 更新配置）</li>
+            <li>回到 Chrome 扩展</li>
+            <li>点击扩展图标</li>
+            <li>点击"使用 Google 登录"</li>
+            <li>应该可以成功登录了</li>
+        </ol>
+    </div>
+
+    <div class="step">
+        <h2>常见问题</h2>
+
+        <h3>如果仍然出现 redirect_uri_mismatch 错误：</h3>
+        <ul>
+            <li>检查重定向 URI 是否以 <code>/</code> 结尾</li>
+            <li>确认扩展 ID 复制正确（没有空格或额外字符）</li>
+            <li>等待几分钟让 Google 更新配置</li>
+            <li>清除浏览器缓存并重试</li>
+        </ul>
+
+        <h3>如何验证配置是否正确：</h3>
+        <p>在 Google Cloud Console 的 OAuth 客户端配置中，"已获授权的重定向 URI" 应该包含：</p>
+        <div class="code">
+https://你的扩展ID.chromiumapp.org/
+http://localhost:3100
+http://localhost:3100/api/auth/callback/google
+以及其他现有的重定向 URI...
+        </div>
+    </div>
+
+    <div class="step">
+        <h2>快速测试工具</h2>
+        <p>在浏览器控制台运行以下代码来获取当前扩展 ID：</p>
+        <div class="code">
+chrome.runtime.id
+        </div>
+        <p>（在扩展的任何页面打开控制台，如 popup 页面）</p>
+    </div>
+</body>
+</html>
