@@ -78,6 +78,7 @@ export async function GET(
       keySkills: resume.keySkills || [],
       additionalInfo: resume.additionalInfo,
       themeColor: resume.themeColor,
+      preferredLanguage: resume.preferredLanguage,
       aiOptimizationEnabled: resume.aiOptimizationEnabled ?? false,
       jobDescription: resume.jobDescription || "",
       workExperience: workExperience.map((exp: any) => ({

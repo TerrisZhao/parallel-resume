@@ -400,6 +400,12 @@ export default function ResumeListPage() {
     onPreviewOpen();
   };
 
+  // Handle preview close - refresh list to get updated data
+  const handlePreviewClose = () => {
+    onPreviewClose();
+    void fetchResumes(); // Refresh the list to get updated theme color and language
+  };
+
   if (isLoading) {
     return (
       <div className="max-w-7xl mx-auto">
@@ -487,11 +493,27 @@ export default function ResumeListPage() {
                   width="100%"
                   onClick={() => handlePreview(resume.id)}
                 />
-                <CardFooter className="justify-between bg-white/10 backdrop-blur-md border-white/20 border-1 overflow-hidden py-2 absolute rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10 flex-col items-start gap-2">
+                <CardFooter className="justify-between bg-white/50 backdrop-blur-md overflow-hidden absolute rounded-b-large bottom-0 left-0 right-0 shadow-small z-10 flex-col items-start gap-2">
                   <div className="w-full">
-                    <p className="text-sm font-semibold text-gray-900">
-                      {resume.name}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold text-gray-900 flex-1 truncate">
+                        {resume.name}
+                      </p>
+                      <span
+                        className={`p-1 rounded text-[10px] font-medium flex-shrink-0 leading-tight ${
+                          resume.preferredLanguage === "zh"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-blue-100 text-blue-700"
+                        }`}
+                        title={
+                          resume.preferredLanguage === "zh"
+                            ? "Chinese"
+                            : "English"
+                        }
+                      >
+                        {resume.preferredLanguage === "zh" ? "ZH" : "EN"}
+                      </span>
+                    </div>
                     {/*{resume.fullName && (*/}
                     {/*  <p className="text-xs text-gray-600">{resume.fullName}</p>*/}
                     {/*)}*/}
@@ -506,30 +528,33 @@ export default function ResumeListPage() {
                     <div className="flex gap-1">
                       <Button
                         isIconOnly
-                        className="bg-blue-100 text-blue-700 hover:bg-blue-200"
+                        className="bg-transparent text-blue-700 hover:bg-blue-200"
                         radius="lg"
                         size="sm"
-                        variant="flat"
+                        title="Edit"
+                        variant="light"
                         onPress={() => router.push(`/resume/${resume.id}`)}
                       >
                         <Edit size={14} />
                       </Button>
                       <Button
                         isIconOnly
-                        className="bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        className="bg-transparent text-gray-700 hover:bg-gray-200"
                         radius="lg"
                         size="sm"
-                        variant="flat"
+                        title="Duplicate"
+                        variant="light"
                         onPress={() => handleDuplicate(resume.id)}
                       >
                         <Copy size={14} />
                       </Button>
                       <Button
                         isIconOnly
-                        className="bg-red-100 text-red-700 hover:bg-red-200"
+                        className="bg-transparent text-red-700 hover:bg-red-200"
                         radius="lg"
                         size="sm"
-                        variant="flat"
+                        title="Delete"
+                        variant="light"
                         onPress={() => handleDelete(resume.id)}
                       >
                         <Trash2 size={14} />
@@ -668,7 +693,7 @@ export default function ResumeListPage() {
       <ResumePreviewModal
         isOpen={isPreviewOpen}
         resumeId={previewResumeId}
-        onClose={onPreviewClose}
+        onClose={handlePreviewClose}
       />
     </div>
   );
