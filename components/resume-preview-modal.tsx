@@ -86,6 +86,7 @@ export function ResumePreviewModal({
                 startDate: exp.startDate || "",
                 endDate: exp.endDate || undefined,
                 current: exp.current || false,
+                description: exp.description || "",
                 responsibilities: exp.responsibilities || [],
               })),
               education: (resume.education || []).map((edu: any) => ({

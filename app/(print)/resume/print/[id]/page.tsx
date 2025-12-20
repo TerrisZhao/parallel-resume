@@ -158,6 +158,7 @@ async function getResumeData(
         startDate: exp.startDate,
         endDate: exp.endDate || undefined,
         current: exp.current,
+        description: exp.description,
         responsibilities: exp.responsibilities,
       })),
       education: education.map((edu: Education) => ({
@@ -595,6 +596,11 @@ export default async function PrintResumePage({
                             "End Date"}
                       </div>
                     </div>
+                    {exp.description && (
+                      <div className="entry-description">
+                        {exp.description}
+                      </div>
+                    )}
                     {exp.responsibilities.filter((r) => r.trim()).length >
                       0 && (
                       <ul className="responsibilities">
