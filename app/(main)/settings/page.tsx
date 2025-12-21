@@ -30,6 +30,8 @@ import {
   Eye,
   EyeOff,
   RotateCw,
+  CheckCircle,
+  XCircle,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useTranslations } from "next-intl";
@@ -84,6 +86,7 @@ export default function SettingsPage() {
   const [aiApiEndpoint, setAiApiEndpoint] = useState("");
   const [customProviderName, setCustomProviderName] = useState("");
   const [isTestingConnection, setIsTestingConnection] = useState(false);
+  const [connectionTestResult, setConnectionTestResult] = useState<"success" | "error" | null>(null);
   const [isUpdatingAiConfig, setIsUpdatingAiConfig] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const [availableModels, setAvailableModels] = useState<string[]>([]);
@@ -204,6 +207,11 @@ export default function SettingsPage() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isEditingName]);
+
+  // 当AI配置改变时，重置测试结果
+  useEffect(() => {
+    setConnectionTestResult(null);
+  }, [aiProvider, aiModel, aiApiKey, aiApiEndpoint]);
 
   // 更新用户姓名
   const handleUpdateName = async () => {
@@ -491,6 +499,7 @@ export default function SettingsPage() {
     }
 
     setIsTestingConnection(true);
+    setConnectionTestResult(null); // 重置测试结果
     try {
       const response = await fetch("/api/ai/test-connection", {
         method: "POST",
@@ -507,12 +516,15 @@ export default function SettingsPage() {
       const data = await response.json();
 
       if (data.success) {
+        setConnectionTestResult("success");
         showToast(t("testConnectionSuccess"), "success");
       } else {
+        setConnectionTestResult("error");
         showToast(`${t("testConnectionFailed")}: ${data.error}`, "error");
       }
     } catch (error) {
       console.error("测试连接失败:", error);
+      setConnectionTestResult("error");
       showToast(t("testConnectionFailed"), "error");
     } finally {
       setIsTestingConnection(false);
@@ -527,11 +539,11 @@ export default function SettingsPage() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          aiProvider: null,
-          aiModel: null,
-          aiApiKey: null,
-          aiApiEndpoint: null,
-          aiCustomProviderName: null,
+          aiProvider: "",
+          aiModel: "",
+          aiApiKey: "",
+          aiApiEndpoint: "",
+          aiCustomProviderName: "",
         }),
       });
 
@@ -561,6 +573,7 @@ export default function SettingsPage() {
       setAiApiEndpoint("");
       setCustomProviderName("");
       setIsApiKeyMasked(false);
+      setConnectionTestResult(null);
 
       showToast(t("configCleared"), "success");
     } catch (error) {
@@ -819,8 +832,21 @@ export default function SettingsPage() {
             {aiProvider && (
               <div className="flex gap-2">
                 <Button
-                  color="primary"
+                  color={
+                    connectionTestResult === "success"
+                      ? "success"
+                      : connectionTestResult === "error"
+                        ? "danger"
+                        : "primary"
+                  }
                   isLoading={isTestingConnection}
+                  startContent={
+                    !isTestingConnection && connectionTestResult === "success" ? (
+                      <CheckCircle className="w-4 h-4" />
+                    ) : !isTestingConnection && connectionTestResult === "error" ? (
+                      <XCircle className="w-4 h-4" />
+                    ) : undefined
+                  }
                   variant="bordered"
                   onPress={handleTestConnection}
                 >
@@ -828,6 +854,7 @@ export default function SettingsPage() {
                 </Button>
                 <Button
                   color="primary"
+                  isDisabled={connectionTestResult !== "success"}
                   isLoading={isUpdatingAiConfig}
                   onPress={handleSaveAiConfig}
                 >
