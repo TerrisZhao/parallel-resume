@@ -553,7 +553,7 @@ export default function ResumeListPage() {
                         className="bg-transparent text-blue-700 hover:bg-blue-200"
                         radius="lg"
                         size="sm"
-                        title="Edit"
+                        title={tCommon("edit")}
                         variant="light"
                         onPress={() => router.push(`/resume/${resume.id}`)}
                       >
@@ -564,7 +564,7 @@ export default function ResumeListPage() {
                         className="bg-transparent text-gray-700 hover:bg-gray-200"
                         radius="lg"
                         size="sm"
-                        title="Duplicate"
+                        title={t("duplicate")}
                         variant="light"
                         onPress={() => handleDuplicate(resume.id)}
                       >
@@ -575,7 +575,7 @@ export default function ResumeListPage() {
                         className="bg-transparent text-red-700 hover:bg-red-200"
                         radius="lg"
                         size="sm"
-                        title="Delete"
+                        title={tCommon("delete")}
                         variant="light"
                         onPress={() => handleDelete(resume.id)}
                       >
