@@ -22,6 +22,7 @@ import {
   Sun,
   Moon,
   Monitor,
+  Globe,
   Clock,
   MapPin,
   Smartphone,
@@ -31,6 +32,7 @@ import {
   RotateCw,
 } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useTranslations } from "next-intl";
 
 import { title, subtitle } from "@/components/primitives";
 
@@ -52,6 +54,8 @@ export default function SettingsPage() {
   const { data: session, update, status } = useSession();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
+  const t = useTranslations("settings");
+  const tCommon = useTranslations("common");
   const [notifications, setNotifications] = useState(true);
 
   // 用户信息编辑状态
@@ -63,6 +67,10 @@ export default function SettingsPage() {
   // 主题模式状态
   const [themeMode, setThemeMode] = useState<string>("system");
   const [isUpdatingTheme, setIsUpdatingTheme] = useState(false);
+
+  // 语言模式状态
+  const [languageMode, setLanguageMode] = useState<string>("system");
+  const [isUpdatingLanguage, setIsUpdatingLanguage] = useState(false);
 
   // 登录历史状态
   const [loginHistory, setLoginHistory] = useState<LoginHistoryItem[]>([]);
@@ -106,7 +114,7 @@ export default function SettingsPage() {
     },
     {
       value: "custom",
-      label: "自定义模型",
+      label: t("customModel"),
       models: [],
       defaultEndpoint: "",
     },
@@ -127,6 +135,9 @@ export default function SettingsPage() {
     }
     if (session?.user && (session.user as any)?.themeMode) {
       setThemeMode((session.user as any).themeMode);
+    }
+    if (session?.user && (session.user as any)?.preferredLanguage) {
+      setLanguageMode((session.user as any).preferredLanguage);
     }
   }, [session?.user]);
 
@@ -197,7 +208,7 @@ export default function SettingsPage() {
   // 更新用户姓名
   const handleUpdateName = async () => {
     if (!name.trim()) {
-      showToast("姓名不能为空", "error");
+      showToast(t("nameEmpty"), "error");
 
       return;
     }
@@ -221,7 +232,7 @@ export default function SettingsPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "更新失败");
+        throw new Error(data.error || t("nameUpdateFailed"));
       }
 
       // 更新session
@@ -233,11 +244,11 @@ export default function SettingsPage() {
         },
       });
 
-      showToast("姓名更新成功", "success");
+      showToast(t("nameUpdateSuccess"), "success");
       setIsEditingName(false);
     } catch (error) {
       console.error("更新姓名失败:", error);
-      showToast(error instanceof Error ? error.message : "更新失败", "error");
+      showToast(error instanceof Error ? error.message : t("nameUpdateFailed"), "error");
     } finally {
       setIsLoading(false);
     }
@@ -246,7 +257,7 @@ export default function SettingsPage() {
   // 加载指定提供商的模型列表
   const handleLoadModels = async () => {
     if (!aiProvider || (!aiApiKey && !isApiKeyMasked)) {
-      showToast("请先选择AI提供商并填写API Key", "error");
+      showToast(t("pleaseSelectProvider"), "error");
 
       return;
     }
@@ -267,7 +278,7 @@ export default function SettingsPage() {
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.error || "获取模型列表失败");
+        throw new Error(data.error || t("modelsLoadFailed"));
       }
 
       const models: string[] = (data.models || []).map(
@@ -275,7 +286,7 @@ export default function SettingsPage() {
       );
 
       if (!models.length) {
-        showToast("未获取到可用模型，请检查配置是否正确", "error");
+        showToast(t("modelsNotFound"), "error");
       }
 
       // 确保当前已选模型在列表中
@@ -288,11 +299,11 @@ export default function SettingsPage() {
       const sortedModels = Array.from(merged).sort();
 
       setAvailableModels(sortedModels);
-      showToast("模型列表已更新", "success");
+      showToast(t("modelsUpdated"), "success");
     } catch (error) {
       console.error("获取模型列表失败:", error);
       showToast(
-        error instanceof Error ? error.message : "获取模型列表失败",
+        error instanceof Error ? error.message : t("modelsLoadFailed"),
         "error",
       );
     } finally {
@@ -321,7 +332,7 @@ export default function SettingsPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "更新失败");
+        throw new Error(data.error || t("updateFailed"));
       }
 
       // 更新session
@@ -337,12 +348,53 @@ export default function SettingsPage() {
       setTheme(newThemeMode);
       setThemeMode(newThemeMode);
 
-      showToast("主题设置更新成功", "success");
+      showToast(t("themeUpdateSuccess"), "success");
     } catch (error) {
       console.error("更新主题模式失败:", error);
-      showToast(error instanceof Error ? error.message : "更新失败", "error");
+      showToast(error instanceof Error ? error.message : t("updateFailed"), "error");
     } finally {
       setIsUpdatingTheme(false);
+    }
+  };
+
+  // 更新语言模式
+  const handleLanguageModeChange = async (newLanguageMode: string) => {
+    setIsUpdatingLanguage(true);
+    try {
+      const response = await fetch("/api/user/locale", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ locale: newLanguageMode }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || t("updateFailed"));
+      }
+
+      // 更新session
+      await update({
+        ...session,
+        user: {
+          ...session?.user,
+          preferredLanguage: newLanguageMode,
+        },
+      });
+
+      setLanguageMode(newLanguageMode);
+
+      showToast(t("languageUpdateSuccess"), "success");
+
+      // 刷新页面以应用新语言
+      window.location.reload();
+    } catch (error) {
+      console.error("更新语言模式失败:", error);
+      showToast(error instanceof Error ? error.message : t("updateFailed"), "error");
+    } finally {
+      setIsUpdatingLanguage(false);
     }
   };
 
@@ -354,14 +406,14 @@ export default function SettingsPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "获取登录历史失败");
+        throw new Error(data.error || t("fetchHistoryFailed"));
       }
 
       setLoginHistory(data.history);
     } catch (error) {
       console.error("获取登录历史失败:", error);
       showToast(
-        error instanceof Error ? error.message : "获取登录历史失败",
+        error instanceof Error ? error.message : t("fetchHistoryFailed"),
         "error",
       );
     } finally {
@@ -378,7 +430,7 @@ export default function SettingsPage() {
   // 保存AI配置
   const handleSaveAiConfig = async () => {
     if (!aiProvider || !aiModel || (!aiApiKey && !isApiKeyMasked)) {
-      showToast("请填写完整的AI配置信息", "error");
+      showToast(t("pleaseCompleteConfig"), "error");
 
       return;
     }
@@ -402,7 +454,7 @@ export default function SettingsPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "保存失败");
+        throw new Error(data.error || t("configSaveFailed"));
       }
 
       // 更新session
@@ -418,13 +470,13 @@ export default function SettingsPage() {
         },
       });
 
-      showToast("AI配置保存成功", "success");
+      showToast(t("configSaved"), "success");
       // 更新为遮盖后的Key
       setAiApiKey(data.user.aiApiKeyMasked || "");
       setIsApiKeyMasked(Boolean(data.user.aiApiKeyMasked));
     } catch (error) {
       console.error("保存AI配置失败:", error);
-      showToast(error instanceof Error ? error.message : "保存失败", "error");
+      showToast(error instanceof Error ? error.message : t("configSaveFailed"), "error");
     } finally {
       setIsUpdatingAiConfig(false);
     }
@@ -433,7 +485,7 @@ export default function SettingsPage() {
   // 测试连接
   const handleTestConnection = async () => {
     if (!aiProvider || !aiModel) {
-      showToast("请填写完整的AI配置信息", "error");
+      showToast(t("pleaseCompleteConfig"), "error");
 
       return;
     }
@@ -455,13 +507,13 @@ export default function SettingsPage() {
       const data = await response.json();
 
       if (data.success) {
-        showToast("连接测试成功", "success");
+        showToast(t("testConnectionSuccess"), "success");
       } else {
-        showToast(`连接测试失败: ${data.error}`, "error");
+        showToast(`${t("testConnectionFailed")}: ${data.error}`, "error");
       }
     } catch (error) {
       console.error("测试连接失败:", error);
-      showToast("测试连接失败", "error");
+      showToast(t("testConnectionFailed"), "error");
     } finally {
       setIsTestingConnection(false);
     }
@@ -486,7 +538,7 @@ export default function SettingsPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "清除失败");
+        throw new Error(data.error || t("configClearFailed"));
       }
 
       // 更新session
@@ -510,10 +562,10 @@ export default function SettingsPage() {
       setCustomProviderName("");
       setIsApiKeyMasked(false);
 
-      showToast("AI配置已清除", "success");
+      showToast(t("configCleared"), "success");
     } catch (error) {
       console.error("清除AI配置失败:", error);
-      showToast(error instanceof Error ? error.message : "清除失败", "error");
+      showToast(error instanceof Error ? error.message : t("configClearFailed"), "error");
     } finally {
       setIsUpdatingAiConfig(false);
     }
@@ -556,13 +608,13 @@ export default function SettingsPage() {
     return (
       <div className="max-w-2xl mx-auto">
         <div className="mb-8">
-          <h1 className={title()}>设置</h1>
-          <p className={subtitle({ class: "mt-2" })}>管理您的账户设置和偏好</p>
+          <h1 className={title()}>{t("title")}</h1>
+          <p className={subtitle({ class: "mt-2" })}>{t("subtitle")}</p>
         </div>
         <div className="flex justify-center items-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
-            <p className="text-default-500">加载中...</p>
+            <p className="text-default-500">{t("loading")}</p>
           </div>
         </div>
       </div>
@@ -577,13 +629,13 @@ export default function SettingsPage() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-8">
-        <h1 className={title()}>设置</h1>
+        <h1 className={title()}>{t("title")}</h1>
       </div>
 
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-semibold">账户信息</h3>
+            <h3 className="text-lg font-semibold">{t("accountInfo")}</h3>
           </CardHeader>
           <CardBody className="space-y-4">
             <div className="space-y-2">
@@ -594,8 +646,8 @@ export default function SettingsPage() {
                       input: "cursor-pointer",
                     }}
                     isReadOnly={!isEditingName}
-                    label="姓名"
-                    placeholder="输入您的姓名"
+                    label={t("name")}
+                    placeholder={t("namePlaceholder")}
                     value={name}
                     variant={isEditingName ? "bordered" : "flat"}
                     onChange={(e) => setName(e.target.value)}
@@ -632,22 +684,22 @@ export default function SettingsPage() {
             <Input
               isReadOnly
               defaultValue={session.user?.email || ""}
-              description="邮箱地址不可修改"
-              label="邮箱"
-              placeholder="输入您的邮箱"
+              description={t("emailReadonly")}
+              label={t("email")}
+              placeholder={t("emailPlaceholder")}
             />
           </CardBody>
         </Card>
 
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-semibold">AI模型配置</h3>
+            <h3 className="text-lg font-semibold">{t("aiConfig")}</h3>
           </CardHeader>
           <CardBody className="space-y-4">
             {/* AI提供商选择 */}
             <Select
-              label="AI提供商"
-              placeholder="选择AI提供商"
+              label={t("aiProvider")}
+              placeholder={t("aiProviderPlaceholder")}
               selectedKeys={aiProvider ? [aiProvider] : []}
               onSelectionChange={(keys) => {
                 const selected = Array.from(keys)[0] as string;
@@ -673,8 +725,8 @@ export default function SettingsPage() {
             {/* 自定义提供商名称 */}
             {aiProvider === "custom" && (
               <Input
-                label="提供商名称"
-                placeholder="输入自定义提供商名称"
+                label={t("providerName")}
+                placeholder={t("providerNamePlaceholder")}
                 value={customProviderName}
                 onChange={(e) => setCustomProviderName(e.target.value)}
               />
@@ -683,8 +735,8 @@ export default function SettingsPage() {
             {/* 自定义模型名称 */}
             {aiProvider === "custom" && (
               <Input
-                label="模型名称"
-                placeholder="输入模型名称"
+                label={t("modelName")}
+                placeholder={t("modelNamePlaceholder")}
                 value={aiModel}
                 onChange={(e) => setAiModel(e.target.value)}
               />
@@ -704,8 +756,8 @@ export default function SettingsPage() {
                     {showApiKey ? <EyeOff size={18} /> : <Eye size={18} />}
                   </Button>
                 }
-                label="API Key"
-                placeholder="输入API Key"
+                label={t("apiKey")}
+                placeholder={t("apiKeyPlaceholder")}
                 type={showApiKey ? "text" : "password"}
                 value={aiApiKey}
                 onChange={(e) => {
@@ -719,8 +771,8 @@ export default function SettingsPage() {
             {/* API端点 */}
             {aiProvider && (
               <Input
-                label="API端点"
-                placeholder="输入API端点地址"
+                label={t("apiEndpoint")}
+                placeholder={t("apiEndpointPlaceholder")}
                 value={aiApiEndpoint}
                 onChange={(e) => setAiApiEndpoint(e.target.value)}
               />
@@ -732,8 +784,8 @@ export default function SettingsPage() {
                 <div className="flex-1">
                   <Select
                     isDisabled={availableModels.length === 0}
-                    label="模型"
-                    placeholder="选择模型"
+                    label={t("modelName")}
+                    placeholder={t("modelPlaceholder")}
                     selectedKeys={aiModel ? [aiModel] : []}
                     onSelectionChange={(keys) =>
                       setAiModel(Array.from(keys)[0] as string)
@@ -772,14 +824,14 @@ export default function SettingsPage() {
                   variant="bordered"
                   onPress={handleTestConnection}
                 >
-                  测试连接
+                  {t("testConnection")}
                 </Button>
                 <Button
                   color="primary"
                   isLoading={isUpdatingAiConfig}
                   onPress={handleSaveAiConfig}
                 >
-                  保存配置
+                  {tCommon("save")}
                 </Button>
                 {(session?.user as any)?.aiProvider && (
                   <Button
@@ -788,7 +840,7 @@ export default function SettingsPage() {
                     variant="light"
                     onPress={handleClearAiConfig}
                   >
-                    清除配置
+                    {tCommon("clear")}
                   </Button>
                 )}
               </div>
@@ -798,14 +850,14 @@ export default function SettingsPage() {
 
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-semibold">通知设置</h3>
+            <h3 className="text-lg font-semibold">{t("notifications")}</h3>
           </CardHeader>
           <CardBody className="space-y-4">
             <div className="flex justify-between items-center">
               <div>
-                <p className="text-medium font-medium">邮件通知</p>
+                <p className="text-medium font-medium">{t("emailNotifications")}</p>
                 <p className="text-small text-default-500">
-                  接收重要更新和通知邮件
+                  {t("emailNotificationsDesc")}
                 </p>
               </div>
               <Switch
@@ -815,7 +867,7 @@ export default function SettingsPage() {
             </div>
             <div className="flex justify-between items-center">
               <div>
-                <p className="text-medium font-medium">主题模式</p>
+                <p className="text-medium font-medium">{t("themeMode")}</p>
               </div>
               <div style={{ width: "140px" }}>
                 <Select
@@ -836,13 +888,47 @@ export default function SettingsPage() {
                   }}
                 >
                   <SelectItem key="light" startContent={<Sun size={16} />}>
-                    浅色
+                    {t("light")}
                   </SelectItem>
                   <SelectItem key="dark" startContent={<Moon size={16} />}>
-                    深色
+                    {t("dark")}
                   </SelectItem>
                   <SelectItem key="system" startContent={<Monitor size={16} />}>
-                    跟随系统
+                    {t("system")}
+                  </SelectItem>
+                </Select>
+              </div>
+            </div>
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-medium font-medium">{t("languageSettings")}</p>
+              </div>
+              <div style={{ width: "140px" }}>
+                <Select
+                  classNames={{
+                    trigger: "min-h-8 h-8 w-full",
+                    value: "text-sm",
+                    mainWrapper: "w-full",
+                  }}
+                  isDisabled={isUpdatingLanguage}
+                  selectedKeys={[languageMode]}
+                  size="sm"
+                  onSelectionChange={(keys) => {
+                    const selectedKey = Array.from(keys)[0] as string;
+
+                    if (selectedKey) {
+                      handleLanguageModeChange(selectedKey);
+                    }
+                  }}
+                >
+                  <SelectItem key="system" startContent={<Monitor size={16} />}>
+                    {t("languageFollow")}
+                  </SelectItem>
+                  <SelectItem key="en" startContent={<Globe size={16} />}>
+                    {t("languageEn")}
+                  </SelectItem>
+                  <SelectItem key="zh" startContent={<Globe size={16} />}>
+                    {t("languageZh")}
                   </SelectItem>
                 </Select>
               </div>
@@ -852,7 +938,7 @@ export default function SettingsPage() {
 
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-semibold">安全设置</h3>
+            <h3 className="text-lg font-semibold">{t("security")}</h3>
           </CardHeader>
           <CardBody className="space-y-4">
             <Button
@@ -860,14 +946,14 @@ export default function SettingsPage() {
               variant="flat"
               onPress={handleOpenLoginHistory}
             >
-              登录历史
+              {t("loginHistory")}
             </Button>
           </CardBody>
         </Card>
 
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-semibold">数据管理</h3>
+            <h3 className="text-lg font-semibold">{t("dataManagement")}</h3>
           </CardHeader>
           <CardBody className="space-y-4">
             {/*<Button className="w-full justify-start" variant="flat">*/}
@@ -878,7 +964,7 @@ export default function SettingsPage() {
               color="danger"
               variant="flat"
             >
-              删除账户
+              {t("deleteAccount")}
             </Button>
           </CardBody>
         </Card>
@@ -893,7 +979,7 @@ export default function SettingsPage() {
       >
         <ModalContent>
           <ModalHeader>
-            <h3 className="text-lg font-semibold">登录历史</h3>
+            <h3 className="text-lg font-semibold">{t("loginHistory")}</h3>
           </ModalHeader>
           <ModalBody>
             {isLoadingHistory ? (
@@ -902,7 +988,7 @@ export default function SettingsPage() {
               </div>
             ) : loginHistory.length === 0 ? (
               <div className="text-center py-8 text-default-500">
-                暂无登录历史记录
+                {t("noLoginHistory")}
               </div>
             ) : (
               <div className="space-y-4">
@@ -945,13 +1031,13 @@ export default function SettingsPage() {
                             item.isSuccessful ? "text-success" : "text-danger"
                           }`}
                         >
-                          {item.isSuccessful ? "登录成功" : "登录失败"}
+                          {item.isSuccessful ? t("loginSuccess") : t("loginFailed")}
                         </div>
                       </div>
                     </div>
                     {!item.isSuccessful && item.failureReason && (
                       <div className="mt-2 text-sm text-danger">
-                        失败原因: {item.failureReason}
+                        {t("failureReason")}: {item.failureReason}
                       </div>
                     )}
                   </div>
@@ -961,7 +1047,7 @@ export default function SettingsPage() {
           </ModalBody>
           <ModalFooter>
             <Button variant="flat" onPress={() => setIsLoginHistoryOpen(false)}>
-              关闭
+              {t("close")}
             </Button>
           </ModalFooter>
         </ModalContent>

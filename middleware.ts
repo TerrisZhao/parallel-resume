@@ -4,12 +4,41 @@ import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { jwtVerify } from "jose";
 
+// 辅助函数：检测语言
+function detectLocale(request: NextRequest): string {
+  const acceptLanguage = request.headers.get("accept-language");
+
+  if (acceptLanguage?.includes("zh")) return "zh";
+  if (acceptLanguage?.includes("en")) return "en";
+
+  return "en"; // 默认英文
+}
+
+// 辅助函数：为 response 设置语言 cookie
+function setLocaleCookie(
+  response: NextResponse,
+  request: NextRequest,
+): NextResponse {
+  const currentLocale = request.cookies.get("NEXT_LOCALE")?.value;
+
+  if (!currentLocale) {
+    const detectedLocale = detectLocale(request);
+
+    response.cookies.set("NEXT_LOCALE", detectedLocale, {
+      maxAge: 60 * 60 * 24 * 365, // 1 year
+      path: "/",
+    });
+  }
+
+  return response;
+}
+
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
   // 根路径首页：完全公开
   if (path === "/") {
-    return NextResponse.next();
+    return setLocaleCookie(NextResponse.next(), request);
   }
 
   // 打印页面特殊处理：只允许 PDF 生成访问，浏览器访问重定向
@@ -20,11 +49,14 @@ export async function middleware(request: NextRequest) {
       // 浏览器直接访问，重定向到简历编辑页面
       const resumeId = path.split("/").pop();
 
-      return NextResponse.redirect(new URL(`/resume/${resumeId}`, request.url));
+      return setLocaleCookie(
+        NextResponse.redirect(new URL(`/resume/${resumeId}`, request.url)),
+        request,
+      );
     }
 
     // PDF 生成请求，允许访问
-    return NextResponse.next();
+    return setLocaleCookie(NextResponse.next(), request);
   }
 
   // 公开路径，无需认证（前缀匹配）
@@ -35,7 +67,7 @@ export async function middleware(request: NextRequest) {
   );
 
   if (isPublicPath) {
-    return NextResponse.next();
+    return setLocaleCookie(NextResponse.next(), request);
   }
 
   // API 路由的认证处理
@@ -59,17 +91,23 @@ export async function middleware(request: NextRequest) {
         requestHeaders.set("x-user-email", String(payload.email));
         requestHeaders.set("x-user-role", String(payload.role));
 
-        return NextResponse.next({
-          request: {
-            headers: requestHeaders,
-          },
-        });
+        return setLocaleCookie(
+          NextResponse.next({
+            request: {
+              headers: requestHeaders,
+            },
+          }),
+          request,
+        );
       } catch (error) {
         console.error("JWT verification failed:", error);
 
-        return NextResponse.json(
-          { error: "未授权: Token 无效或已过期" },
-          { status: 401 },
+        return setLocaleCookie(
+          NextResponse.json(
+            { error: "未授权: Token 无效或已过期" },
+            { status: 401 },
+          ),
+          request,
         );
       }
     }
@@ -81,10 +119,13 @@ export async function middleware(request: NextRequest) {
     });
 
     if (!token) {
-      return NextResponse.json({ error: "未授权" }, { status: 401 });
+      return setLocaleCookie(
+        NextResponse.json({ error: "未授权" }, { status: 401 }),
+        request,
+      );
     }
 
-    return NextResponse.next();
+    return setLocaleCookie(NextResponse.next(), request);
   }
 
   // 页面路由的认证处理（网页端）
@@ -94,10 +135,13 @@ export async function middleware(request: NextRequest) {
   });
 
   if (!token) {
-    return NextResponse.redirect(new URL("/sign-in", request.url));
+    return setLocaleCookie(
+      NextResponse.redirect(new URL("/sign-in", request.url)),
+      request,
+    );
   }
 
-  return NextResponse.next();
+  return setLocaleCookie(NextResponse.next(), request);
 }
 
 export const config = {

@@ -16,6 +16,7 @@ const updateProfileSchema = z.object({
     .max(255, "姓名长度不能超过255个字符")
     .optional(),
   themeMode: z.enum(["light", "dark", "system"]).optional(),
+  preferredLanguage: z.enum(["system", "en", "zh"]).optional(),
   // AI配置字段
   aiProvider: z
     .enum(["openai", "deepseek", "claude", "gemini", "custom"])
@@ -45,6 +46,7 @@ export async function GET() {
         role: users.role,
         emailVerified: users.emailVerified,
         themeMode: users.themeMode,
+        preferredLanguage: users.preferredLanguage,
         aiProvider: users.aiProvider,
         aiModel: users.aiModel,
         aiApiKey: users.aiApiKey,
@@ -112,6 +114,10 @@ export async function PUT(request: NextRequest) {
       updateData.themeMode = validatedData.themeMode;
     }
 
+    if (validatedData.preferredLanguage !== undefined) {
+      updateData.preferredLanguage = validatedData.preferredLanguage;
+    }
+
     // 处理AI配置
     if (validatedData.aiProvider !== undefined) {
       updateData.aiProvider = validatedData.aiProvider;
@@ -151,6 +157,7 @@ export async function PUT(request: NextRequest) {
         role: users.role,
         emailVerified: users.emailVerified,
         themeMode: users.themeMode,
+        preferredLanguage: users.preferredLanguage,
         aiProvider: users.aiProvider,
         aiModel: users.aiModel,
         aiApiKey: users.aiApiKey,

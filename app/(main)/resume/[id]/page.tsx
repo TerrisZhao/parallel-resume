@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, use } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@heroui/button";
 import { Card, CardBody } from "@heroui/card";
 import { Input, Textarea } from "@heroui/input";
@@ -81,6 +82,7 @@ function BatchStarIndicator({
   ) => void;
   jobDescription?: string;
 }) {
+  const t = useTranslations("resumeEditor");
   const [overallStarResult, setOverallStarResult] =
     useState<StarCheckResult | null>(null);
   const [isLoadingStar, setIsLoadingStar] = useState(false);
@@ -97,7 +99,7 @@ function BatchStarIndicator({
   const handleRefresh = async () => {
     if (items.length === 0 || items.every((item) => !item.content.trim())) {
       addToast({
-        title: "内容为空，无法检测",
+        title: t("contentEmpty"),
         color: "warning",
       });
 
@@ -119,7 +121,7 @@ function BatchStarIndicator({
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.error || "检测失败");
+        throw new Error(data.error || t("detectionFailed"));
       }
 
       setOverallStarResult(data.overallSatisfied || null);
@@ -133,9 +135,9 @@ function BatchStarIndicator({
       );
       onConfirmOpen();
     } catch (error) {
-      console.error("批量STAR检测失败:", error);
+      console.error(t("batchStarCheckFailed"), error);
       addToast({
-        title: error instanceof Error ? error.message : "检测失败",
+        title: error instanceof Error ? error.message : t("detectionFailed"),
         color: "danger",
       });
     } finally {
@@ -154,7 +156,7 @@ function BatchStarIndicator({
     setOverallStarResult(null);
     onConfirmClose();
     addToast({
-      title: "内容已更新",
+      title: t("contentUpdated"),
       color: "success",
     });
   };
@@ -168,7 +170,7 @@ function BatchStarIndicator({
   return (
     <>
       <div className="flex items-center gap-2">
-        <Tooltip content="AI优化">
+        <Tooltip content={t("aiOptimizationTooltip")}>
           <Button
             isIconOnly
             className={`min-w-8 w-8 h-8 ${
@@ -199,7 +201,7 @@ function BatchStarIndicator({
       <Modal isOpen={isConfirmOpen} size="3xl" onClose={onConfirmClose}>
         <ModalContent>
           <ModalHeader>
-            <span>确认优化后的内容</span>
+            <span>{t("confirmOptimizedContent")}</span>
           </ModalHeader>
           <ModalBody>
             <div className="space-y-4 max-h-[60vh] overflow-y-auto">
@@ -208,20 +210,20 @@ function BatchStarIndicator({
                   key={imp.id}
                   className="space-y-2 border-b pb-4 last:border-0"
                 >
-                  <p className="text-sm font-medium">条目 {index + 1}</p>
+                  <p className="text-sm font-medium">{t("item")} {index + 1}</p>
                   <div>
-                    <p className="text-xs text-default-500 mb-1">原内容：</p>
+                    <p className="text-xs text-default-500 mb-1">{t("originalContent")}</p>
                     <p className="text-sm text-default-600 bg-default-100 p-2 rounded">
                       {imp.originalContent}
                     </p>
                   </div>
                   <div>
                     <p className="text-xs text-default-500 mb-1">
-                      优化后内容：
+                      {t("optimizedContent")}
                     </p>
                     <Textarea
                       minRows={3}
-                      placeholder="优化后的内容..."
+                      placeholder={t("optimizedContentPlaceholder")}
                       value={imp.improvedContent}
                       onChange={(e) => {
                         const newImprovements = [...improvements];
@@ -282,10 +284,10 @@ function BatchStarIndicator({
             )}
             <div className="flex items-center gap-2 ml-auto">
               <Button variant="light" onPress={onConfirmClose}>
-                取消
+                {t("cancel")}
               </Button>
               <Button color="primary" onPress={handleConfirm}>
-                确认使用全部
+                {t("confirmUseAll")}
               </Button>
             </div>
           </ModalFooter>
@@ -309,6 +311,7 @@ function ProjectStarIndicator({
   onContentChange?: (value: string) => void;
   jobDescription?: string;
 }) {
+  const t = useTranslations("resumeEditor");
   const [starResult, setStarResult] = useState<StarCheckResult | null>(null);
   const [isLoadingStar, setIsLoadingStar] = useState(false);
   const {
@@ -322,7 +325,7 @@ function ProjectStarIndicator({
   const handleRefresh = async () => {
     if (!content.trim()) {
       addToast({
-        title: "内容为空，无法检测",
+        title: t("contentEmpty"),
         color: "warning",
       });
 
@@ -344,7 +347,7 @@ function ProjectStarIndicator({
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.error || "检测失败");
+        throw new Error(data.error || t("detectionFailed"));
       }
 
       setStarResult(data.satisfied);
@@ -353,7 +356,7 @@ function ProjectStarIndicator({
     } catch (error) {
       console.error("STAR检测失败:", error);
       addToast({
-        title: error instanceof Error ? error.message : "检测失败",
+        title: error instanceof Error ? error.message : t("detectionFailed"),
         color: "danger",
       });
     } finally {
@@ -367,7 +370,7 @@ function ProjectStarIndicator({
       onConfirmImprovement(improvedContent);
       onConfirmClose();
       addToast({
-        title: "内容已更新",
+        title: t("contentUpdated"),
         color: "success",
       });
     }
@@ -376,9 +379,9 @@ function ProjectStarIndicator({
   if (!isEnabled) {
     return (
       <Textarea
-        label="Description"
+        label={t("description")}
         minRows={3}
-        placeholder="Describe the project and your contributions..."
+        placeholder={t("descriptionPlaceholder")}
         value={content}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
           onContentChange?.(e.target.value)
@@ -397,7 +400,7 @@ function ProjectStarIndicator({
     <>
       <Textarea
         endContent={
-          <Tooltip content="AI优化">
+          <Tooltip content={t("aiOptimizationTooltip")}>
             <Button
               isIconOnly
               className={`min-w-8 w-8 h-8 ${
@@ -415,9 +418,9 @@ function ProjectStarIndicator({
             </Button>
           </Tooltip>
         }
-        label="Description"
+        label={t("description")}
         minRows={3}
-        placeholder="Describe the project and your contributions..."
+        placeholder={t("descriptionPlaceholder")}
         value={content}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
           onContentChange?.(e.target.value)
@@ -427,21 +430,21 @@ function ProjectStarIndicator({
       <Modal isOpen={isConfirmOpen} size="2xl" onClose={onConfirmClose}>
         <ModalContent>
           <ModalHeader>
-            <span>确认优化后的内容</span>
+            <span>{t("confirmOptimizedContent")}</span>
           </ModalHeader>
           <ModalBody>
             <div className="space-y-4">
               <div>
-                <p className="text-sm font-medium mb-2">原内容：</p>
+                <p className="text-sm font-medium mb-2">{t("originalContent")}</p>
                 <p className="text-sm text-default-600 bg-default-100 p-3 rounded">
                   {content}
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium mb-2">优化后内容：</p>
+                <p className="text-sm font-medium mb-2">{t("optimizedContent")}</p>
                 <Textarea
                   minRows={5}
-                  placeholder="优化后的内容..."
+                  placeholder={t("optimizedContentPlaceholder")}
                   value={improvedContent}
                   onChange={(e) => setImprovedContent(e.target.value)}
                 />
@@ -495,10 +498,10 @@ function ProjectStarIndicator({
             )}
             <div className="flex items-center gap-2 ml-auto">
               <Button variant="light" onPress={onConfirmClose}>
-                取消
+                {t("cancel")}
               </Button>
               <Button color="primary" onPress={handleConfirm}>
-                确认使用
+                {t("confirmUse")}
               </Button>
             </div>
           </ModalFooter>
@@ -525,6 +528,7 @@ function StarIndicator({
   onConfirmImprovement: (improvedContent: string) => void;
   jobDescription?: string;
 }) {
+  const t = useTranslations("resumeEditor");
   const {
     isOpen: isConfirmOpen,
     onOpen: onConfirmOpen,
@@ -543,7 +547,7 @@ function StarIndicator({
   const handleRefresh = async () => {
     if (!content.trim()) {
       addToast({
-        title: "内容为空，无法检测",
+        title: t("contentEmpty"),
         color: "warning",
       });
 
@@ -565,7 +569,7 @@ function StarIndicator({
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.error || "检测失败");
+        throw new Error(data.error || t("detectionFailed"));
       }
 
       setLocalStarResult(data.satisfied);
@@ -574,7 +578,7 @@ function StarIndicator({
     } catch (error) {
       console.error("STAR检测失败:", error);
       addToast({
-        title: error instanceof Error ? error.message : "检测失败",
+        title: error instanceof Error ? error.message : t("detectionFailed"),
         color: "danger",
       });
     } finally {
@@ -588,7 +592,7 @@ function StarIndicator({
       setLocalStarResult(null); // 重置检测结果，让用户重新检测新内容
       onConfirmClose();
       addToast({
-        title: "内容已更新",
+        title: t("contentUpdated"),
         color: "success",
       });
     }
@@ -607,7 +611,7 @@ function StarIndicator({
   return (
     <>
       <div className="flex items-center gap-2">
-        <Tooltip content="AI优化">
+        <Tooltip content={t("aiOptimizationTooltip")}>
           <Button
             isIconOnly
             className={`min-w-8 w-8 h-8 ${
@@ -630,21 +634,21 @@ function StarIndicator({
       <Modal isOpen={isConfirmOpen} size="2xl" onClose={onConfirmClose}>
         <ModalContent>
           <ModalHeader>
-            <span>确认优化后的内容</span>
+            <span>{t("confirmOptimizedContent")}</span>
           </ModalHeader>
           <ModalBody>
             <div className="space-y-4">
               <div>
-                <p className="text-sm font-medium mb-2">原内容：</p>
+                <p className="text-sm font-medium mb-2">{t("originalContent")}</p>
                 <p className="text-sm text-default-600 bg-default-100 p-3 rounded">
                   {content}
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium mb-2">优化后内容：</p>
+                <p className="text-sm font-medium mb-2">{t("optimizedContent")}</p>
                 <Textarea
                   minRows={5}
-                  placeholder="优化后的内容..."
+                  placeholder={t("optimizedContentPlaceholder")}
                   value={improvedContent}
                   onChange={(e) => setImprovedContent(e.target.value)}
                 />
@@ -698,10 +702,10 @@ function StarIndicator({
             )}
             <div className="flex items-center gap-2 ml-auto">
               <Button variant="light" onPress={onConfirmClose}>
-                取消
+                {t("cancel")}
               </Button>
               <Button color="primary" onPress={handleConfirm}>
-                确认使用
+                {t("confirmUse")}
               </Button>
             </div>
           </ModalFooter>
@@ -980,6 +984,7 @@ export default function ResumeEditPage({
 }) {
   const resolvedParams = use(params);
   const router = useRouter();
+  const t = useTranslations("resumeEditor");
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [resumeData, setResumeData] = useState<
     ResumeData & { name?: string; preferredLanguage?: string }
@@ -1066,7 +1071,7 @@ export default function ResumeEditPage({
           setLastSaved(new Date(resume.updatedAt));
         } else {
           addToast({
-            title: data.error || "Failed to load resume",
+            title: data.error || t("failedToLoadResume"),
             color: "danger",
           });
           router.push("/resume");
@@ -1074,7 +1079,7 @@ export default function ResumeEditPage({
       } catch (error) {
         console.error("Error loading resume:", error);
         addToast({
-          title: "Failed to load resume",
+          title: t("failedToLoadResume"),
           color: "danger",
         });
         router.push("/resume");
@@ -1084,7 +1089,7 @@ export default function ResumeEditPage({
     };
 
     void fetchResume();
-  }, [resolvedParams.id, router]);
+  }, [resolvedParams.id, router, t]);
 
   // Auto-save function with debounce
   const autoSave = useCallback(
@@ -1649,16 +1654,16 @@ export default function ResumeEditPage({
           {isSaving ? (
             <div className="text-sm text-default-500 flex items-center gap-1">
               <Save className="animate-pulse" size={14} />
-              Saving...
+              {t("saving")}
             </div>
           ) : lastSaved ? (
             <div className="text-sm text-success flex items-center gap-1">
               <CheckCircle size={14} />
-              Saved {lastSaved.toLocaleTimeString()}
+              {t("saved")} {lastSaved.toLocaleTimeString()}
             </div>
           ) : null}
           <div className="flex items-center gap-2">
-            <span className="text-sm text-default-600">AI优化</span>
+            <span className="text-sm text-default-600">{t("aiOptimization")}</span>
             <Switch
               isSelected={isAiOptimizationEnabled}
               size="sm"
@@ -1713,12 +1718,12 @@ export default function ResumeEditPage({
         {isAiOptimizationEnabled && (
           <Card>
             <CardBody className="space-y-4">
-              <h3 className="text-lg font-semibold">Job Description</h3>
+              <h3 className="text-lg font-semibold">{t("jobDescription")}</h3>
               <Textarea
-                description="This information helps AI tailor your resume content to match the job requirements."
-                label="Job Description"
+                description={t("jobDescriptionHelpText")}
+                label={t("jobDescriptionLabel")}
                 minRows={4}
-                placeholder="Enter the job description you're applying for. This will help AI optimize your resume content."
+                placeholder={t("jobDescriptionPlaceholder")}
                 value={resumeData.jobDescription || ""}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setResumeData({
@@ -1734,19 +1739,19 @@ export default function ResumeEditPage({
         {/* Personal Information */}
         <Card>
           <CardBody className="space-y-4">
-            <h3 className="text-lg font-semibold">Personal Information</h3>
+            <h3 className="text-lg font-semibold">{t("personalInformation")}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
-                label="Full Name"
-                placeholder="John Doe"
+                label={t("fullName")}
+                placeholder={t("fullNamePlaceholder")}
                 value={resumeData.fullName}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setResumeData({ ...resumeData, fullName: e.target.value })
                 }
               />
               <Input
-                label="Preferred Name"
-                placeholder="John (Optional)"
+                label={t("preferredName")}
+                placeholder={t("preferredNamePlaceholder")}
                 value={resumeData.preferredName}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setResumeData({
@@ -1756,16 +1761,16 @@ export default function ResumeEditPage({
                 }
               />
               <Input
-                label="Phone"
-                placeholder="+1 (555) 123-4567"
+                label={t("phone")}
+                placeholder={t("phonePlaceholder")}
                 value={resumeData.phone}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setResumeData({ ...resumeData, phone: e.target.value })
                 }
               />
               <Input
-                label="Email"
-                placeholder="john.doe@example.com"
+                label={t("email")}
+                placeholder={t("emailPlaceholder")}
                 type="email"
                 value={resumeData.email}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -1773,32 +1778,32 @@ export default function ResumeEditPage({
                 }
               />
               <Input
-                label="Location"
-                placeholder="San Francisco, CA"
+                label={t("location")}
+                placeholder={t("locationPlaceholder")}
                 value={resumeData.location}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setResumeData({ ...resumeData, location: e.target.value })
                 }
               />
               <Input
-                label="LinkedIn"
-                placeholder="linkedin.com/in/johndoe"
+                label={t("linkedin")}
+                placeholder={t("linkedinPlaceholder")}
                 value={resumeData.linkedin}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setResumeData({ ...resumeData, linkedin: e.target.value })
                 }
               />
               <Input
-                label="GitHub"
-                placeholder="github.com/johndoe"
+                label={t("github")}
+                placeholder={t("githubPlaceholder")}
                 value={resumeData.github}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setResumeData({ ...resumeData, github: e.target.value })
                 }
               />
               <Input
-                label="Website"
-                placeholder="example.com"
+                label={t("website")}
+                placeholder={t("websitePlaceholder")}
                 value={resumeData.website}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setResumeData({ ...resumeData, website: e.target.value })
@@ -1811,11 +1816,11 @@ export default function ResumeEditPage({
         {/* Summary */}
         <Card>
           <CardBody className="space-y-4">
-            <h3 className="text-lg font-semibold">Summary</h3>
+            <h3 className="text-lg font-semibold">{t("summary")}</h3>
             <Textarea
-              // label="Summary"
+              // label={t("summary")}
               minRows={4}
-              placeholder="Write a brief Summary highlighting your key achievements and career goals..."
+              placeholder={t("summaryPlaceholder")}
               value={resumeData.summary}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setResumeData({ ...resumeData, summary: e.target.value })
@@ -1828,13 +1833,13 @@ export default function ResumeEditPage({
         <Card>
           <CardBody className="space-y-4">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Key Skills</h3>
+              <h3 className="text-lg font-semibold">{t("keySkills")}</h3>
               <Button
                 size="sm"
                 variant="flat"
                 onPress={handleToggleSkillFormat}
               >
-                {useSkillGroups ? "Switch to Simple List" : "Switch to Groups"}
+                {useSkillGroups ? t("switchToSimpleList") : t("switchToGroups")}
               </Button>
             </div>
 
@@ -1843,7 +1848,7 @@ export default function ResumeEditPage({
               <>
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Add a skill and press Enter"
+                    placeholder={t("addSkillPlaceholder")}
                     value={currentSkill}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                       setCurrentSkill(e.target.value)
@@ -1860,7 +1865,7 @@ export default function ResumeEditPage({
                     startContent={<Plus size={18} />}
                     onPress={handleAddSkill}
                   >
-                    Add
+                    {t("add")}
                   </Button>
                 </div>
                 <DndContext
@@ -1903,7 +1908,7 @@ export default function ResumeEditPage({
                     startContent={<Plus size={18} />}
                     onPress={handleAddSkillGroup}
                   >
-                    Add Group
+                    {t("addGroup")}
                   </Button>
                 </div>
                 <DndContext
@@ -1966,14 +1971,14 @@ export default function ResumeEditPage({
         <Card>
           <CardBody className="space-y-4">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Work Experience</h3>
+              <h3 className="text-lg font-semibold">{t("workExperience")}</h3>
               <Button
                 color="primary"
                 size="sm"
                 startContent={<Plus size={18} />}
                 onPress={handleAddWorkExperience}
               >
-                Add Experience
+                {t("addExperience")}
               </Button>
             </div>
             {resumeData.workExperience.map((exp, expIndex) => (
@@ -1983,7 +1988,7 @@ export default function ResumeEditPage({
               >
                 <CardBody className="space-y-3">
                   <div className="flex justify-between items-start">
-                    <h4 className="font-medium">Experience {expIndex + 1}</h4>
+                    <h4 className="font-medium">{t("experience")} {expIndex + 1}</h4>
                     <Button
                       isIconOnly
                       color="danger"
@@ -1996,8 +2001,8 @@ export default function ResumeEditPage({
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <Input
-                      label="Company"
-                      placeholder="Company Name"
+                      label={t("company")}
+                      placeholder={t("companyPlaceholder")}
                       value={exp.company}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         handleUpdateWorkExperience(
@@ -2008,8 +2013,8 @@ export default function ResumeEditPage({
                       }
                     />
                     <Input
-                      label="Position"
-                      placeholder="Software Engineer"
+                      label={t("position")}
+                      placeholder={t("positionPlaceholder")}
                       value={exp.position}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         handleUpdateWorkExperience(
@@ -2020,7 +2025,7 @@ export default function ResumeEditPage({
                       }
                     />
                     <MonthYearPicker
-                      label="Start Date"
+                      label={t("startDate")}
                       language={
                         (resumeData.preferredLanguage as "en" | "zh") || "en"
                       }
@@ -2031,7 +2036,7 @@ export default function ResumeEditPage({
                     />
                     <MonthYearPicker
                       isDisabled={exp.current}
-                      label="End Date"
+                      label={t("endDate")}
                       language={
                         (resumeData.preferredLanguage as "en" | "zh") || "en"
                       }
@@ -2053,16 +2058,16 @@ export default function ResumeEditPage({
                         )
                       }
                     />
-                    <span className="text-sm">Current Position</span>
+                    <span className="text-sm">{t("currentPosition")}</span>
                   </label>
                   <Divider />
                   <div className="space-y-2">
                     <div className="text-sm font-medium">
-                      Company/Project Description
+                      {t("companyDescription")}
                     </div>
                     <Textarea
                       minRows={2}
-                      placeholder="Brief description of the company or project (e.g., company background, industry, or project overview)..."
+                      placeholder={t("companyDescriptionPlaceholder")}
                       value={exp.description || ""}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         handleUpdateWorkExperience(
@@ -2078,7 +2083,7 @@ export default function ResumeEditPage({
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-3">
                         <div className="text-sm font-medium">
-                          Responsibilities & Achievements
+                          {t("responsibilitiesAndAchievements")}
                         </div>
                         {isAiOptimizationEnabled &&
                           exp.responsibilities.length > 0 && (
@@ -2147,7 +2152,7 @@ export default function ResumeEditPage({
                         variant="flat"
                         onPress={() => handleAddResponsibility(exp.id)}
                       >
-                        Add
+                        {t("add")}
                       </Button>
                     </div>
                     <DndContext
@@ -2194,14 +2199,14 @@ export default function ResumeEditPage({
         <Card>
           <CardBody className="space-y-4">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Education</h3>
+              <h3 className="text-lg font-semibold">{t("education")}</h3>
               <Button
                 color="primary"
                 size="sm"
                 startContent={<Plus size={18} />}
                 onPress={handleAddEducation}
               >
-                Add Education
+                {t("addEducation")}
               </Button>
             </div>
             {resumeData.education.map((edu, eduIndex) => (
@@ -2211,7 +2216,7 @@ export default function ResumeEditPage({
               >
                 <CardBody className="space-y-3">
                   <div className="flex justify-between items-start">
-                    <h4 className="font-medium">Education {eduIndex + 1}</h4>
+                    <h4 className="font-medium">{t("education")} {eduIndex + 1}</h4>
                     <Button
                       isIconOnly
                       color="danger"
@@ -2224,39 +2229,39 @@ export default function ResumeEditPage({
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <Input
-                      label="School"
-                      placeholder="University Name"
+                      label={t("school")}
+                      placeholder={t("schoolPlaceholder")}
                       value={edu.school}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         handleUpdateEducation(edu.id, "school", e.target.value)
                       }
                     />
                     <Input
-                      label="Degree"
-                      placeholder="Bachelor of Science"
+                      label={t("degree")}
+                      placeholder={t("degreePlaceholder")}
                       value={edu.degree}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         handleUpdateEducation(edu.id, "degree", e.target.value)
                       }
                     />
                     <Input
-                      label="Major"
-                      placeholder="Computer Science"
+                      label={t("major")}
+                      placeholder={t("majorPlaceholder")}
                       value={edu.major}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         handleUpdateEducation(edu.id, "major", e.target.value)
                       }
                     />
                     <Input
-                      label="GPA (Optional)"
-                      placeholder="3.8/4.0"
+                      label={t("gpa")}
+                      placeholder={t("gpaPlaceholder")}
                       value={edu.gpa || ""}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         handleUpdateEducation(edu.id, "gpa", e.target.value)
                       }
                     />
                     <MonthYearPicker
-                      label="Start Date"
+                      label={t("startDate")}
                       language={
                         (resumeData.preferredLanguage as "en" | "zh") || "en"
                       }
@@ -2267,7 +2272,7 @@ export default function ResumeEditPage({
                     />
                     <MonthYearPicker
                       isDisabled={edu.current}
-                      label="End Date"
+                      label={t("endDate")}
                       language={
                         (resumeData.preferredLanguage as "en" | "zh") || "en"
                       }
@@ -2289,7 +2294,7 @@ export default function ResumeEditPage({
                         )
                       }
                     />
-                    <span className="text-sm">Currently Enrolled</span>
+                    <span className="text-sm">{t("currentlyEnrolled")}</span>
                   </label>
                 </CardBody>
               </Card>
@@ -2301,14 +2306,14 @@ export default function ResumeEditPage({
         <Card>
           <CardBody className="space-y-4">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Projects</h3>
+              <h3 className="text-lg font-semibold">{t("projects")}</h3>
               <Button
                 color="primary"
                 size="sm"
                 startContent={<Plus size={18} />}
                 onPress={handleAddProject}
               >
-                Add Project
+                {t("addProject")}
               </Button>
             </div>
             {resumeData.projects.map((proj, projIndex) => (
@@ -2318,7 +2323,7 @@ export default function ResumeEditPage({
               >
                 <CardBody className="space-y-3">
                   <div className="flex justify-between items-start">
-                    <h4 className="font-medium">Project {projIndex + 1}</h4>
+                    <h4 className="font-medium">{t("project")} {projIndex + 1}</h4>
                     <Button
                       isIconOnly
                       color="danger"
@@ -2331,23 +2336,23 @@ export default function ResumeEditPage({
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <Input
-                      label="Project Name"
-                      placeholder="E-commerce Platform"
+                      label={t("projectName")}
+                      placeholder={t("projectNamePlaceholder")}
                       value={proj.name}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         handleUpdateProject(proj.id, "name", e.target.value)
                       }
                     />
                     <Input
-                      label="Role"
-                      placeholder="Lead Developer"
+                      label={t("role")}
+                      placeholder={t("rolePlaceholder")}
                       value={proj.role}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         handleUpdateProject(proj.id, "role", e.target.value)
                       }
                     />
                     <MonthYearPicker
-                      label="Start Date"
+                      label={t("startDate")}
                       language={
                         (resumeData.preferredLanguage as "en" | "zh") || "en"
                       }
@@ -2358,7 +2363,7 @@ export default function ResumeEditPage({
                     />
                     <MonthYearPicker
                       isDisabled={proj.current}
-                      label="End Date"
+                      label={t("endDate")}
                       language={
                         (resumeData.preferredLanguage as "en" | "zh") || "en"
                       }
@@ -2380,7 +2385,7 @@ export default function ResumeEditPage({
                         )
                       }
                     />
-                    <span className="text-sm">Ongoing Project</span>
+                    <span className="text-sm">{t("ongoingProject")}</span>
                   </label>
                   <div className="space-y-2">
                     <ProjectStarIndicator
@@ -2401,10 +2406,10 @@ export default function ResumeEditPage({
                   </div>
                   <Divider />
                   <div className="space-y-2">
-                    <div className="text-sm font-medium">Technologies</div>
+                    <div className="text-sm font-medium">{t("technologies")}</div>
                     <div className="flex gap-2">
                       <Input
-                        placeholder="Add technology and press Enter"
+                        placeholder={t("addTechnologyPlaceholder")}
                         onKeyDown={(
                           e: React.KeyboardEvent<HTMLInputElement>,
                         ) => {
@@ -2447,11 +2452,11 @@ export default function ResumeEditPage({
         {/* Additional Information */}
         <Card>
           <CardBody className="space-y-4">
-            <h3 className="text-lg font-semibold">Additional Information</h3>
+            <h3 className="text-lg font-semibold">{t("additionalInformation")}</h3>
             <Textarea
-              label="Additional Info"
+              label={t("additionalInfo")}
               minRows={4}
-              placeholder="Add any additional information like certifications, languages, awards, etc."
+              placeholder={t("additionalInfoPlaceholder")}
               value={resumeData.additionalInfo}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setResumeData({ ...resumeData, additionalInfo: e.target.value })
@@ -2468,7 +2473,7 @@ export default function ResumeEditPage({
             startContent={<Eye size={18} />}
             onPress={onOpen}
           >
-            Preview
+            {t("preview")}
           </Button>
         </div>
       </div>

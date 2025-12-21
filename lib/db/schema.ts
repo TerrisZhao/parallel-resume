@@ -19,6 +19,13 @@ export const userRoleEnum = pgEnum("user_role", ["owner", "admin", "user"]);
 // 主题模式枚举
 export const themeModeEnum = pgEnum("theme_mode", ["light", "dark", "system"]);
 
+// 语言偏好枚举
+export const languagePreferenceEnum = pgEnum("language_preference", [
+  "system",
+  "en",
+  "zh",
+]);
+
 // AI提供商枚举
 export const aiProviderEnum = pgEnum("ai_provider", [
   "openai",
@@ -77,6 +84,9 @@ export const users = pgTable("users", {
   emailVerified: boolean("email_verified").notNull().default(false),
   isActive: boolean("is_active").notNull().default(true),
   themeMode: themeModeEnum("theme_mode").notNull().default("system"),
+  preferredLanguage: languagePreferenceEnum("preferred_language")
+    .notNull()
+    .default("system"),
   // AI配置字段
   aiProvider: aiProviderEnum("ai_provider"), // AI提供商
   aiModel: varchar("ai_model", { length: 100 }), // 模型名称

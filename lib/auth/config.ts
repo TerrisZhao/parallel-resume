@@ -201,6 +201,7 @@ const authOptions = {
             token.name = dbUser[0].name;
             token.email = dbUser[0].email;
             token.themeMode = dbUser[0].themeMode;
+            token.preferredLanguage = dbUser[0].preferredLanguage;
             // AI配置（不包含API Key）
             token.aiProvider = dbUser[0].aiProvider;
             token.aiModel = dbUser[0].aiModel;
@@ -221,6 +222,7 @@ const authOptions = {
             token.name = dbUser[0].name;
             token.email = dbUser[0].email;
             token.themeMode = dbUser[0].themeMode;
+            token.preferredLanguage = dbUser[0].preferredLanguage;
             // AI配置（不包含API Key）
             token.aiProvider = dbUser[0].aiProvider;
             token.aiModel = dbUser[0].aiModel;
@@ -243,6 +245,7 @@ const authOptions = {
           token.email = dbUser[0].email;
           token.role = dbUser[0].role;
           token.themeMode = dbUser[0].themeMode;
+          token.preferredLanguage = dbUser[0].preferredLanguage;
           // AI配置（不包含API Key）
           token.aiProvider = dbUser[0].aiProvider;
           token.aiModel = dbUser[0].aiModel;
@@ -262,6 +265,8 @@ const authOptions = {
         if (token.name) session.user.name = token.name;
         if (token.email) session.user.email = token.email;
         if (token.themeMode) (session.user as any).themeMode = token.themeMode;
+        if (token.preferredLanguage)
+          (session.user as any).preferredLanguage = token.preferredLanguage;
         // AI配置（不包含API Key）
         if (token.aiProvider)
           (session.user as any).aiProvider = token.aiProvider;

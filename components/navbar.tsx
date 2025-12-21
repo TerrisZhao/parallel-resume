@@ -16,6 +16,7 @@ import { usePathname } from "next/navigation";
 
 import { siteConfig } from "@/config/site";
 import { ThemeSwitch } from "@/components/theme-switch";
+import { LanguageSwitch } from "@/components/language-switch";
 import { AuthButton } from "@/components/auth-button";
 import { Logo } from "@/components/logo";
 
@@ -98,6 +99,7 @@ export const Navbar = ({ minimal = false }: NavbarProps) => {
           {/*  <GithubIcon className="text-default-500" />*/}
           {/*</Link>*/}
           <ThemeSwitch />
+          <LanguageSwitch />
         </NavbarItem>
         <NavbarItem className="hidden sm:flex">
           <AuthButton />
@@ -109,6 +111,7 @@ export const Navbar = ({ minimal = false }: NavbarProps) => {
         {/*  <GithubIcon className="text-default-500" />*/}
         {/*</Link>*/}
         <ThemeSwitch />
+        <LanguageSwitch />
         <NavbarItem className="md:hidden">
           <AuthButton />
         </NavbarItem>

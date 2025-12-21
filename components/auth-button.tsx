@@ -10,10 +10,12 @@ import {
 } from "@heroui/dropdown";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export function AuthButton() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const t = useTranslations("navbar");
 
   if (status === "loading") {
     return (
@@ -22,7 +24,7 @@ export function AuthButton() {
         className="text-sm font-normal text-default-600 bg-default-100"
         variant="flat"
       >
-        加载中...
+        {t("loading")}
       </Button>
     );
   }
@@ -36,34 +38,34 @@ export function AuthButton() {
             as="button"
             className="transition-transform"
             color="secondary"
-            name={session.user?.name || session.user?.email || "用户"}
+            name={session.user?.name || session.user?.email || t("user")}
             size="sm"
             src={session.user?.image || undefined}
           />
         </DropdownTrigger>
         <DropdownMenu aria-label="Profile Actions" variant="flat">
           <DropdownItem key="profile" className="h-14 gap-2">
-            <p className="font-semibold">登录为</p>
+            <p className="font-semibold">{t("signedInAs")}</p>
             <p className="font-semibold">{session.user?.email}</p>
           </DropdownItem>
           <DropdownItem key="resume" onPress={() => router.push("/resume")}>
-            我的简历
+            {t("myResumes")}
           </DropdownItem>
           <DropdownItem key="settings" onPress={() => router.push("/settings")}>
-            设置
+            {t("settings")}
           </DropdownItem>
           <DropdownItem
             key="subscription"
             onPress={() => router.push("/subscription")}
           >
-            Subscription
+            {t("subscription")}
           </DropdownItem>
           <DropdownItem
             key="logout"
             color="danger"
             onPress={() => signOut({ callbackUrl: "/" })}
           >
-            登出
+            {t("logout")}
           </DropdownItem>
         </DropdownMenu>
       </Dropdown>
@@ -76,7 +78,7 @@ export function AuthButton() {
       variant="flat"
       onPress={() => signIn()}
     >
-      登录
+      {t("signIn")}
     </Button>
   );
 }

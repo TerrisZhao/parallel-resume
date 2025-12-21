@@ -17,6 +17,7 @@ import {
 import { Checkbox } from "@heroui/checkbox";
 import { Plus, Edit, Copy, Trash2, FileText, Calendar } from "lucide-react";
 import { addToast } from "@heroui/toast";
+import { useTranslations } from "next-intl";
 
 import { title } from "@/components/primitives";
 import { ResumePreviewModal } from "@/components/resume-preview-modal";
@@ -36,6 +37,8 @@ interface Resume {
 
 export default function ResumeListPage() {
   const router = useRouter();
+  const t = useTranslations("resume");
+  const tCommon = useTranslations("common");
   const {
     isOpen: isNewOpen,
     onOpen: onNewOpen,
@@ -410,7 +413,7 @@ export default function ResumeListPage() {
     return (
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className={title()}>My Resumes</h1>
+          <h1 className={title()}>{t("title")}</h1>
         </div>
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -422,15 +425,15 @@ export default function ResumeListPage() {
   return (
     <div className="max-w-7xl mx-auto">
       <div className="mb-8 flex justify-between items-center">
-        <h1 className={title()}>My Resumes</h1>
+        <h1 className={title()}>{t("title")}</h1>
         <div className="flex gap-2">
           {selectedResumes.size > 0 && (
             <>
               <Button color="danger" variant="flat" onPress={handleBatchDelete}>
-                Delete ({selectedResumes.size})
+                {tCommon("delete")} ({selectedResumes.size})
               </Button>
               <Button color="secondary" variant="flat" onPress={onBatchOpen}>
-                Batch Update ({selectedResumes.size})
+                {t("batchUpdate")} ({selectedResumes.size})
               </Button>
             </>
           )}
@@ -439,7 +442,7 @@ export default function ResumeListPage() {
             startContent={<Plus size={18} />}
             onPress={onNewOpen}
           >
-            New Resume
+            {t("newResume")}
           </Button>
         </div>
       </div>
@@ -448,9 +451,9 @@ export default function ResumeListPage() {
         <Card className="border-none shadow-none">
           <CardBody className="text-center py-12">
             <FileText className="mx-auto mb-4 text-default-400" size={128} />
-            <h3 className="text-xl font-semibold mb-2">No resumes yet</h3>
+            <h3 className="text-xl font-semibold mb-2">{t("noResumes")}</h3>
             <p className="text-default-500 mb-4">
-              Create your first resume to get started
+              {t("noResumesDescription")}
             </p>
           </CardBody>
         </Card>
@@ -464,7 +467,7 @@ export default function ResumeListPage() {
               onValueChange={handleSelectAll}
             >
               <span className="text-sm text-default-600">
-                Select All ({resumes.length})
+                {t("selectAll")} ({resumes.length})
               </span>
             </Checkbox>
           </div>
@@ -571,11 +574,11 @@ export default function ResumeListPage() {
       {/* New Resume Modal */}
       <Modal isOpen={isNewOpen} onClose={onNewClose}>
         <ModalContent>
-          <ModalHeader>Create New Resume</ModalHeader>
+          <ModalHeader>{t("createNewResume")}</ModalHeader>
           <ModalBody>
             <Input
-              label="Resume Name"
-              placeholder="e.g., Software Engineer Resume"
+              label={t("resumeName")}
+              placeholder={t("resumeNamePlaceholder")}
               value={newResumeName}
               onChange={(e) => setNewResumeName(e.target.value)}
               onKeyDown={(e) => {
@@ -587,14 +590,14 @@ export default function ResumeListPage() {
           </ModalBody>
           <ModalFooter>
             <Button variant="flat" onPress={onNewClose}>
-              Cancel
+              {tCommon("cancel")}
             </Button>
             <Button
               color="primary"
               isLoading={isCreating}
               onPress={handleCreateResume}
             >
-              Create
+              {tCommon("create")}
             </Button>
           </ModalFooter>
         </ModalContent>
@@ -663,27 +666,27 @@ export default function ResumeListPage() {
       {/* Delete Confirmation Modal */}
       <Modal isOpen={isDeleteOpen} onClose={onDeleteClose}>
         <ModalContent>
-          <ModalHeader>Confirm Delete</ModalHeader>
+          <ModalHeader>{tCommon("confirm")}</ModalHeader>
           <ModalBody>
             <p className="text-default-700">
               {deleteTarget?.type === "single"
-                ? "Are you sure you want to delete this resume?"
-                : `Are you sure you want to delete ${selectedResumes.size} resume${selectedResumes.size > 1 ? "s" : ""}?`}
+                ? t("deleteConfirm")
+                : t("deleteMultipleConfirm", { count: selectedResumes.size })}
             </p>
             <p className="text-sm text-default-500 mt-2">
-              This action cannot be undone.
+              {t("cannotUndo")}
             </p>
           </ModalBody>
           <ModalFooter>
             <Button variant="flat" onPress={onDeleteClose}>
-              Cancel
+              {tCommon("cancel")}
             </Button>
             <Button
               color="danger"
               isLoading={isDeleting}
               onPress={confirmDelete}
             >
-              Delete
+              {tCommon("delete")}
             </Button>
           </ModalFooter>
         </ModalContent>

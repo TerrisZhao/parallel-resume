@@ -1,6 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Button } from "@heroui/button";
 import { Chip } from "@heroui/chip";
@@ -68,6 +69,7 @@ interface Payment {
 export default function ManageSubscriptionPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const t = useTranslations("managePage");
   const [loading, setLoading] = useState(true);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [credits, setCredits] = useState(0);
@@ -121,7 +123,7 @@ export default function ManageSubscriptionPage() {
     } catch (error) {
       console.error("Failed to fetch subscription data:", error);
       addToast({
-        title: "Failed to load subscription info, please refresh",
+        title: t("failedToLoadSubscription"),
         color: "danger",
       });
     } finally {
@@ -142,7 +144,7 @@ export default function ManageSubscriptionPage() {
       }
 
       addToast({
-        title: "Subscription will end at the current period",
+        title: t("subscriptionEndNotice"),
         color: "success",
       });
 
@@ -151,7 +153,7 @@ export default function ManageSubscriptionPage() {
     } catch (error) {
       console.error("Failed to cancel subscription:", error);
       addToast({
-        title: "Failed to cancel subscription, please try again",
+        title: t("failedToCancelSubscription"),
         color: "danger",
       });
     } finally {
@@ -171,7 +173,7 @@ export default function ManageSubscriptionPage() {
       }
 
       addToast({
-        title: "Subscription auto-renewal reactivated",
+        title: t("autoRenewalReactivated"),
         color: "success",
       });
 
@@ -179,7 +181,7 @@ export default function ManageSubscriptionPage() {
     } catch (error) {
       console.error("Failed to reactivate subscription:", error);
       addToast({
-        title: "Failed to reactivate subscription, please try again",
+        title: t("failedToReactivate"),
         color: "danger",
       });
     }
@@ -191,10 +193,10 @@ export default function ManageSubscriptionPage() {
       string,
       { label: string; color: "success" | "warning" | "danger" | "default" }
     > = {
-      active: { label: "Active", color: "success" },
-      canceled: { label: "Canceled", color: "danger" },
-      past_due: { label: "Past Due", color: "warning" },
-      trialing: { label: "Trial", color: "default" },
+      active: { label: t("success"), color: "success" },
+      canceled: { label: t("status"), color: "danger" },
+      past_due: { label: t("pending"), color: "warning" },
+      trialing: { label: t("status"), color: "default" },
     };
 
     return statusMap[status] || { label: status, color: "default" };
@@ -207,27 +209,27 @@ export default function ManageSubscriptionPage() {
       { label: string; icon: React.ReactNode; color: string }
     > = {
       purchase: {
-        label: "Purchase",
+        label: t("purchase"),
         icon: <TrendingUp className="w-4 h-4" />,
         color: "text-success",
       },
       usage: {
-        label: "Usage",
+        label: t("usage"),
         icon: <TrendingDown className="w-4 h-4" />,
         color: "text-danger",
       },
       refund: {
-        label: "Refund",
+        label: t("refund"),
         icon: <RefreshCw className="w-4 h-4" />,
         color: "text-warning",
       },
       bonus: {
-        label: "Bonus",
+        label: t("bonus"),
         icon: <CheckCircle className="w-4 h-4" />,
         color: "text-primary",
       },
       subscription_grant: {
-        label: "Subscription Grant",
+        label: t("subscriptionGrant"),
         icon: <CheckCircle className="w-4 h-4" />,
         color: "text-secondary",
       },
@@ -265,9 +267,9 @@ export default function ManageSubscriptionPage() {
           <ArrowLeft className="w-4 h-4" />
         </Button>
         <div>
-          <h1 className={title({ size: "sm" })}>Manage Subscription</h1>
+          <h1 className={title({ size: "sm" })}>{t("title")}</h1>
           <p className="text-sm text-default-500 mt-1">
-            Manage your subscription and view account details
+            {t("subtitle")}
           </p>
         </div>
       </div>
@@ -277,16 +279,16 @@ export default function ManageSubscriptionPage() {
         <CardBody className="flex flex-row items-center justify-between">
           <div>
             <p className="text-sm text-default-500 mb-1">
-              Current Credit Balance
+              {t("currentCreditBalance")}
             </p>
-            <p className="text-3xl font-bold text-warning">{credits} Credits</p>
+            <p className="text-3xl font-bold text-warning">{credits} {t("credits").split(" ")[0]}</p>
           </div>
           <Button
             color="warning"
             variant="flat"
             onPress={() => router.push("/subscription")}
           >
-            Buy Credits
+            {t("buyCredits")}
           </Button>
         </CardBody>
       </Card>
@@ -295,7 +297,7 @@ export default function ManageSubscriptionPage() {
       {subscription && (
         <Card className="mb-6">
           <CardHeader>
-            <h2 className="text-xl font-bold">Current Subscription</h2>
+            <h2 className="text-xl font-bold">{t("currentSubscription")}</h2>
           </CardHeader>
           <CardBody className="gap-4">
             <div className="flex items-start justify-between">
@@ -312,7 +314,7 @@ export default function ManageSubscriptionPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="text-default-500">Period Start</p>
+                    <p className="text-default-500">{t("periodStart")}</p>
                     <p className="font-medium">
                       {new Date(
                         subscription.currentPeriodStart,
@@ -320,7 +322,7 @@ export default function ManageSubscriptionPage() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-default-500">Period End</p>
+                    <p className="text-default-500">{t("periodEnd")}</p>
                     <p className="font-medium">
                       {new Date(
                         subscription.currentPeriodEnd,
@@ -328,15 +330,15 @@ export default function ManageSubscriptionPage() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-default-500">Price</p>
+                    <p className="text-default-500">{t("price")}</p>
                     <p className="font-medium">
                       ${subscription.price.toFixed(2)}/month
                     </p>
                   </div>
                   <div>
-                    <p className="text-default-500">Auto-Renewal</p>
+                    <p className="text-default-500">{t("autoRenewal")}</p>
                     <p className="font-medium">
-                      {subscription.cancelAtPeriodEnd ? "Disabled" : "Enabled"}
+                      {subscription.cancelAtPeriodEnd ? t("disabled") : t("enabled")}
                     </p>
                   </div>
                 </div>
@@ -348,10 +350,10 @@ export default function ManageSubscriptionPage() {
                 <AlertCircle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
                   <p className="text-sm font-medium">
-                    Subscription will be canceled at period end
+                    {t("subscriptionWillCancel")}
                   </p>
                   <p className="text-xs text-default-500 mt-1">
-                    Your subscription will end on{" "}
+                    {t("subscriptionWillEnd")}{" "}
                     {new Date(subscription.currentPeriodEnd).toLocaleDateString(
                       "en-US",
                     )}
@@ -369,7 +371,7 @@ export default function ManageSubscriptionPage() {
                   variant="flat"
                   onPress={handleReactivateSubscription}
                 >
-                  Reactivate Auto-Renewal
+                  {t("reactivateAutoRenewal")}
                 </Button>
               ) : (
                 <Button
@@ -377,7 +379,7 @@ export default function ManageSubscriptionPage() {
                   variant="flat"
                   onPress={() => setShowCancelModal(true)}
                 >
-                  Cancel Subscription
+                  {t("cancelSubscription")}
                 </Button>
               )}
             </div>
@@ -388,21 +390,21 @@ export default function ManageSubscriptionPage() {
       {/* 积分交易记录 */}
       <Card className="mb-6">
         <CardHeader>
-          <h2 className="text-xl font-bold">Credit Transaction History</h2>
+          <h2 className="text-xl font-bold">{t("creditTransactionHistory")}</h2>
         </CardHeader>
         <CardBody>
           {creditTransactions.length === 0 ? (
             <p className="text-center text-default-500 py-8">
-              No transactions yet
+              {t("noTransactions")}
             </p>
           ) : (
             <Table removeWrapper aria-label="Credit transactions table">
               <TableHeader>
-                <TableColumn>Date</TableColumn>
-                <TableColumn>Type</TableColumn>
-                <TableColumn>Description</TableColumn>
-                <TableColumn>Amount</TableColumn>
-                <TableColumn>Balance</TableColumn>
+                <TableColumn>{t("date")}</TableColumn>
+                <TableColumn>{t("type")}</TableColumn>
+                <TableColumn>{t("description")}</TableColumn>
+                <TableColumn>{t("amount")}</TableColumn>
+                <TableColumn>{t("balance")}</TableColumn>
               </TableHeader>
               <TableBody>
                 {creditTransactions.map((transaction) => {
@@ -451,20 +453,20 @@ export default function ManageSubscriptionPage() {
       {/* 支付记录 */}
       <Card>
         <CardHeader>
-          <h2 className="text-xl font-bold">Payment History</h2>
+          <h2 className="text-xl font-bold">{t("paymentHistory")}</h2>
         </CardHeader>
         <CardBody>
           {payments.length === 0 ? (
             <p className="text-center text-default-500 py-8">
-              No payment records
+              {t("noPaymentRecords")}
             </p>
           ) : (
             <Table removeWrapper aria-label="Payment records table">
               <TableHeader>
-                <TableColumn>Date</TableColumn>
-                <TableColumn>Description</TableColumn>
-                <TableColumn>Amount</TableColumn>
-                <TableColumn>Status</TableColumn>
+                <TableColumn>{t("date")}</TableColumn>
+                <TableColumn>{t("description")}</TableColumn>
+                <TableColumn>{t("amount")}</TableColumn>
+                <TableColumn>{t("status")}</TableColumn>
               </TableHeader>
               <TableBody>
                 {payments.map((payment) => (
@@ -490,10 +492,10 @@ export default function ManageSubscriptionPage() {
                         variant="flat"
                       >
                         {payment.status === "succeeded"
-                          ? "Success"
+                          ? t("success")
                           : payment.status === "pending"
-                            ? "Pending"
-                            : "Failed"}
+                            ? t("pending")
+                            : t("failed")}
                       </Chip>
                     </TableCell>
                   </TableRow>
@@ -510,23 +512,21 @@ export default function ManageSubscriptionPage() {
           {(onClose) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
-                Confirm Cancellation
+                {t("confirmCancellation")}
               </ModalHeader>
               <ModalBody>
                 <div className="flex items-start gap-3">
                   <AlertCircle className="w-6 h-6 text-warning flex-shrink-0" />
                   <div>
                     <p className="font-medium mb-2">
-                      Are you sure you want to cancel?
+                      {t("areYouSureCancel")}
                     </p>
                     <p className="text-sm text-default-500">
-                      You&apos;ll retain access until the end of your current
-                      billing period. After that, you won&apos;t be able to use
-                      premium features.
+                      {t("cancelWarning")}
                     </p>
                     {subscription && (
                       <p className="text-sm text-default-500 mt-2">
-                        Current period ends on:{" "}
+                        {t("currentPeriodEnds")}{" "}
                         {new Date(
                           subscription.currentPeriodEnd,
                         ).toLocaleDateString("en-US")}
@@ -537,14 +537,14 @@ export default function ManageSubscriptionPage() {
               </ModalBody>
               <ModalFooter>
                 <Button variant="flat" onPress={onClose}>
-                  Keep Subscription
+                  {t("keepSubscription")}
                 </Button>
                 <Button
                   color="danger"
                   isLoading={canceling}
                   onPress={handleCancelSubscription}
                 >
-                  Confirm Cancel
+                  {t("confirmCancel")}
                 </Button>
               </ModalFooter>
             </>

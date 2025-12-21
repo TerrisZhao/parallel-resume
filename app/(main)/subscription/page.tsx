@@ -1,6 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { Card, CardBody, CardHeader, CardFooter } from "@heroui/card";
 import { Button } from "@heroui/button";
 import { Chip } from "@heroui/chip";
@@ -54,6 +55,8 @@ interface UserSubscription {
 export default function SubscriptionPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const t = useTranslations("subscriptionPage");
+  const tSub = useTranslations("subscription");
   const [userSubscription, setUserSubscription] =
     useState<UserSubscription | null>(null);
   const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null);
@@ -62,61 +65,58 @@ export default function SubscriptionPage() {
   const plans: Plan[] = [
     {
       id: "free",
-      name: "Free Plan",
+      name: tSub("plans.free.name"),
       type: "free",
       price: 0,
       interval: "",
       features: [
-        "Basic resume editing",
-        "3 resume templates",
-        "Export to PDF",
-        "10 AI optimizations/month",
-        "Community support",
+        tSub("plans.free.features.basicEditing"),
+        tSub("plans.free.features.templates"),
+        tSub("plans.free.features.exportPDF"),
+        tSub("plans.free.features.aiOptimizations"),
+        tSub("plans.free.features.communitySupport"),
       ],
       icon: <Gift className="w-6 h-6" />,
-      description: "Perfect for getting started",
-      buttonText: "Current Plan",
+      description: tSub("plans.free.description"),
+      buttonText: tSub("buttons.currentPlan"),
       buttonColor: "default",
     },
     {
       id: "credits-100",
-      name: "Credits Pack",
+      name: tSub("plans.credits.name"),
       type: "credits",
       price: 9.99,
       credits: 100,
       features: [
-        "Get 100 credits",
-        "Credits never expire",
-        "1 credit = 1 AI optimization",
-        "All premium templates",
-        "Priority support",
-        "Batch export",
+        tSub("plans.credits.credits100"),
+        tSub("plans.credits.features.neverExpire"),
+        tSub("plans.credits.features.flexibleCredits"),
+        tSub("plans.credits.features.allFreeFeatures"),
+        tSub("plans.credits.features.prioritySupport"),
+        tSub("plans.credits.features.payAsYouGo"),
       ],
       popular: true,
       icon: <Zap className="w-6 h-6" />,
-      description: "Pay as you go, flexible credits",
-      buttonText: "Buy Now",
+      description: tSub("plans.credits.description"),
+      buttonText: tSub("buttons.buyNow"),
       buttonColor: "warning",
     },
     {
       id: "pro-monthly",
-      name: "Pro Subscription",
+      name: tSub("plans.pro.name"),
       type: "subscription",
       price: 19.99,
       interval: "month",
       features: [
-        "Unlimited AI optimizations",
-        "All premium features",
-        "All resume templates",
-        "Multi-format export (PDF/Word/HTML)",
-        "Resume analytics",
-        "Priority support",
-        "Personalized suggestions",
-        "Team collaboration",
+        tSub("plans.pro.features.unlimitedAI"),
+        tSub("plans.pro.features.allFreeFeatures"),
+        tSub("plans.pro.features.unlimitedTemplates"),
+        tSub("plans.pro.features.prioritySupport"),
+        tSub("plans.pro.features.advancedAnalytics"),
       ],
       icon: <Crown className="w-6 h-6" />,
-      description: "For active job seekers",
-      buttonText: "Subscribe Now",
+      description: tSub("plans.pro.description"),
+      buttonText: tSub("buttons.subscribeNow"),
       buttonColor: "secondary",
     },
   ];
@@ -146,7 +146,7 @@ export default function SubscriptionPage() {
   const handleSelectPlan = async (plan: Plan) => {
     if (!session) {
       addToast({
-        title: "Please sign in to purchase a plan",
+        title: t("signInToPurchase"),
         color: "danger",
       });
       router.push("/sign-in");
@@ -184,7 +184,7 @@ export default function SubscriptionPage() {
     } catch (error) {
       console.error("Failed to process plan selection:", error);
       addToast({
-        title: "Failed to create payment session, please try again",
+        title: t("failedToCreateCheckout"),
         color: "danger",
       });
     } finally {
@@ -216,7 +216,7 @@ export default function SubscriptionPage() {
               startContent={<Star className="w-4 h-4" />}
               variant="shadow"
             >
-              Most Popular
+              {t("mostPopular")}
             </Chip>
           </div>
         )}
@@ -242,7 +242,7 @@ export default function SubscriptionPage() {
             </div>
             {plan.credits && (
               <Chip color="warning" size="sm" variant="flat">
-                {plan.credits} 积分
+                {plan.credits} {t("credits")}
               </Chip>
             )}
           </div>
@@ -277,7 +277,7 @@ export default function SubscriptionPage() {
             variant={isCurrentPlan || isSubscribed ? "flat" : "shadow"}
             onPress={() => handleSelectPlan(plan)}
           >
-            {isSubscribed ? "Current Plan" : plan.buttonText}
+            {isSubscribed ? tSub("buttons.currentPlan") : plan.buttonText}
           </Button>
         </CardFooter>
       </Card>
@@ -288,9 +288,9 @@ export default function SubscriptionPage() {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Page Title */}
       <div className="text-center mb-12">
-        <h1 className={title({ size: "lg" })}>Pricing & Plans</h1>
+        <h1 className={title({ size: "lg" })}>{t("title")}</h1>
         <p className={subtitle({ class: "mt-4" })}>
-          Choose the perfect plan for your career growth
+          {t("subtitle")}
         </p>
       </div>
 
@@ -303,9 +303,9 @@ export default function SubscriptionPage() {
                 <Sparkles className="w-6 h-6 text-warning" />
               </div>
               <div>
-                <p className="font-semibold">Current Credit Balance</p>
+                <p className="font-semibold">{t("currentCreditBalance")}</p>
                 <p className="text-2xl font-bold text-warning">
-                  {userSubscription.credits} Credits
+                  {userSubscription.credits} {t("credits")}
                 </p>
               </div>
             </div>
@@ -313,11 +313,11 @@ export default function SubscriptionPage() {
             {userSubscription.subscriptionStatus === "active" && (
               <div className="text-right">
                 <Chip color="success" variant="flat">
-                  Pro Subscribed
+                  {t("proSubscribed")}
                 </Chip>
                 {userSubscription.subscriptionEndDate && (
                   <p className="text-sm text-default-500 mt-2">
-                    Renewal Date:{" "}
+                    {t("renewalDate")}{" "}
                     {new Date(
                       userSubscription.subscriptionEndDate,
                     ).toLocaleDateString("en-US")}
@@ -332,7 +332,7 @@ export default function SubscriptionPage() {
               variant="flat"
               onPress={() => router.push("/subscription/manage")}
             >
-              Manage Subscription
+              {t("manageSubscription")}
             </Button>
           </CardBody>
         </Card>
@@ -346,47 +346,40 @@ export default function SubscriptionPage() {
       {/* FAQ */}
       <Card className="bg-default-50">
         <CardHeader>
-          <h2 className="text-xl font-bold">Frequently Asked Questions</h2>
+          <h2 className="text-xl font-bold">{t("faq")}</h2>
         </CardHeader>
         <CardBody className="gap-4">
           <div>
-            <h3 className="font-semibold mb-2">How do credits work?</h3>
+            <h3 className="font-semibold mb-2">{t("howCreditsWork")}</h3>
             <p className="text-sm text-default-600">
-              Credits can be used for AI resume optimization, unlocking premium
-              templates, and more. 1 credit typically equals 1 AI optimization.
-              Credits never expire.
+              {t("howCreditsWorkAnswer")}
             </p>
           </div>
           <Divider />
           <div>
             <h3 className="font-semibold mb-2">
-              What&apos;s the difference between credits and subscription?
+              {t("creditVsSubscription")}
             </h3>
             <p className="text-sm text-default-600">
-              Credits are pay-as-you-go, perfect for occasional users. Pro
-              subscription offers unlimited usage and more premium features,
-              ideal for active job seekers.
+              {t("creditVsSubscriptionAnswer")}
             </p>
           </div>
           <Divider />
           <div>
             <h3 className="font-semibold mb-2">
-              Can I cancel my subscription anytime?
+              {t("cancelAnytime")}
             </h3>
             <p className="text-sm text-default-600">
-              Yes, you can cancel your subscription anytime from the Manage
-              Subscription page. You&apos;ll retain access until the end of your
-              current billing period.
+              {t("cancelAnytimeAnswer")}
             </p>
           </div>
           <Divider />
           <div>
             <h3 className="font-semibold mb-2">
-              What payment methods do you accept?
+              {t("paymentMethods")}
             </h3>
             <p className="text-sm text-default-600">
-              We accept all major credit and debit cards through Stripe, our
-              secure payment processor.
+              {t("paymentMethodsAnswer")}
             </p>
           </div>
         </CardBody>

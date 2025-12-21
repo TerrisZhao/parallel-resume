@@ -1,6 +1,8 @@
 import "@/styles/globals.css";
 import { Metadata, Viewport } from "next";
 import clsx from "clsx";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages, getLocale } from "next-intl/server";
 
 import { Providers } from "./providers";
 
@@ -26,13 +28,16 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html suppressHydrationWarning lang="en">
+    <html suppressHydrationWarning lang={locale}>
       <head>
         <link href="https://fonts.googleapis.com" rel="preconnect" />
         <link
@@ -52,10 +57,12 @@ export default function RootLayout({
           fontSans.variable,
         )}
       >
-        <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
-          <LoginHistoryRecorder />
-          {children}
-        </Providers>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
+            <LoginHistoryRecorder />
+            {children}
+          </Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

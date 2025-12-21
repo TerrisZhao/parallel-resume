@@ -7,10 +7,12 @@ import { Input } from "@heroui/input";
 import { Divider } from "@heroui/divider";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import { title } from "@/components/primitives";
 
 export default function SignInPage() {
+  const t = useTranslations("auth");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -30,13 +32,13 @@ export default function SignInPage() {
       });
 
       if (result?.error) {
-        setError("邮箱或密码错误");
+        setError(t("invalidCredentials"));
       } else {
         // 登录成功，重定向到简历页面
         router.push("/resume");
       }
     } catch (error) {
-      setError("登录失败，请重试");
+      setError(t("signInFailed"));
     } finally {
       setIsLoading(false);
     }
@@ -47,7 +49,7 @@ export default function SignInPage() {
     try {
       await signIn("google", { callbackUrl: "/resume" });
     } catch (error) {
-      setError("Google 登录失败，请重试");
+      setError(t("googleSignInFailed"));
       setIsLoading(false);
     }
   };
@@ -56,7 +58,7 @@ export default function SignInPage() {
     <div className="flex items-center justify-center min-h-[80vh] px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="flex flex-col gap-1 pb-0 pt-6 px-6">
-          <h1 className={title({ size: "sm" })}>登录</h1>
+          <h1 className={title({ size: "sm" })}>{t("signIn")}</h1>
         </CardHeader>
         <CardBody className="gap-4 px-6 py-15">
           {error && (
@@ -89,12 +91,12 @@ export default function SignInPage() {
                 fill="currentColor"
               />
             </svg>
-            使用 Google 登录
+            {t("signInWith", { provider: "Google" })}
           </Button>
 
           <div className="flex items-center gap-4">
             <Divider className="flex-1" />
-            <p className="text-tiny text-default-500">或</p>
+            <p className="text-tiny text-default-500">{t("or")}</p>
             <Divider className="flex-1" />
           </div>
 
@@ -104,16 +106,16 @@ export default function SignInPage() {
           >
             <Input
               isRequired
-              label="邮箱"
-              placeholder="输入您的邮箱"
+              label={t("email")}
+              placeholder={t("emailPlaceholder")}
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
             <Input
               isRequired
-              label="密码"
-              placeholder="输入您的密码"
+              label={t("password")}
+              placeholder={t("passwordPlaceholder")}
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -124,7 +126,7 @@ export default function SignInPage() {
               isLoading={isLoading}
               type="submit"
             >
-              登录
+              {t("signIn")}
             </Button>
           </form>
         </CardBody>

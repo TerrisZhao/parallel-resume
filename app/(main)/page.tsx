@@ -4,12 +4,14 @@ import { Link } from "@heroui/link";
 import { Button } from "@heroui/button";
 import { motion } from "framer-motion";
 import { FileText } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { title, subtitle } from "@/components/primitives";
 
 const MotionDiv = motion.div;
 
 export default function Home() {
+  const t = useTranslations("home");
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -42,19 +44,21 @@ export default function Home() {
       >
         <MotionDiv className="inline-block" variants={itemVariants}>
           <h1 className={title({ size: "lg" })}>
-            Create Your Professional Resume,&nbsp;
+            {t("title")}&nbsp;
             <span className={title({ color: "blue", size: "lg" })}>
-              Start Here
+              {t("titleHighlight")}
             </span>
           </h1>
         </MotionDiv>
 
         <MotionDiv variants={itemVariants}>
           <p className={subtitle({ class: "mt-4" })}>
-            Easily create, manage, and export your professional resume.
-            <br />
-            Modern design, one-click PDF export, helping you stand out in your
-            job search.
+            {t("subtitle").split('\n').map((line, i) => (
+              <span key={i}>
+                {line}
+                {i === 0 && <br />}
+              </span>
+            ))}
           </p>
         </MotionDiv>
 
@@ -67,7 +71,7 @@ export default function Home() {
               size="lg"
               startContent={<FileText size={20} />}
             >
-              Create Resume
+              {t("createResume")}
             </Button>
           </Link>
         </MotionDiv>
@@ -81,7 +85,7 @@ export default function Home() {
           href="#"
           title="Resume Builder"
         >
-          <span className="text-default-600">2025 ｜ Designed by</span>
+          <span className="text-default-600">2025 ｜ {t("footer")}</span>
           <p className="text-primary">Terris</p>
         </Link>
       </footer>
