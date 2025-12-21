@@ -237,7 +237,7 @@ export default function SubscriptionPage() {
                 ${plan.price.toFixed(2)}
               </span>
               {plan.interval && (
-                <span className="text-default-500">/{plan.interval}</span>
+                <span className="text-default-500">{tSub("plans.pro.perMonth")}</span>
               )}
             </div>
             {plan.credits && (

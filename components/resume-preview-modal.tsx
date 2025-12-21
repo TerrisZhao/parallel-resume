@@ -14,6 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@heroui/popover";
 import { Download, Edit, Palette } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { CloseIcon } from "@heroui/shared-icons";
+import { useTranslations } from "next-intl";
 
 import { ResumeData } from "@/types/resume";
 import { ResumePreview } from "@/components/resume-preview";
@@ -45,6 +46,7 @@ export function ResumePreviewModal({
   onThemeColorChange,
 }: ResumePreviewModalProps) {
   const router = useRouter();
+  const t = useTranslations("resumePreview");
   const [previewLanguage, setPreviewLanguage] = useState<"en" | "zh">("en");
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -231,7 +233,7 @@ export function ResumePreviewModal({
     >
       <ModalContent>
         <ModalHeader className="flex justify-between items-center">
-          <span>Resume Preview</span>
+          <span>{t("title")}</span>
           <div className="flex gap-2">
             <Button
               color={previewLanguage === "en" ? "primary" : "default"}
@@ -239,7 +241,7 @@ export function ResumePreviewModal({
               variant={previewLanguage === "en" ? "solid" : "flat"}
               onPress={() => handleLanguageChange("en")}
             >
-              English
+              {t("english")}
             </Button>
             <Button
               color={previewLanguage === "zh" ? "primary" : "default"}
@@ -247,7 +249,7 @@ export function ResumePreviewModal({
               variant={previewLanguage === "zh" ? "solid" : "flat"}
               onPress={() => handleLanguageChange("zh")}
             >
-              中文
+              {t("chinese")}
             </Button>
             <Button size="sm" variant="flat" onPress={onClose}>
               <CloseIcon />
@@ -267,7 +269,7 @@ export function ResumePreviewModal({
             />
           ) : (
             <div className="text-center py-12 text-default-500">
-              No resume data available
+              {t("noData")}
             </div>
           )}
         </ModalBody>
@@ -282,13 +284,13 @@ export function ResumePreviewModal({
                 <button
                   className="w-10 h-10 rounded-full border-3 border-default-300 hover:border-default-400 transition-all shadow-md hover:shadow-lg cursor-pointer"
                   style={{ backgroundColor: resumeData.themeColor }}
-                  title="Change theme color"
+                  title={t("changeThemeColor")}
                 />
               </PopoverTrigger>
               <PopoverContent className="p-3">
                 <div className="space-y-3">
                   <div className="text-sm font-semibold text-default-700">
-                    Theme Color
+                    {t("themeColor")}
                   </div>
                   <div className="grid grid-cols-4 gap-2">
                     {presetColors.map((color) => (
@@ -328,7 +330,7 @@ export function ResumePreviewModal({
                       ) : (
                         <Palette size={16} />
                       )}
-                      <span>Custom Color</span>
+                      <span>{t("customColor")}</span>
                     </div>
                     <input
                       ref={colorInputRef}
@@ -347,7 +349,7 @@ export function ResumePreviewModal({
           <div className="flex gap-2 ml-auto">
             <Button color="default" onPress={handleEdit}>
               <Edit size={18} />
-              Edit
+              {t("edit")}
             </Button>
             <Button
               color="primary"
@@ -358,7 +360,7 @@ export function ResumePreviewModal({
                 onClose();
               }}
             >
-              PDF
+              {t("exportPDF")}
             </Button>
           </div>
         </ModalFooter>

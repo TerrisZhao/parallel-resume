@@ -391,6 +391,17 @@
     "failedToReactivate": "Failed to reactivate subscription, please try again",
     "failedToLoadSubscription": "Failed to load subscription info, please refresh"
   },
+  "resumePreview": {
+    "title": "Resume Preview",
+    "english": "English",
+    "chinese": "中文",
+    "noData": "No resume data available",
+    "changeThemeColor": "Change theme color",
+    "themeColor": "Theme Color",
+    "customColor": "Custom Color",
+    "edit": "Edit",
+    "exportPDF": "PDF"
+  },
   "errors": {
     "generic": "An error occurred",
     "network": "Network error, please try again",

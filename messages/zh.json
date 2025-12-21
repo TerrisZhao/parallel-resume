@@ -391,6 +391,17 @@
     "failedToReactivate": "重新启用订阅失败，请重试",
     "failedToLoadSubscription": "加载订阅信息失败，请刷新"
   },
+  "resumePreview": {
+    "title": "简历预览",
+    "english": "English",
+    "chinese": "中文",
+    "noData": "无简历数据",
+    "changeThemeColor": "更改主题颜色",
+    "themeColor": "主题颜色",
+    "customColor": "自定义颜色",
+    "edit": "编辑",
+    "exportPDF": "PDF"
+  },
   "errors": {
     "generic": "发生错误",
     "network": "网络错误，请重试",

@@ -17,7 +17,7 @@ import {
 import { Checkbox } from "@heroui/checkbox";
 import { Plus, Edit, Copy, Trash2, FileText, Calendar } from "lucide-react";
 import { addToast } from "@heroui/toast";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 import { title } from "@/components/primitives";
 import { ResumePreviewModal } from "@/components/resume-preview-modal";
@@ -37,6 +37,7 @@ interface Resume {
 
 export default function ResumeListPage() {
   const router = useRouter();
+  const locale = useLocale();
   const t = useTranslations("resume");
   const tCommon = useTranslations("common");
   const {
@@ -390,11 +391,29 @@ export default function ResumeListPage() {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
 
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    // Format time (HH:mm)
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    const timeStr = `${hours}:${minutes}`;
+
+    // Format date based on locale
+    if (locale === "zh") {
+      // Chinese format: 2020-05-01 21:00
+      const year = date.getFullYear();
+      const month = (date.getMonth() + 1).toString().padStart(2, "0");
+      const day = date.getDate().toString().padStart(2, "0");
+
+      return `${year}-${month}-${day} ${timeStr}`;
+    } else {
+      // English format: May 1, 2020 21:00
+      const dateStr = date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+
+      return `${dateStr} ${timeStr}`;
+    }
   };
 
   // Handle preview

@@ -281,7 +281,7 @@ export default function ManageSubscriptionPage() {
             <p className="text-sm text-default-500 mb-1">
               {t("currentCreditBalance")}
             </p>
-            <p className="text-3xl font-bold text-warning">{credits} {t("credits").split(" ")[0]}</p>
+            <p className="text-3xl font-bold text-warning">{credits}</p>
           </div>
           <Button
             color="warning"
