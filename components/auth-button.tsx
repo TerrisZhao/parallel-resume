@@ -54,12 +54,13 @@ export function AuthButton() {
           <DropdownItem key="settings" onPress={() => router.push("/settings")}>
             {t("settings")}
           </DropdownItem>
-          <DropdownItem
+          {/* Subscription功能已禁用 */}
+          {/* <DropdownItem
             key="subscription"
             onPress={() => router.push("/subscription")}
           >
             {t("subscription")}
-          </DropdownItem>
+          </DropdownItem> */}
           <DropdownItem
             key="logout"
             color="danger"

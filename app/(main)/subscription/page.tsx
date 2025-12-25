@@ -61,7 +61,7 @@ export default function SubscriptionPage() {
     useState<UserSubscription | null>(null);
   const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null);
 
-  // Define three plans
+  // Define three plans (subscription plan disabled)
   const plans: Plan[] = [
     {
       id: "free",
@@ -101,24 +101,25 @@ export default function SubscriptionPage() {
       buttonText: tSub("buttons.buyNow"),
       buttonColor: "warning",
     },
-    {
-      id: "pro-monthly",
-      name: tSub("plans.pro.name"),
-      type: "subscription",
-      price: 19.99,
-      interval: "month",
-      features: [
-        tSub("plans.pro.features.unlimitedAI"),
-        tSub("plans.pro.features.allFreeFeatures"),
-        tSub("plans.pro.features.unlimitedTemplates"),
-        tSub("plans.pro.features.prioritySupport"),
-        tSub("plans.pro.features.advancedAnalytics"),
-      ],
-      icon: <Crown className="w-6 h-6" />,
-      description: tSub("plans.pro.description"),
-      buttonText: tSub("buttons.subscribeNow"),
-      buttonColor: "secondary",
-    },
+    // Subscription功能已禁用
+    // {
+    //   id: "pro-monthly",
+    //   name: tSub("plans.pro.name"),
+    //   type: "subscription",
+    //   price: 19.99,
+    //   interval: "month",
+    //   features: [
+    //     tSub("plans.pro.features.unlimitedAI"),
+    //     tSub("plans.pro.features.allFreeFeatures"),
+    //     tSub("plans.pro.features.unlimitedTemplates"),
+    //     tSub("plans.pro.features.prioritySupport"),
+    //     tSub("plans.pro.features.advancedAnalytics"),
+    //   ],
+    //   icon: <Crown className="w-6 h-6" />,
+    //   description: tSub("plans.pro.description"),
+    //   buttonText: tSub("buttons.subscribeNow"),
+    //   buttonColor: "secondary",
+    // },
   ];
 
   // Fetch user subscription info
@@ -339,7 +340,7 @@ export default function SubscriptionPage() {
       )}
 
       {/* 套餐卡片网格 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 pt-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 pt-6 max-w-4xl mx-auto">
         {plans.map((plan) => renderPlanCard(plan))}
       </div>
 
