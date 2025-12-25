@@ -60,7 +60,12 @@ export async function middleware(request: NextRequest) {
   }
 
   // 公开路径，无需认证（前缀匹配）
-  const publicPaths = ["/sign-in", "/api/auth", "/api/auth/mobile-login"];
+  const publicPaths = [
+    "/sign-in",
+    "/api/auth",
+    "/api/auth/mobile-login",
+    "/api/subscription/webhook",
+  ];
 
   const isPublicPath = publicPaths.some((publicPath) =>
     path.startsWith(publicPath),
