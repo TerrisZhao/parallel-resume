@@ -5,15 +5,19 @@ export const siteConfig = {
   description:
     "轻松创建、管理和导出专业简历。现代化设计、多版本管理、一键导出PDF，助你在求职中脱颖而出。",
   navItems: [
-    // {
-    //   label: "简历",
-    //   href: "/resume",
-    // },
+    {
+      label: "Chrome 扩展",
+      href: "/chrome-extension",
+    },
   ],
   navMenuItems: [
     {
       label: "简历",
       href: "/resume",
+    },
+    {
+      label: "Chrome 扩展",
+      href: "/chrome-extension",
     },
     {
       label: "设置",

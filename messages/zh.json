@@ -409,5 +409,51 @@
     "notFound": "页面未找到",
     "serverError": "服务器错误，请稍后再试",
     "validation": "验证错误，请检查输入"
+  },
+  "chromeExtension": {
+    "badge": "浏览器扩展",
+    "title": "安装 Chrome 扩展",
+    "titleHighlight": "提升求职效率",
+    "subtitle": "一键快速访问简历工具，随时随地管理和优化你的简历。浏览职位的同时，即时优化简历匹配度。",
+    "downloadButton": "立即下载扩展",
+    "learnMore": "了解更多",
+    "featuresTitle": "强大功能",
+    "features": {
+      "quickAccess": {
+        "title": "快速访问",
+        "description": "无需打开网站，直接从浏览器工具栏快速访问和管理你的简历。"
+      },
+      "secure": {
+        "title": "安全可靠",
+        "description": "所有数据加密传输，确保你的个人信息和简历内容安全无忧。"
+      },
+      "aiPowered": {
+        "title": "AI 智能优化",
+        "description": "浏览职位描述时，一键分析并优化简历，提高匹配度和通过率。"
+      }
+    },
+    "stepsTitle": "安装步骤",
+    "steps": {
+      "step1": {
+        "title": "访问 Chrome 网上应用店",
+        "description": "点击下载按钮跳转到 Chrome 网上应用店的扩展页面。"
+      },
+      "step2": {
+        "title": "添加到 Chrome",
+        "description": "在应用店页面点击「添加至 Chrome」按钮完成安装。"
+      },
+      "step3": {
+        "title": "开始使用",
+        "description": "安装完成后，点击浏览器工具栏的扩展图标即可开始使用。"
+      }
+    },
+    "benefitsTitle": "使用扩展的好处",
+    "benefits": {
+      "benefit1": "随时随地快速访问和编辑简历",
+      "benefit2": "浏览招聘网站时，实时分析职位要求并优化简历",
+      "benefit3": "一键导出 PDF，无需打开完整网站",
+      "benefit4": "跨设备同步，所有数据云端保存",
+      "benefit5": "完全免费，无需额外付费"
+    }
   }
 }

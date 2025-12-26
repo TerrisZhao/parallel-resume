@@ -409,5 +409,51 @@
     "notFound": "Page not found",
     "serverError": "Server error, please try again later",
     "validation": "Validation error, please check your input"
+  },
+  "chromeExtension": {
+    "badge": "Browser Extension",
+    "title": "Install Chrome Extension",
+    "titleHighlight": "Boost Your Job Search",
+    "subtitle": "Quick access to resume tools with one click, manage and optimize your resume anytime, anywhere. Instantly optimize resume matching while browsing jobs.",
+    "downloadButton": "Download Extension",
+    "learnMore": "Learn More",
+    "featuresTitle": "Powerful Features",
+    "features": {
+      "quickAccess": {
+        "title": "Quick Access",
+        "description": "Access and manage your resumes directly from the browser toolbar without opening the website."
+      },
+      "secure": {
+        "title": "Secure & Reliable",
+        "description": "All data is encrypted during transmission, ensuring your personal information and resume content are safe."
+      },
+      "aiPowered": {
+        "title": "AI-Powered",
+        "description": "Analyze and optimize your resume with one click while browsing job descriptions to improve match rate."
+      }
+    },
+    "stepsTitle": "Installation Steps",
+    "steps": {
+      "step1": {
+        "title": "Visit Chrome Web Store",
+        "description": "Click the download button to navigate to the extension page in Chrome Web Store."
+      },
+      "step2": {
+        "title": "Add to Chrome",
+        "description": "Click the 'Add to Chrome' button on the store page to complete installation."
+      },
+      "step3": {
+        "title": "Start Using",
+        "description": "After installation, click the extension icon in the browser toolbar to start using."
+      }
+    },
+    "benefitsTitle": "Benefits of Using the Extension",
+    "benefits": {
+      "benefit1": "Quick access and edit your resume anytime, anywhere",
+      "benefit2": "Real-time analysis of job requirements and resume optimization while browsing job sites",
+      "benefit3": "Export PDF with one click without opening the full website",
+      "benefit4": "Cross-device sync with all data saved in the cloud",
+      "benefit5": "Completely free with no additional fees"
+    }
   }
 }
