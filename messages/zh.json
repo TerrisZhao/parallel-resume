@@ -82,6 +82,11 @@
   "settings": {
     "title": "设置",
     "subtitle": "管理您的账户设置和偏好",
+    "tabAccount": "账户",
+    "tabAI": "AI",
+    "tabGeneral": "通用",
+    "tabSecurity": "安全",
+    "tabData": "数据",
     "accountInfo": "账户信息",
     "name": "姓名",
     "namePlaceholder": "输入您的姓名",
@@ -128,6 +133,7 @@
     "configCleared": "AI 配置已清除",
     "configClearFailed": "清除配置失败",
     "notifications": "通知设置",
+    "appearance": "外观",
     "emailNotifications": "邮件通知",
     "emailNotificationsDesc": "接收重要更新和通知邮件",
     "security": "安全设置",
@@ -415,12 +421,17 @@
     "interviews": "面试看板",
     "interviewPrep": "面试准备",
     "settings": "设置",
+    "help": "帮助与反馈",
     "subscription": "订阅",
     "home": "首页",
     "logout": "退出登录",
     "upgradeToPro": "升级到专业版",
     "upgradeDescription": "免费获得 1 个月，解锁专业版所有功能。",
     "upgrade": "立即升级"
+  },
+  "help": {
+    "title": "帮助与反馈",
+    "placeholder": "待完善..."
   },
   "interviews": {
     "title": "面试看板",

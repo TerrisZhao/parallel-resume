@@ -82,6 +82,11 @@
   "settings": {
     "title": "Settings",
     "subtitle": "Manage your account settings and preferences",
+    "tabAccount": "Account",
+    "tabAI": "AI",
+    "tabGeneral": "General",
+    "tabSecurity": "Security",
+    "tabData": "Data",
     "accountInfo": "Account Information",
     "name": "Name",
     "namePlaceholder": "Enter your name",
@@ -128,6 +133,7 @@
     "configCleared": "AI configuration cleared",
     "configClearFailed": "Failed to clear configuration",
     "notifications": "Notification Settings",
+    "appearance": "Appearance",
     "emailNotifications": "Email Notifications",
     "emailNotificationsDesc": "Receive important updates and notification emails",
     "security": "Security Settings",
@@ -415,12 +421,17 @@
     "interviews": "Interviews",
     "interviewPrep": "Interview Prep",
     "settings": "Settings",
+    "help": "Help & Feedback",
     "subscription": "Subscription",
     "home": "Home",
     "logout": "Log Out",
     "upgradeToPro": "Upgrade to Pro",
     "upgradeDescription": "Get 1 month free and unlock all the features of the pro plan.",
     "upgrade": "Upgrade"
+  },
+  "help": {
+    "title": "Help & Feedback",
+    "placeholder": "Coming soon..."
   },
   "interviews": {
     "title": "Interview Board",

@@ -6,6 +6,7 @@ import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import { Switch } from "@heroui/switch";
 import { Select, SelectItem } from "@heroui/select";
+import { Tabs, Tab } from "@heroui/tabs";
 import { usePageHeader } from "../use-page-header";
 import {
   Modal,
@@ -61,6 +62,7 @@ export default function SettingsPage() {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
   const [notifications, setNotifications] = useState(true);
+  const [selectedTab, setSelectedTab] = useState("account");
 
   // 用户信息编辑状态
   const [isEditingName, setIsEditingName] = useState(false);
@@ -88,7 +90,9 @@ export default function SettingsPage() {
   const [aiApiEndpoint, setAiApiEndpoint] = useState("");
   const [customProviderName, setCustomProviderName] = useState("");
   const [isTestingConnection, setIsTestingConnection] = useState(false);
-  const [connectionTestResult, setConnectionTestResult] = useState<"success" | "error" | null>(null);
+  const [connectionTestResult, setConnectionTestResult] = useState<
+    "success" | "error" | null
+  >(null);
   const [isUpdatingAiConfig, setIsUpdatingAiConfig] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const [availableModels, setAvailableModels] = useState<string[]>([]);
@@ -258,7 +262,10 @@ export default function SettingsPage() {
       setIsEditingName(false);
     } catch (error) {
       console.error("更新姓名失败:", error);
-      showToast(error instanceof Error ? error.message : t("nameUpdateFailed"), "error");
+      showToast(
+        error instanceof Error ? error.message : t("nameUpdateFailed"),
+        "error",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -361,7 +368,10 @@ export default function SettingsPage() {
       showToast(t("themeUpdateSuccess"), "success");
     } catch (error) {
       console.error("更新主题模式失败:", error);
-      showToast(error instanceof Error ? error.message : t("updateFailed"), "error");
+      showToast(
+        error instanceof Error ? error.message : t("updateFailed"),
+        "error",
+      );
     } finally {
       setIsUpdatingTheme(false);
     }
@@ -402,7 +412,10 @@ export default function SettingsPage() {
       window.location.reload();
     } catch (error) {
       console.error("更新语言模式失败:", error);
-      showToast(error instanceof Error ? error.message : t("updateFailed"), "error");
+      showToast(
+        error instanceof Error ? error.message : t("updateFailed"),
+        "error",
+      );
     } finally {
       setIsUpdatingLanguage(false);
     }
@@ -486,7 +499,10 @@ export default function SettingsPage() {
       setIsApiKeyMasked(Boolean(data.user.aiApiKeyMasked));
     } catch (error) {
       console.error("保存AI配置失败:", error);
-      showToast(error instanceof Error ? error.message : t("configSaveFailed"), "error");
+      showToast(
+        error instanceof Error ? error.message : t("configSaveFailed"),
+        "error",
+      );
     } finally {
       setIsUpdatingAiConfig(false);
     }
@@ -580,7 +596,10 @@ export default function SettingsPage() {
       showToast(t("configCleared"), "success");
     } catch (error) {
       console.error("清除AI配置失败:", error);
-      showToast(error instanceof Error ? error.message : t("configClearFailed"), "error");
+      showToast(
+        error instanceof Error ? error.message : t("configClearFailed"),
+        "error",
+      );
     } finally {
       setIsUpdatingAiConfig(false);
     }
@@ -623,7 +642,7 @@ export default function SettingsPage() {
     setHeader(
       <div className="px-6 py-4">
         <h1 className={title({ size: "sm" })}>{t("title")}</h1>
-      </div>
+      </div>,
     );
 
     return () => setHeader(null);
@@ -650,357 +669,398 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <h3 className="text-lg font-semibold">{t("accountInfo")}</h3>
-          </CardHeader>
-          <CardBody className="space-y-4">
-            <div className="space-y-2">
-              <div ref={nameEditRef} className="flex items-center gap-2">
-                <div className="flex-1">
-                  <Input
-                    classNames={{
-                      input: "cursor-pointer",
-                    }}
-                    isReadOnly={!isEditingName}
-                    label={t("name")}
-                    placeholder={t("namePlaceholder")}
-                    value={name}
-                    variant={isEditingName ? "bordered" : "flat"}
-                    onChange={(e) => setName(e.target.value)}
-                    onFocus={() => !isEditingName && setIsEditingName(true)}
-                  />
+      <Tabs
+        selectedKey={selectedTab}
+        onSelectionChange={(key) => setSelectedTab(key as string)}
+      >
+        <Tab key="account" title={t("tabAccount")}>
+          <div className="mt-4">
+            <Card>
+              <CardHeader>
+                <h3 className="text-lg font-semibold">{t("accountInfo")}</h3>
+              </CardHeader>
+              <CardBody className="space-y-4">
+                <div className="space-y-2">
+                  <div ref={nameEditRef} className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <Input
+                        classNames={{
+                          input: "cursor-pointer",
+                        }}
+                        isReadOnly={!isEditingName}
+                        label={t("name")}
+                        placeholder={t("namePlaceholder")}
+                        value={name}
+                        variant={isEditingName ? "bordered" : "flat"}
+                        onChange={(e) => setName(e.target.value)}
+                        onFocus={() => !isEditingName && setIsEditingName(true)}
+                      />
+                    </div>
+                    {isEditingName && (
+                      <div className="flex gap-2">
+                        <Button
+                          isIconOnly
+                          className="min-w-10 w-10 h-10 rounded-lg"
+                          color="danger"
+                          isDisabled={isLoading}
+                          variant="light"
+                          onPress={handleCancelEdit}
+                        >
+                          <X size={18} />
+                        </Button>
+                        <Button
+                          isIconOnly
+                          className="min-w-10 w-10 h-10 rounded-lg"
+                          color="success"
+                          isDisabled={!name.trim()}
+                          isLoading={isLoading}
+                          variant="light"
+                          onPress={handleUpdateName}
+                        >
+                          <Check size={18} />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                {isEditingName && (
-                  <div className="flex gap-2">
+                <Input
+                  isReadOnly
+                  defaultValue={session.user?.email || ""}
+                  description={t("emailReadonly")}
+                  label={t("email")}
+                  placeholder={t("emailPlaceholder")}
+                />
+              </CardBody>
+            </Card>
+          </div>
+        </Tab>
+
+        <Tab key="ai" title={t("tabAI")}>
+          <div className="mt-4">
+            <Card>
+              <CardHeader>
+                <h3 className="text-lg font-semibold">{t("aiConfig")}</h3>
+              </CardHeader>
+              <CardBody className="space-y-4">
+                {/* AI提供商选择 */}
+                <Select
+                  label={t("aiProvider")}
+                  placeholder={t("aiProviderPlaceholder")}
+                  selectedKeys={aiProvider ? [aiProvider] : []}
+                  onSelectionChange={(keys) => {
+                    const selected = Array.from(keys)[0] as string;
+
+                    setAiProvider(selected);
+                    // 重置相关字段
+                    setAiModel("");
+                    setAvailableModels([]);
+                    if (selected !== "custom") {
+                      const provider = AI_PROVIDERS.find(
+                        (p) => p.value === selected,
+                      );
+
+                      setAiApiEndpoint(provider?.defaultEndpoint || "");
+                    }
+                  }}
+                >
+                  {AI_PROVIDERS.map((provider) => (
+                    <SelectItem key={provider.value}>
+                      {provider.label}
+                    </SelectItem>
+                  ))}
+                </Select>
+
+                {/* 自定义提供商名称 */}
+                {aiProvider === "custom" && (
+                  <Input
+                    label={t("providerName")}
+                    placeholder={t("providerNamePlaceholder")}
+                    value={customProviderName}
+                    onChange={(e) => setCustomProviderName(e.target.value)}
+                  />
+                )}
+
+                {/* 自定义模型名称 */}
+                {aiProvider === "custom" && (
+                  <Input
+                    label={t("modelName")}
+                    placeholder={t("modelNamePlaceholder")}
+                    value={aiModel}
+                    onChange={(e) => setAiModel(e.target.value)}
+                  />
+                )}
+
+                {/* API Key输入 */}
+                {aiProvider && (
+                  <Input
+                    endContent={
+                      <Button
+                        isIconOnly
+                        className="min-w-8 w-8 h-8"
+                        size="sm"
+                        variant="light"
+                        onPress={() => setShowApiKey(!showApiKey)}
+                      >
+                        {showApiKey ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </Button>
+                    }
+                    label={t("apiKey")}
+                    placeholder={t("apiKeyPlaceholder")}
+                    type={showApiKey ? "text" : "password"}
+                    value={aiApiKey}
+                    onChange={(e) => {
+                      setAiApiKey(e.target.value);
+                      // 一旦用户修改输入，就认为当前值是明文 key
+                      setIsApiKeyMasked(false);
+                    }}
+                  />
+                )}
+
+                {/* API端点 */}
+                {aiProvider && (
+                  <Input
+                    label={t("apiEndpoint")}
+                    placeholder={t("apiEndpointPlaceholder")}
+                    value={aiApiEndpoint}
+                    onChange={(e) => setAiApiEndpoint(e.target.value)}
+                  />
+                )}
+
+                {/* 模型选择 */}
+                {aiProvider && aiProvider !== "custom" && (
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <Select
+                        isDisabled={availableModels.length === 0}
+                        label={t("modelName")}
+                        placeholder={t("modelPlaceholder")}
+                        selectedKeys={aiModel ? [aiModel] : []}
+                        onSelectionChange={(keys) =>
+                          setAiModel(Array.from(keys)[0] as string)
+                        }
+                      >
+                        {availableModels.map((model) => (
+                          <SelectItem key={model}>{model}</SelectItem>
+                        ))}
+                      </Select>
+                    </div>
                     <Button
                       isIconOnly
-                      className="min-w-10 w-10 h-10 rounded-lg"
-                      color="danger"
-                      isDisabled={isLoading}
-                      variant="light"
-                      onPress={handleCancelEdit}
+                      className="p-2"
+                      color="primary"
+                      isDisabled={
+                        isLoadingModels ||
+                        !aiProvider ||
+                        (!aiApiKey && !isApiKeyMasked)
+                      }
+                      isLoading={isLoadingModels}
+                      size="lg"
+                      variant="flat"
+                      onPress={handleLoadModels}
                     >
-                      <X size={18} />
-                    </Button>
-                    <Button
-                      isIconOnly
-                      className="min-w-10 w-10 h-10 rounded-lg"
-                      color="success"
-                      isDisabled={!name.trim()}
-                      isLoading={isLoading}
-                      variant="light"
-                      onPress={handleUpdateName}
-                    >
-                      <Check size={18} />
+                      <RotateCw />
                     </Button>
                   </div>
                 )}
-              </div>
-            </div>
-            <Input
-              isReadOnly
-              defaultValue={session.user?.email || ""}
-              description={t("emailReadonly")}
-              label={t("email")}
-              placeholder={t("emailPlaceholder")}
-            />
-          </CardBody>
-        </Card>
 
-        <Card>
-          <CardHeader>
-            <h3 className="text-lg font-semibold">{t("aiConfig")}</h3>
-          </CardHeader>
-          <CardBody className="space-y-4">
-            {/* AI提供商选择 */}
-            <Select
-              label={t("aiProvider")}
-              placeholder={t("aiProviderPlaceholder")}
-              selectedKeys={aiProvider ? [aiProvider] : []}
-              onSelectionChange={(keys) => {
-                const selected = Array.from(keys)[0] as string;
-
-                setAiProvider(selected);
-                // 重置相关字段
-                setAiModel("");
-                setAvailableModels([]);
-                if (selected !== "custom") {
-                  const provider = AI_PROVIDERS.find(
-                    (p) => p.value === selected,
-                  );
-
-                  setAiApiEndpoint(provider?.defaultEndpoint || "");
-                }
-              }}
-            >
-              {AI_PROVIDERS.map((provider) => (
-                <SelectItem key={provider.value}>{provider.label}</SelectItem>
-              ))}
-            </Select>
-
-            {/* 自定义提供商名称 */}
-            {aiProvider === "custom" && (
-              <Input
-                label={t("providerName")}
-                placeholder={t("providerNamePlaceholder")}
-                value={customProviderName}
-                onChange={(e) => setCustomProviderName(e.target.value)}
-              />
-            )}
-
-            {/* 自定义模型名称 */}
-            {aiProvider === "custom" && (
-              <Input
-                label={t("modelName")}
-                placeholder={t("modelNamePlaceholder")}
-                value={aiModel}
-                onChange={(e) => setAiModel(e.target.value)}
-              />
-            )}
-
-            {/* API Key输入 */}
-            {aiProvider && (
-              <Input
-                endContent={
-                  <Button
-                    isIconOnly
-                    className="min-w-8 w-8 h-8"
-                    size="sm"
-                    variant="light"
-                    onPress={() => setShowApiKey(!showApiKey)}
-                  >
-                    {showApiKey ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </Button>
-                }
-                label={t("apiKey")}
-                placeholder={t("apiKeyPlaceholder")}
-                type={showApiKey ? "text" : "password"}
-                value={aiApiKey}
-                onChange={(e) => {
-                  setAiApiKey(e.target.value);
-                  // 一旦用户修改输入，就认为当前值是明文 key
-                  setIsApiKeyMasked(false);
-                }}
-              />
-            )}
-
-            {/* API端点 */}
-            {aiProvider && (
-              <Input
-                label={t("apiEndpoint")}
-                placeholder={t("apiEndpointPlaceholder")}
-                value={aiApiEndpoint}
-                onChange={(e) => setAiApiEndpoint(e.target.value)}
-              />
-            )}
-
-            {/* 模型选择 */}
-            {aiProvider && aiProvider !== "custom" && (
-              <div className="flex items-center gap-2">
-                <div className="flex-1">
-                  <Select
-                    isDisabled={availableModels.length === 0}
-                    label={t("modelName")}
-                    placeholder={t("modelPlaceholder")}
-                    selectedKeys={aiModel ? [aiModel] : []}
-                    onSelectionChange={(keys) =>
-                      setAiModel(Array.from(keys)[0] as string)
-                    }
-                  >
-                    {availableModels.map((model) => (
-                      <SelectItem key={model}>{model}</SelectItem>
-                    ))}
-                  </Select>
-                </div>
-                <Button
-                  isIconOnly
-                  className="p-2"
-                  color="primary"
-                  isDisabled={
-                    isLoadingModels ||
-                    !aiProvider ||
-                    (!aiApiKey && !isApiKeyMasked)
-                  }
-                  isLoading={isLoadingModels}
-                  size="lg"
-                  variant="flat"
-                  onPress={handleLoadModels}
-                >
-                  <RotateCw />
-                </Button>
-              </div>
-            )}
-
-            {/* 操作按钮 */}
-            {aiProvider && (
-              <div className="flex gap-2">
-                <Button
-                  color={
-                    connectionTestResult === "success"
-                      ? "success"
-                      : connectionTestResult === "error"
-                        ? "danger"
-                        : "primary"
-                  }
-                  isLoading={isTestingConnection}
-                  startContent={
-                    !isTestingConnection && connectionTestResult === "success" ? (
-                      <CheckCircle className="w-4 h-4" />
-                    ) : !isTestingConnection && connectionTestResult === "error" ? (
-                      <XCircle className="w-4 h-4" />
-                    ) : undefined
-                  }
-                  variant="bordered"
-                  onPress={handleTestConnection}
-                >
-                  {t("testConnection")}
-                </Button>
-                <Button
-                  color="primary"
-                  isDisabled={connectionTestResult !== "success"}
-                  isLoading={isUpdatingAiConfig}
-                  onPress={handleSaveAiConfig}
-                >
-                  {tCommon("save")}
-                </Button>
-                {(session?.user as any)?.aiProvider && (
-                  <Button
-                    color="danger"
-                    isLoading={isUpdatingAiConfig}
-                    variant="light"
-                    onPress={handleClearAiConfig}
-                  >
-                    {tCommon("clear")}
-                  </Button>
+                {/* 操作按钮 */}
+                {aiProvider && (
+                  <div className="flex gap-2">
+                    <Button
+                      color={
+                        connectionTestResult === "success"
+                          ? "success"
+                          : connectionTestResult === "error"
+                            ? "danger"
+                            : "primary"
+                      }
+                      isLoading={isTestingConnection}
+                      startContent={
+                        !isTestingConnection &&
+                        connectionTestResult === "success" ? (
+                          <CheckCircle className="w-4 h-4" />
+                        ) : !isTestingConnection &&
+                          connectionTestResult === "error" ? (
+                          <XCircle className="w-4 h-4" />
+                        ) : undefined
+                      }
+                      variant="bordered"
+                      onPress={handleTestConnection}
+                    >
+                      {t("testConnection")}
+                    </Button>
+                    <Button
+                      color="primary"
+                      isDisabled={connectionTestResult !== "success"}
+                      isLoading={isUpdatingAiConfig}
+                      onPress={handleSaveAiConfig}
+                    >
+                      {tCommon("save")}
+                    </Button>
+                    {(session?.user as any)?.aiProvider && (
+                      <Button
+                        color="danger"
+                        isLoading={isUpdatingAiConfig}
+                        variant="light"
+                        onPress={handleClearAiConfig}
+                      >
+                        {tCommon("clear")}
+                      </Button>
+                    )}
+                  </div>
                 )}
-              </div>
-            )}
-          </CardBody>
-        </Card>
+              </CardBody>
+            </Card>
+          </div>
+        </Tab>
 
-        <Card>
-          <CardHeader>
-            <h3 className="text-lg font-semibold">{t("notifications")}</h3>
-          </CardHeader>
-          <CardBody className="space-y-4">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-medium font-medium">{t("emailNotifications")}</p>
-                <p className="text-small text-default-500">
-                  {t("emailNotificationsDesc")}
-                </p>
-              </div>
-              <Switch
-                isSelected={notifications}
-                onValueChange={setNotifications}
-              />
-            </div>
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-medium font-medium">{t("themeMode")}</p>
-              </div>
-              <div style={{ width: "140px" }}>
-                <Select
-                  classNames={{
-                    trigger: "min-h-8 h-8 w-full",
-                    value: "text-sm",
-                    mainWrapper: "w-full",
-                  }}
-                  isDisabled={isUpdatingTheme}
-                  selectedKeys={[themeMode]}
-                  size="sm"
-                  onSelectionChange={(keys) => {
-                    const selectedKey = Array.from(keys)[0] as string;
+        <Tab key="general" title={t("tabGeneral")}>
+          <div className="mt-4 space-y-6">
+            <Card>
+              <CardHeader>
+                <h3 className="text-lg font-semibold">{t("notifications")}</h3>
+              </CardHeader>
+              <CardBody className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-medium font-medium">
+                      {t("emailNotifications")}
+                    </p>
+                    <p className="text-small text-default-500">
+                      {t("emailNotificationsDesc")}
+                    </p>
+                  </div>
+                  <Switch
+                    isSelected={notifications}
+                    onValueChange={setNotifications}
+                  />
+                </div>
+              </CardBody>
+            </Card>
 
-                    if (selectedKey) {
-                      handleThemeModeChange(selectedKey);
-                    }
-                  }}
+            <Card>
+              <CardHeader>
+                <h3 className="text-lg font-semibold">{t("appearance")}</h3>
+              </CardHeader>
+              <CardBody className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-medium font-medium">{t("themeMode")}</p>
+                  </div>
+                  <div style={{ width: "140px" }}>
+                    <Select
+                      classNames={{
+                        trigger: "min-h-8 h-8 w-full",
+                        value: "text-sm",
+                        mainWrapper: "w-full",
+                      }}
+                      isDisabled={isUpdatingTheme}
+                      selectedKeys={[themeMode]}
+                      size="sm"
+                      onSelectionChange={(keys) => {
+                        const selectedKey = Array.from(keys)[0] as string;
+
+                        if (selectedKey) {
+                          handleThemeModeChange(selectedKey);
+                        }
+                      }}
+                    >
+                      <SelectItem key="light" startContent={<Sun size={16} />}>
+                        {t("light")}
+                      </SelectItem>
+                      <SelectItem key="dark" startContent={<Moon size={16} />}>
+                        {t("dark")}
+                      </SelectItem>
+                      <SelectItem
+                        key="system"
+                        startContent={<Monitor size={16} />}
+                      >
+                        {t("system")}
+                      </SelectItem>
+                    </Select>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-medium font-medium">
+                      {t("languageSettings")}
+                    </p>
+                  </div>
+                  <div style={{ width: "140px" }}>
+                    <Select
+                      classNames={{
+                        trigger: "min-h-8 h-8 w-full",
+                        value: "text-sm",
+                        mainWrapper: "w-full",
+                      }}
+                      isDisabled={isUpdatingLanguage}
+                      selectedKeys={[languageMode]}
+                      size="sm"
+                      onSelectionChange={(keys) => {
+                        const selectedKey = Array.from(keys)[0] as string;
+
+                        if (selectedKey) {
+                          handleLanguageModeChange(selectedKey);
+                        }
+                      }}
+                    >
+                      <SelectItem
+                        key="system"
+                        startContent={<Monitor size={16} />}
+                      >
+                        {t("languageFollow")}
+                      </SelectItem>
+                      <SelectItem key="en" startContent={<Globe size={16} />}>
+                        {t("languageEn")}
+                      </SelectItem>
+                      <SelectItem key="zh" startContent={<Globe size={16} />}>
+                        {t("languageZh")}
+                      </SelectItem>
+                    </Select>
+                  </div>
+                </div>
+              </CardBody>
+            </Card>
+          </div>
+        </Tab>
+
+        <Tab key="security" title={t("tabSecurity")}>
+          <div className="mt-4 space-y-6">
+            <Card>
+              <CardHeader>
+                <h3 className="text-lg font-semibold">{t("security")}</h3>
+              </CardHeader>
+              <CardBody className="space-y-4">
+                <Button
+                  className="w-full justify-start"
+                  variant="flat"
+                  onPress={handleOpenLoginHistory}
                 >
-                  <SelectItem key="light" startContent={<Sun size={16} />}>
-                    {t("light")}
-                  </SelectItem>
-                  <SelectItem key="dark" startContent={<Moon size={16} />}>
-                    {t("dark")}
-                  </SelectItem>
-                  <SelectItem key="system" startContent={<Monitor size={16} />}>
-                    {t("system")}
-                  </SelectItem>
-                </Select>
-              </div>
-            </div>
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-medium font-medium">{t("languageSettings")}</p>
-              </div>
-              <div style={{ width: "140px" }}>
-                <Select
-                  classNames={{
-                    trigger: "min-h-8 h-8 w-full",
-                    value: "text-sm",
-                    mainWrapper: "w-full",
-                  }}
-                  isDisabled={isUpdatingLanguage}
-                  selectedKeys={[languageMode]}
-                  size="sm"
-                  onSelectionChange={(keys) => {
-                    const selectedKey = Array.from(keys)[0] as string;
+                  {t("loginHistory")}
+                </Button>
+              </CardBody>
+            </Card>
 
-                    if (selectedKey) {
-                      handleLanguageModeChange(selectedKey);
-                    }
-                  }}
+            <Card>
+              <CardHeader>
+                <h3 className="text-lg font-semibold">{t("dataManagement")}</h3>
+              </CardHeader>
+              <CardBody className="space-y-4">
+                {/*<Button className="w-full justify-start" variant="flat">*/}
+                {/*  导出数据*/}
+                {/*</Button>*/}
+                <Button
+                  className="w-full justify-start"
+                  color="danger"
+                  variant="flat"
                 >
-                  <SelectItem key="system" startContent={<Monitor size={16} />}>
-                    {t("languageFollow")}
-                  </SelectItem>
-                  <SelectItem key="en" startContent={<Globe size={16} />}>
-                    {t("languageEn")}
-                  </SelectItem>
-                  <SelectItem key="zh" startContent={<Globe size={16} />}>
-                    {t("languageZh")}
-                  </SelectItem>
-                </Select>
-              </div>
-            </div>
-          </CardBody>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <h3 className="text-lg font-semibold">{t("security")}</h3>
-          </CardHeader>
-          <CardBody className="space-y-4">
-            <Button
-              className="w-full justify-start"
-              variant="flat"
-              onPress={handleOpenLoginHistory}
-            >
-              {t("loginHistory")}
-            </Button>
-          </CardBody>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <h3 className="text-lg font-semibold">{t("dataManagement")}</h3>
-          </CardHeader>
-          <CardBody className="space-y-4">
-            {/*<Button className="w-full justify-start" variant="flat">*/}
-            {/*  导出数据*/}
-            {/*</Button>*/}
-            <Button
-              className="w-full justify-start"
-              color="danger"
-              variant="flat"
-            >
-              {t("deleteAccount")}
-            </Button>
-          </CardBody>
-        </Card>
-      </div>
+                  {t("deleteAccount")}
+                </Button>
+              </CardBody>
+            </Card>
+          </div>
+        </Tab>
+      </Tabs>
 
       {/* 登录历史模态框 */}
       <Modal
@@ -1063,7 +1123,9 @@ export default function SettingsPage() {
                             item.isSuccessful ? "text-success" : "text-danger"
                           }`}
                         >
-                          {item.isSuccessful ? t("loginSuccess") : t("loginFailed")}
+                          {item.isSuccessful
+                            ? t("loginSuccess")
+                            : t("loginFailed")}
                         </div>
                       </div>
                     </div>

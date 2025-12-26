@@ -13,6 +13,7 @@ import { ScrollShadow } from "@heroui/scroll-shadow";
 import { Spacer } from "@heroui/spacer";
 import { Icon } from "@iconify/react";
 import { Card, CardBody } from "@heroui/card";
+import { useTheme } from "next-themes";
 
 import { PageHeaderContext } from "./page-header-context";
 
@@ -30,9 +31,11 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
   const t = useTranslations("sidebar");
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
   const [selectedKey, setSelectedKey] = useState("resume");
   const [pageHeader, setPageHeader] = useState<ReactNode>(null);
+  const { theme, setTheme } = useTheme();
+  const [currentLanguage, setCurrentLanguage] = useState<string>("system");
 
   const items: SidebarItem[] = [
     {
@@ -53,12 +56,6 @@ export default function DashboardLayout({
       icon: "solar:clipboard-list-bold-duotone",
       title: t("interviewPrep"),
     },
-    {
-      key: "settings",
-      href: "/settings",
-      icon: "solar:settings-bold-duotone",
-      title: t("settings"),
-    },
   ];
 
   useEffect(() => {
@@ -68,10 +65,55 @@ export default function DashboardLayout({
       setSelectedKey("interviews");
     } else if (pathname.startsWith("/interview-prep")) {
       setSelectedKey("interview-prep");
-    } else if (pathname.startsWith("/settings")) {
-      setSelectedKey("settings");
     }
   }, [pathname]);
+
+  useEffect(() => {
+    if (session?.user && (session.user as any)?.preferredLanguage) {
+      setCurrentLanguage((session.user as any).preferredLanguage);
+    }
+  }, [session?.user]);
+
+  const handleThemeToggle = async () => {
+    const newTheme = theme === "dark" ? "light" : "dark";
+
+    setTheme(newTheme);
+    try {
+      await fetch("/api/user/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ themeMode: newTheme }),
+      });
+      await update({
+        ...session,
+        user: { ...session?.user, themeMode: newTheme },
+      });
+    } catch (error) {
+      console.error("Failed to update theme:", error);
+    }
+  };
+
+  const handleLanguageToggle = async () => {
+    const languages = ["system", "en", "zh"];
+    const currentIndex = languages.indexOf(currentLanguage);
+    const newLanguage = languages[(currentIndex + 1) % languages.length];
+
+    setCurrentLanguage(newLanguage);
+    try {
+      await fetch("/api/user/locale", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ locale: newLanguage }),
+      });
+      await update({
+        ...session,
+        user: { ...session?.user, preferredLanguage: newLanguage },
+      });
+      window.location.reload();
+    } catch (error) {
+      console.error("Failed to update language:", error);
+    }
+  };
 
   return (
     <div className="flex h-screen">
@@ -167,16 +209,65 @@ export default function DashboardLayout({
             className="justify-start text-default-500 data-[hover=true]:text-foreground"
             startContent={
               <Icon
-                className="rotate-180 text-default-500"
-                icon="solar:minus-circle-line-duotone"
+                className="text-default-500"
+                icon="solar:settings-bold-duotone"
                 width={24}
               />
             }
             variant="light"
-            onPress={() => signOut()}
+            onPress={() => router.push("/settings")}
           >
-            {t("logout") || "Log Out"}
+            {t("settings")}
           </Button>
+          <Button
+            fullWidth
+            className="justify-start text-default-500 data-[hover=true]:text-foreground"
+            startContent={
+              <Icon
+                className="text-default-500"
+                icon="solar:question-circle-bold-duotone"
+                width={24}
+              />
+            }
+            variant="light"
+            onPress={() => router.push("/help")}
+          >
+            {t("help")}
+          </Button>
+          <Spacer y={2} />
+          <div className="flex items-center justify-between">
+            <Button
+              isIconOnly
+              className="text-default-500 data-[hover=true]:text-foreground"
+              variant="light"
+              onPress={() => signOut()}
+            >
+              <Icon icon="solar:logout-2-bold-duotone" width={24} />
+            </Button>
+            <Button
+              isIconOnly
+              className="text-default-500 data-[hover=true]:text-foreground"
+              variant="light"
+              onPress={handleLanguageToggle}
+            >
+              <Icon icon="solar:global-bold-duotone" width={24} />
+            </Button>
+            <Button
+              isIconOnly
+              className="text-default-500 data-[hover=true]:text-foreground"
+              variant="light"
+              onPress={handleThemeToggle}
+            >
+              <Icon
+                icon={
+                  theme === "dark"
+                    ? "solar:moon-bold-duotone"
+                    : "solar:sun-bold-duotone"
+                }
+                width={24}
+              />
+            </Button>
+          </div>
         </div>
       </aside>
       <PageHeaderContext.Provider value={{ setHeader: setPageHeader }}>
