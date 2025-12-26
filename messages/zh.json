@@ -415,7 +415,10 @@
     "settings": "设置",
     "subscription": "订阅",
     "home": "首页",
-    "logout": "退出登录"
+    "logout": "退出登录",
+    "upgradeToPro": "升级到专业版",
+    "upgradeDescription": "免费获得 1 个月，解锁专业版所有功能。",
+    "upgrade": "立即升级"
   },
   "chromeExtension": {
     "badge": "浏览器扩展",

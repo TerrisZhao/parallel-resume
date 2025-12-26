@@ -242,60 +242,89 @@ export default function SubscriptionPage() {
     return (
       <Card
         key={plan.id}
-        className={`relative overflow-visible ${
+        className={`relative p-3 ${
           plan.popular
-            ? "border-2 border-warning scale-105 shadow-lg"
-            : "border border-default-200"
+            ? "bg-primary shadow-primary/20 overflow-visible shadow-2xl"
+            : "border-medium border-default-100 bg-transparent"
         }`}
+        shadow="none"
       >
         {plan.popular && (
-          <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-            <Chip
-              color="warning"
-              startContent={<Star className="w-4 h-4" />}
-              variant="shadow"
-            >
-              {t("mostPopular")}
-            </Chip>
-          </div>
+          <Chip
+            classNames={{
+              base: "absolute -top-3 left-1/2 -translate-x-1/2 bg-primary-foreground shadow-large border-medium border-primary",
+              content: "font-medium text-primary",
+            }}
+            color="primary"
+          >
+            {t("mostPopular")}
+          </Chip>
         )}
 
-        <CardHeader className="flex flex-col items-center gap-2 pt-8 pb-4">
-          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20">
-            {plan.icon}
-          </div>
-          <h3 className="text-2xl font-bold">{plan.name}</h3>
-          <p className="text-sm text-default-500">{plan.description}</p>
+        <CardHeader className="flex flex-col items-start gap-2 pb-6">
+          <h2
+            className={`text-xl font-medium ${
+              plan.popular ? "text-primary-foreground" : ""
+            }`}
+          >
+            {plan.name}
+          </h2>
+          <p
+            className={`text-medium ${
+              plan.popular
+                ? "text-primary-foreground/70"
+                : "text-default-500"
+            }`}
+          >
+            {plan.description}
+          </p>
         </CardHeader>
 
-        <CardBody className="gap-4">
-          {/* 价格展示 */}
-          <div className="flex flex-col items-center gap-1">
-            <div className="flex items-baseline gap-1">
-              <span className="text-4xl font-bold">
-                ${plan.price.toFixed(2)}
-              </span>
-              {plan.interval && (
-                <span className="text-default-500">
-                  {tSub("plans.pro.perMonth")}
-                </span>
-              )}
-            </div>
-            {plan.credits && (
-              <Chip color="warning" size="sm" variant="flat">
-                {plan.credits} {t("credits")}
-              </Chip>
-            )}
-          </div>
+        <Divider className={plan.popular ? "bg-primary-foreground/20" : ""} />
 
-          <Divider />
+        <CardBody className="gap-8 pt-6">
+          {/* 价格展示 */}
+          <p className="flex items-baseline gap-1">
+            <span
+              className={`inline bg-linear-to-br bg-clip-text text-4xl leading-7 font-semibold tracking-tight ${
+                plan.popular
+                  ? "text-primary-foreground"
+                  : "from-foreground to-foreground-600 text-transparent"
+              }`}
+            >
+              ${plan.price.toFixed(2)}
+            </span>
+            {plan.credits && (
+              <span
+                className={`text-sm font-medium ${
+                  plan.popular
+                    ? "text-primary-foreground/50"
+                    : "text-default-400"
+                }`}
+              >
+                / {plan.credits} {t("credits")}
+              </span>
+            )}
+          </p>
 
           {/* 功能列表 */}
-          <ul className="space-y-3">
+          <ul className="flex flex-col gap-2">
             {plan.features.map((feature, index) => (
-              <li key={index} className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
-                <span className="text-sm">{feature}</span>
+              <li key={index} className="flex items-center gap-2">
+                <Check
+                  className={`w-6 h-6 flex-shrink-0 ${
+                    plan.popular ? "text-primary-foreground" : "text-primary"
+                  }`}
+                />
+                <p
+                  className={`text-sm ${
+                    plan.popular
+                      ? "text-primary-foreground/70"
+                      : "text-default-500"
+                  }`}
+                >
+                  {feature}
+                </p>
               </li>
             ))}
           </ul>
@@ -303,11 +332,15 @@ export default function SubscriptionPage() {
 
         <CardFooter>
           <Button
-            className="w-full"
+            fullWidth
+            className={
+              plan.popular
+                ? "bg-primary-foreground text-primary shadow-default-500/50 font-medium shadow-xs"
+                : ""
+            }
             color={plan.buttonColor}
             isDisabled={isCurrentPlan || isSubscribed}
             isLoading={loadingPlanId === plan.id}
-            size="lg"
             startContent={
               plan.type === "credits" ? (
                 <CreditCard className="w-5 h-5" />
@@ -315,7 +348,7 @@ export default function SubscriptionPage() {
                 <Calendar className="w-5 h-5" />
               ) : null
             }
-            variant={isCurrentPlan || isSubscribed ? "flat" : "shadow"}
+            variant={isCurrentPlan || isSubscribed ? "flat" : plan.popular ? "solid" : "bordered"}
             onPress={() => handleSelectPlan(plan)}
           >
             {isSubscribed ? tSub("buttons.currentPlan") : plan.buttonText}
@@ -326,52 +359,62 @@ export default function SubscriptionPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="flex max-w-4xl mx-auto flex-col items-center py-12">
       {/* Page Subtitle */}
-      <div className="text-center mb-12">
-        <p className={subtitle()}>{t("subtitle")}</p>
+      <div className="flex max-w-xl flex-col text-center mb-12">
+        <h2 className="text-large text-default-500">{t("subtitle")}</h2>
       </div>
 
       {/* 套餐卡片网格 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 pt-6 max-w-4xl mx-auto">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 w-full mb-12">
         {plans.map((plan) => renderPlanCard(plan))}
       </div>
 
-      {/* FAQ */}
-      <Card className="bg-default-50">
-        <CardHeader>
-          <h2 className="text-xl font-bold">{t("faq")}</h2>
-        </CardHeader>
-        <CardBody className="gap-4">
-          <div>
-            <h3 className="font-semibold mb-2">{t("howCreditsWork")}</h3>
-            <p className="text-sm text-default-600">
-              {t("howCreditsWorkAnswer")}
-            </p>
-          </div>
-          <Divider />
-          <div>
-            <h3 className="font-semibold mb-2">{t("creditVsSubscription")}</h3>
-            <p className="text-sm text-default-600">
-              {t("creditVsSubscriptionAnswer")}
-            </p>
-          </div>
-          <Divider />
-          <div>
-            <h3 className="font-semibold mb-2">{t("cancelAnytime")}</h3>
-            <p className="text-sm text-default-600">
-              {t("cancelAnytimeAnswer")}
-            </p>
-          </div>
-          <Divider />
-          <div>
-            <h3 className="font-semibold mb-2">{t("paymentMethods")}</h3>
-            <p className="text-sm text-default-600">
-              {t("paymentMethodsAnswer")}
-            </p>
-          </div>
-        </CardBody>
-      </Card>
+      {/* FAQ Section */}
+      <div className="w-full">
+        <Card className="bg-default-50/50 border-default-200" shadow="sm">
+          <CardHeader>
+            <h2 className="text-xl font-semibold">{t("faq")}</h2>
+          </CardHeader>
+          <CardBody className="gap-4">
+            <div>
+              <h3 className="font-medium mb-2 text-default-700">
+                {t("howCreditsWork")}
+              </h3>
+              <p className="text-sm text-default-500">
+                {t("howCreditsWorkAnswer")}
+              </p>
+            </div>
+            <Divider />
+            <div>
+              <h3 className="font-medium mb-2 text-default-700">
+                {t("creditVsSubscription")}
+              </h3>
+              <p className="text-sm text-default-500">
+                {t("creditVsSubscriptionAnswer")}
+              </p>
+            </div>
+            <Divider />
+            <div>
+              <h3 className="font-medium mb-2 text-default-700">
+                {t("cancelAnytime")}
+              </h3>
+              <p className="text-sm text-default-500">
+                {t("cancelAnytimeAnswer")}
+              </p>
+            </div>
+            <Divider />
+            <div>
+              <h3 className="font-medium mb-2 text-default-700">
+                {t("paymentMethods")}
+              </h3>
+              <p className="text-sm text-default-500">
+                {t("paymentMethodsAnswer")}
+              </p>
+            </div>
+          </CardBody>
+        </Card>
+      </div>
     </div>
   );
 }

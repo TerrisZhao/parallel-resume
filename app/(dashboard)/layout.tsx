@@ -125,13 +125,13 @@ export default function DashboardLayout({
           <Card className="relative mx-2 mb-8 overflow-visible" shadow="sm">
             <CardBody className="items-center pb-8 pt-5 text-center">
               <h3 className="text-medium font-medium text-default-700">
-                Upgrade to Pro
+                {t("upgradeToPro")}
                 <span aria-label="rocket-emoji" className="ml-2" role="img">
                   🚀
                 </span>
               </h3>
               <p className="p-4 text-small text-default-500">
-                Get 1 month free and unlock all the features of the pro plan.
+                {t("upgradeDescription")}
               </p>
             </CardBody>
             <div className="absolute -bottom-5 left-0 right-0 flex justify-center">
@@ -142,7 +142,7 @@ export default function DashboardLayout({
                 variant="shadow"
                 onPress={() => router.push("/subscription")}
               >
-                Upgrade
+                {t("upgrade")}
               </Button>
             </div>
           </Card>
