@@ -342,6 +342,53 @@ export const interviews = pgTable(
   }),
 );
 
+// 通用面试准备资料表
+export const interviewPreparationMaterials = pgTable(
+  "interview_preparation_materials",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull(),
+    title: varchar("title", { length: 255 }).notNull(), // 资料标题
+    category: varchar("category", { length: 50 }).notNull(), // 分类：self_intro, project, work, qa
+    content: text("content").notNull(), // 准备内容
+    order: integer("order").notNull().default(0), // 显示顺序
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    userIdIdx: index("interview_prep_materials_user_id_idx").on(table.userId),
+    categoryIdx: index("interview_prep_materials_category_idx").on(
+      table.category,
+    ),
+    userIdCategoryIdx: index("interview_prep_materials_user_id_category_idx").on(
+      table.userId,
+      table.category,
+    ),
+  }),
+);
+
+// 面试专属准备内容表
+export const interviewSpecificPreparations = pgTable(
+  "interview_specific_preparations",
+  {
+    id: serial("id").primaryKey(),
+    interviewId: integer("interview_id").notNull(), // 关联的面试ID
+    title: varchar("title", { length: 255 }).notNull(), // 准备项标题
+    content: text("content").notNull(), // 准备内容
+    order: integer("order").notNull().default(0), // 显示顺序
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    interviewIdIdx: index("interview_specific_prep_interview_id_idx").on(
+      table.interviewId,
+    ),
+    interviewIdOrderIdx: index(
+      "interview_specific_prep_interview_id_order_idx",
+    ).on(table.interviewId, table.order),
+  }),
+);
+
 // ==================== 订阅和支付相关表 ====================
 
 // 订阅套餐表
@@ -475,6 +522,8 @@ export const schema = {
   resumeEducation,
   resumeProjects,
   interviews,
+  interviewPreparationMaterials,
+  interviewSpecificPreparations,
   subscriptionPlans,
   subscriptions,
   userCredits,

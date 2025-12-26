@@ -48,6 +48,12 @@ export default function DashboardLayout({
       title: t("interviews"),
     },
     {
+      key: "interview-prep",
+      href: "/interview-prep",
+      icon: "solar:clipboard-list-bold-duotone",
+      title: t("interviewPrep"),
+    },
+    {
       key: "settings",
       href: "/settings",
       icon: "solar:settings-bold-duotone",
@@ -60,6 +66,8 @@ export default function DashboardLayout({
       setSelectedKey("resume");
     } else if (pathname.startsWith("/interviews")) {
       setSelectedKey("interviews");
+    } else if (pathname.startsWith("/interview-prep")) {
+      setSelectedKey("interview-prep");
     } else if (pathname.startsWith("/settings")) {
       setSelectedKey("settings");
     }

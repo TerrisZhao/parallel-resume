@@ -413,6 +413,7 @@
   "sidebar": {
     "resume": "简历",
     "interviews": "面试看板",
+    "interviewPrep": "面试准备",
     "settings": "设置",
     "subscription": "订阅",
     "home": "首页",
@@ -461,6 +462,37 @@
     "failedToDelete": "删除面试失败",
     "notes": "备注",
     "notesPlaceholder": "添加关于这次面试的备注..."
+  },
+  "interviewPrep": {
+    "title": "面试准备",
+    "addMaterial": "添加资料",
+    "editMaterial": "编辑资料",
+    "deleteMaterial": "删除资料",
+    "deleteConfirm": "确定要删除这个准备资料吗？",
+    "noMaterials": "暂无准备资料",
+    "noMaterialsDescription": "添加你的第一个准备资料开始准备面试",
+    "materialTitle": "标题",
+    "materialTitlePlaceholder": "例如：我的自我介绍",
+    "content": "内容",
+    "contentPlaceholder": "在这里写下你的准备内容...",
+    "createdSuccess": "准备资料创建成功",
+    "updatedSuccess": "准备资料更新成功",
+    "deletedSuccess": "准备资料删除成功",
+    "failedToCreate": "创建准备资料失败",
+    "failedToUpdate": "更新准备资料失败",
+    "failedToDelete": "删除准备资料失败",
+    "categories": {
+      "self_intro": "自我介绍",
+      "project": "项目介绍",
+      "work": "工作经历",
+      "qa": "常见问答"
+    },
+    "specificPreparations": "面试专属准备",
+    "addSpecificPrep": "添加准备内容",
+    "editSpecificPrep": "编辑准备内容",
+    "deleteSpecificPrep": "删除准备内容",
+    "noSpecificPreps": "暂无针对此面试的准备内容",
+    "noSpecificPrepsDescription": "添加专属于这个面试的准备内容"
   },
   "chromeExtension": {
     "badge": "浏览器扩展",

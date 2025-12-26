@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@heroui/button";
-import { Card, CardBody } from "@heroui/card";
+import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Chip } from "@heroui/chip";
+import { Tabs, Tab } from "@heroui/tabs";
 import {
   Modal,
   ModalContent,
@@ -49,6 +50,16 @@ interface Interview {
 interface Resume {
   id: number;
   name: string;
+}
+
+interface InterviewPreparation {
+  id: number;
+  interviewId: number;
+  title: string;
+  content: string;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 const STAGES = [

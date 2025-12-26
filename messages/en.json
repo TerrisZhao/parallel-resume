@@ -413,6 +413,7 @@
   "sidebar": {
     "resume": "Resumes",
     "interviews": "Interviews",
+    "interviewPrep": "Interview Prep",
     "settings": "Settings",
     "subscription": "Subscription",
     "home": "Home",
@@ -461,6 +462,37 @@
     "failedToDelete": "Failed to delete interview",
     "notes": "Notes",
     "notesPlaceholder": "Add any notes about this interview..."
+  },
+  "interviewPrep": {
+    "title": "Interview Preparation",
+    "addMaterial": "Add Material",
+    "editMaterial": "Edit Material",
+    "deleteMaterial": "Delete Material",
+    "deleteConfirm": "Are you sure you want to delete this preparation material?",
+    "noMaterials": "No preparation materials yet",
+    "noMaterialsDescription": "Add your first preparation material to get started",
+    "materialTitle": "Title",
+    "materialTitlePlaceholder": "e.g., My Self Introduction",
+    "content": "Content",
+    "contentPlaceholder": "Write your preparation content here...",
+    "createdSuccess": "Preparation material created successfully",
+    "updatedSuccess": "Preparation material updated successfully",
+    "deletedSuccess": "Preparation material deleted successfully",
+    "failedToCreate": "Failed to create preparation material",
+    "failedToUpdate": "Failed to update preparation material",
+    "failedToDelete": "Failed to delete preparation material",
+    "categories": {
+      "self_intro": "Self Introduction",
+      "project": "Project Experience",
+      "work": "Work Experience",
+      "qa": "Q&A"
+    },
+    "specificPreparations": "Interview-Specific Preparations",
+    "addSpecificPrep": "Add Preparation",
+    "editSpecificPrep": "Edit Preparation",
+    "deleteSpecificPrep": "Delete Preparation",
+    "noSpecificPreps": "No preparation materials for this interview yet",
+    "noSpecificPrepsDescription": "Add preparation materials tailored for this specific interview"
   },
   "chromeExtension": {
     "badge": "Browser Extension",
