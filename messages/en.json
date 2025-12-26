@@ -38,7 +38,7 @@
     "title": "Create Your Professional Resume",
     "titleHighlight": "Start Here",
     "subtitle": "Easily create, manage, and export your professional resume.\nModern design, one-click PDF export, helping you stand out in your job search.",
-    "createResume": "Create Resume",
+    "getStarted": "Get Started",
     "footer": "Designed by"
   },
   "resume": {
@@ -409,6 +409,13 @@
     "notFound": "Page not found",
     "serverError": "Server error, please try again later",
     "validation": "Validation error, please check your input"
+  },
+  "sidebar": {
+    "resume": "Resumes",
+    "settings": "Settings",
+    "subscription": "Subscription",
+    "home": "Home",
+    "logout": "Log Out"
   },
   "chromeExtension": {
     "badge": "Browser Extension",

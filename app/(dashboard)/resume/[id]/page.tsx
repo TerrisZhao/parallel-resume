@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, use } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { usePageHeader } from "../../use-page-header";
 import { Button } from "@heroui/button";
 import { Card, CardBody } from "@heroui/card";
 import { Input, Textarea } from "@heroui/input";
@@ -985,6 +986,7 @@ export default function ResumeEditPage({
   const resolvedParams = use(params);
   const router = useRouter();
   const t = useTranslations("resumeEditor");
+  const { setHeader } = usePageHeader();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [resumeData, setResumeData] = useState<
     ResumeData & { name?: string; preferredLanguage?: string }
@@ -1158,6 +1160,134 @@ export default function ResumeEditPage({
       };
     }
   }, [resumeData, isLoading, autoSave]);
+
+  // Set page header
+  useEffect(() => {
+    setHeader(
+      <div className="flex items-center justify-between gap-4 px-6 py-4">
+        <div className="flex items-center gap-3">
+          <Button
+            isIconOnly
+            size="sm"
+            variant="light"
+            onPress={() => router.push("/resume")}
+          >
+            <ArrowLeft size={18} />
+          </Button>
+          <div className="min-h-10 flex items-center">
+            {isEditingName ? (
+              <Input
+                aria-label="Resume Name"
+                classNames={{ inputWrapper: "min-h-10", input: "text-base" }}
+                size="sm"
+                value={resumeData.name}
+                onBlur={() => setIsEditingName(false)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setResumeData({ ...resumeData, name: e.target.value })
+                }
+                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    setIsEditingName(false);
+                  }
+                  if (e.key === "Escape") {
+                    e.preventDefault();
+                    setIsEditingName(false);
+                  }
+                }}
+              />
+            ) : (
+              <button
+                className="text-left focus:outline-none min-h-10 flex items-center"
+                type="button"
+                onClick={() => setIsEditingName(true)}
+              >
+                <span className="text-3xl leading-6 font-semibold">
+                  {resumeData.name || "Resume"}
+                </span>
+                <span className="ml-2 text-xs text-default-500 hidden sm:inline-flex items-center gap-1">
+                  <Edit3 size={14} />
+                </span>
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-4 min-h-10">
+          {isSaving ? (
+            <div className="text-sm text-default-500 flex items-center gap-1">
+              <Save className="animate-pulse" size={14} />
+              {t("saving")}
+            </div>
+          ) : lastSaved ? (
+            <div className="text-sm text-success flex items-center gap-1">
+              <CheckCircle size={14} />
+              {t("saved")} {lastSaved.toLocaleTimeString()}
+            </div>
+          ) : null}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-default-600">{t("aiOptimization")}</span>
+            <Switch
+              isSelected={isAiOptimizationEnabled}
+              size="sm"
+              onValueChange={async (value) => {
+                setIsAiOptimizationEnabled(value);
+                try {
+                  const response = await fetch(
+                    `/api/resumes/${resolvedParams.id}`,
+                    {
+                      method: "PATCH",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({
+                        aiOptimizationEnabled: value,
+                      }),
+                    },
+                  );
+
+                  if (!response.ok) {
+                    const error = await response.json();
+
+                    addToast({
+                      title:
+                        error.error ||
+                        "Failed to update AI optimization setting",
+                      color: "danger",
+                    });
+                    // Revert state on error
+                    setIsAiOptimizationEnabled(!value);
+                  }
+                } catch (error) {
+                  console.error(
+                    "Error updating AI optimization setting:",
+                    error,
+                  );
+                  addToast({
+                    title: "Failed to update AI optimization setting",
+                    color: "danger",
+                  });
+                  // Revert state on error
+                  setIsAiOptimizationEnabled(!value);
+                }
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    );
+
+    return () => setHeader(null);
+  }, [
+    setHeader,
+    router,
+    resumeData.name,
+    isEditingName,
+    isSaving,
+    lastSaved,
+    isAiOptimizationEnabled,
+    resolvedParams.id,
+    t,
+  ]);
 
   // Toggle between simple list and grouped format
   const handleToggleSkillFormat = () => {
@@ -1602,117 +1732,6 @@ export default function ResumeEditPage({
 
   return (
     <div className="max-w-5xl mx-auto">
-      <div className="mb-6 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Button
-            isIconOnly
-            size="sm"
-            variant="light"
-            onPress={() => router.push("/resume")}
-          >
-            <ArrowLeft size={18} />
-          </Button>
-          <div className="min-h-10 flex items-center">
-            {isEditingName ? (
-              <Input
-                aria-label="Resume Name"
-                classNames={{ inputWrapper: "min-h-10", input: "text-base" }}
-                size="sm"
-                value={resumeData.name}
-                onBlur={() => setIsEditingName(false)}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setResumeData({ ...resumeData, name: e.target.value })
-                }
-                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    setIsEditingName(false);
-                  }
-                  if (e.key === "Escape") {
-                    e.preventDefault();
-                    setIsEditingName(false);
-                  }
-                }}
-              />
-            ) : (
-              <button
-                className="text-left focus:outline-none min-h-10 flex items-center"
-                type="button"
-                onClick={() => setIsEditingName(true)}
-              >
-                <span className="text-3xl leading-6 font-semibold">
-                  {resumeData.name || "Resume"}
-                </span>
-                <span className="ml-2 text-xs text-default-500 hidden sm:inline-flex items-center gap-1">
-                  <Edit3 size={14} />
-                </span>
-              </button>
-            )}
-          </div>
-        </div>
-        <div className="flex items-center gap-4 min-h-10 mr-4">
-          {isSaving ? (
-            <div className="text-sm text-default-500 flex items-center gap-1">
-              <Save className="animate-pulse" size={14} />
-              {t("saving")}
-            </div>
-          ) : lastSaved ? (
-            <div className="text-sm text-success flex items-center gap-1">
-              <CheckCircle size={14} />
-              {t("saved")} {lastSaved.toLocaleTimeString()}
-            </div>
-          ) : null}
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-default-600">{t("aiOptimization")}</span>
-            <Switch
-              isSelected={isAiOptimizationEnabled}
-              size="sm"
-              onValueChange={async (value) => {
-                setIsAiOptimizationEnabled(value);
-                try {
-                  const response = await fetch(
-                    `/api/resumes/${resolvedParams.id}`,
-                    {
-                      method: "PATCH",
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
-                      body: JSON.stringify({
-                        aiOptimizationEnabled: value,
-                      }),
-                    },
-                  );
-
-                  if (!response.ok) {
-                    const error = await response.json();
-
-                    addToast({
-                      title:
-                        error.error ||
-                        "Failed to update AI optimization setting",
-                      color: "danger",
-                    });
-                    // Revert state on error
-                    setIsAiOptimizationEnabled(!value);
-                  }
-                } catch (error) {
-                  console.error(
-                    "Error updating AI optimization setting:",
-                    error,
-                  );
-                  addToast({
-                    title: "Failed to update AI optimization setting",
-                    color: "danger",
-                  });
-                  // Revert state on error
-                  setIsAiOptimizationEnabled(!value);
-                }
-              }}
-            />
-          </div>
-        </div>
-      </div>
-
       <div className="space-y-6 pb-5">
         {/* Job Description - Only show when AI optimization is enabled */}
         {isAiOptimizationEnabled && (

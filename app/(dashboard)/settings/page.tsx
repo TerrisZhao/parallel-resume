@@ -6,6 +6,7 @@ import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import { Switch } from "@heroui/switch";
 import { Select, SelectItem } from "@heroui/select";
+import { usePageHeader } from "../use-page-header";
 import {
   Modal,
   ModalContent,
@@ -56,6 +57,7 @@ export default function SettingsPage() {
   const { data: session, update, status } = useSession();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
+  const { setHeader } = usePageHeader();
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
   const [notifications, setNotifications] = useState(true);
@@ -616,14 +618,21 @@ export default function SettingsPage() {
     }
   }, [status, router]);
 
+  // 设置页面头部
+  useEffect(() => {
+    setHeader(
+      <div className="px-6 py-4">
+        <h1 className={title({ size: "sm" })}>{t("title")}</h1>
+      </div>
+    );
+
+    return () => setHeader(null);
+  }, [setHeader, t]);
+
   // 显示加载状态
   if (status === "loading") {
     return (
       <div className="max-w-2xl mx-auto">
-        <div className="mb-8">
-          <h1 className={title()}>{t("title")}</h1>
-          <p className={subtitle({ class: "mt-2" })}>{t("subtitle")}</p>
-        </div>
         <div className="flex justify-center items-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
@@ -641,10 +650,6 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="mb-8">
-        <h1 className={title()}>{t("title")}</h1>
-      </div>
-
       <div className="space-y-6">
         <Card>
           <CardHeader>

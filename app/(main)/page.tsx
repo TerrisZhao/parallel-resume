@@ -53,25 +53,28 @@ export default function Home() {
 
         <MotionDiv variants={itemVariants}>
           <p className={subtitle({ class: "mt-4" })}>
-            {t("subtitle").split('\n').map((line, i) => (
-              <span key={i}>
-                {line}
-                {i === 0 && <br />}
-              </span>
-            ))}
+            {t("subtitle")
+              .split("\n")
+              .map((line, i) => (
+                <span key={i}>
+                  {line}
+                  {i === 0 && <br />}
+                </span>
+              ))}
           </p>
         </MotionDiv>
 
         <MotionDiv className="flex gap-4 mt-4" variants={itemVariants}>
           <Link href="/resume">
             <Button
-              className="font-semibold"
+              className="px-10 font-semibold shadow-md"
               color="primary"
               radius="full"
               size="lg"
               startContent={<FileText size={20} />}
+              variant="shadow"
             >
-              {t("createResume")}
+              {t("getStarted")}
             </Button>
           </Link>
         </MotionDiv>

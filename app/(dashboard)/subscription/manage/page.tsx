@@ -33,6 +33,8 @@ import {
   RefreshCw,
 } from "lucide-react";
 
+import { usePageHeader } from "../../use-page-header";
+
 import { title } from "@/components/primitives";
 
 // 订阅信息类型
@@ -69,6 +71,7 @@ interface Payment {
 export default function ManageSubscriptionPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const { setHeader } = usePageHeader();
   const t = useTranslations("managePage");
   const [loading, setLoading] = useState(true);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -85,6 +88,47 @@ export default function ManageSubscriptionPage() {
       fetchSubscriptionData();
     }
   }, [session]);
+
+  // Set page header
+  useEffect(() => {
+    setHeader(
+      <div className="flex items-center justify-between gap-4 px-6 py-4">
+        <div className="flex items-center gap-3">
+          <Button
+            isIconOnly
+            size="sm"
+            variant="flat"
+            onPress={() => router.push("/subscription")}
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <div>
+            <h1 className={title({ size: "sm" })}>{t("title")}</h1>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <Button
+            color="warning"
+            size="sm"
+            variant="flat"
+            onPress={() => router.push("/subscription")}
+          >
+            {t("buyCredits")}
+          </Button>
+          <div className="flex items-center gap-3">
+            <div>
+              <p className="text-sm text-default-500">
+                {t("currentCreditBalance")}
+              </p>
+              <p className="text-lg font-bold text-warning">{credits}</p>
+            </div>
+          </div>
+        </div>
+      </div>,
+    );
+
+    return () => setHeader(null);
+  }, [setHeader, t, credits, router]);
 
   const fetchSubscriptionData = async () => {
     setLoading(true);
@@ -256,43 +300,6 @@ export default function ManageSubscriptionPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
-      {/* Page Header */}
-      <div className="flex items-center gap-4 mb-8">
-        <Button
-          isIconOnly
-          size="sm"
-          variant="flat"
-          onPress={() => router.push("/subscription")}
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </Button>
-        <div>
-          <h1 className={title({ size: "sm" })}>{t("title")}</h1>
-          <p className="text-sm text-default-500 mt-1">
-            {t("subtitle")}
-          </p>
-        </div>
-      </div>
-
-      {/* Credit Balance Card */}
-      <Card className="mb-6 bg-gradient-to-r from-warning/10 to-warning/5">
-        <CardBody className="flex flex-row items-center justify-between">
-          <div>
-            <p className="text-sm text-default-500 mb-1">
-              {t("currentCreditBalance")}
-            </p>
-            <p className="text-3xl font-bold text-warning">{credits}</p>
-          </div>
-          <Button
-            color="warning"
-            variant="flat"
-            onPress={() => router.push("/subscription")}
-          >
-            {t("buyCredits")}
-          </Button>
-        </CardBody>
-      </Card>
-
       {/* 订阅信息卡片 */}
       {subscription && (
         <Card className="mb-6">
@@ -338,7 +345,9 @@ export default function ManageSubscriptionPage() {
                   <div>
                     <p className="text-default-500">{t("autoRenewal")}</p>
                     <p className="font-medium">
-                      {subscription.cancelAtPeriodEnd ? t("disabled") : t("enabled")}
+                      {subscription.cancelAtPeriodEnd
+                        ? t("disabled")
+                        : t("enabled")}
                     </p>
                   </div>
                 </div>
@@ -518,9 +527,7 @@ export default function ManageSubscriptionPage() {
                 <div className="flex items-start gap-3">
                   <AlertCircle className="w-6 h-6 text-warning flex-shrink-0" />
                   <div>
-                    <p className="font-medium mb-2">
-                      {t("areYouSureCancel")}
-                    </p>
+                    <p className="font-medium mb-2">{t("areYouSureCancel")}</p>
                     <p className="text-sm text-default-500">
                       {t("cancelWarning")}
                     </p>

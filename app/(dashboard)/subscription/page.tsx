@@ -16,9 +16,10 @@ import {
   CreditCard,
   Calendar,
   Gift,
-  Crown,
   Star,
 } from "lucide-react";
+
+import { usePageHeader } from "../use-page-header";
 
 import { title, subtitle } from "@/components/primitives";
 
@@ -55,6 +56,7 @@ interface UserSubscription {
 export default function SubscriptionPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const { setHeader } = usePageHeader();
   const t = useTranslations("subscriptionPage");
   const tSub = useTranslations("subscription");
   const [userSubscription, setUserSubscription] =
@@ -128,6 +130,42 @@ export default function SubscriptionPage() {
       fetchUserSubscription();
     }
   }, [session]);
+
+  // Set page header
+  useEffect(() => {
+    setHeader(
+      <div className="flex items-center justify-between gap-4 px-6 py-4">
+        <h1 className={title({ size: "sm" })}>{t("title")}</h1>
+        {userSubscription && (
+          <div className="flex items-center gap-4">
+            <Button
+              color="primary"
+              size="sm"
+              variant="flat"
+              onPress={() => router.push("/subscription/manage")}
+            >
+              {t("manageSubscription")}
+            </Button>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-warning/20">
+                <Sparkles className="w-5 h-5 text-warning" />
+              </div>
+              <div>
+                <p className="text-sm text-default-500">
+                  {t("currentCreditBalance")}
+                </p>
+                <p className="text-lg font-bold text-warning">
+                  {userSubscription.credits}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>,
+    );
+
+    return () => setHeader(null);
+  }, [setHeader, t, userSubscription, router]);
 
   const fetchUserSubscription = async () => {
     try {
@@ -238,7 +276,9 @@ export default function SubscriptionPage() {
                 ${plan.price.toFixed(2)}
               </span>
               {plan.interval && (
-                <span className="text-default-500">{tSub("plans.pro.perMonth")}</span>
+                <span className="text-default-500">
+                  {tSub("plans.pro.perMonth")}
+                </span>
               )}
             </div>
             {plan.credits && (
@@ -287,57 +327,10 @@ export default function SubscriptionPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
-      {/* Page Title */}
+      {/* Page Subtitle */}
       <div className="text-center mb-12">
-        <h1 className={title({ size: "lg" })}>{t("title")}</h1>
-        <p className={subtitle({ class: "mt-4" })}>
-          {t("subtitle")}
-        </p>
+        <p className={subtitle()}>{t("subtitle")}</p>
       </div>
-
-      {/* Current Subscription Status Card */}
-      {userSubscription && (
-        <Card className="mb-8 bg-gradient-to-r from-primary/10 to-secondary/10">
-          <CardBody className="flex flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-warning/20">
-                <Sparkles className="w-6 h-6 text-warning" />
-              </div>
-              <div>
-                <p className="font-semibold">{t("currentCreditBalance")}</p>
-                <p className="text-2xl font-bold text-warning">
-                  {userSubscription.credits} {t("credits")}
-                </p>
-              </div>
-            </div>
-
-            {userSubscription.subscriptionStatus === "active" && (
-              <div className="text-right">
-                <Chip color="success" variant="flat">
-                  {t("proSubscribed")}
-                </Chip>
-                {userSubscription.subscriptionEndDate && (
-                  <p className="text-sm text-default-500 mt-2">
-                    {t("renewalDate")}{" "}
-                    {new Date(
-                      userSubscription.subscriptionEndDate,
-                    ).toLocaleDateString("en-US")}
-                  </p>
-                )}
-              </div>
-            )}
-
-            <Button
-              color="primary"
-              size="sm"
-              variant="flat"
-              onPress={() => router.push("/subscription/manage")}
-            >
-              {t("manageSubscription")}
-            </Button>
-          </CardBody>
-        </Card>
-      )}
 
       {/* 套餐卡片网格 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 pt-6 max-w-4xl mx-auto">
@@ -358,27 +351,21 @@ export default function SubscriptionPage() {
           </div>
           <Divider />
           <div>
-            <h3 className="font-semibold mb-2">
-              {t("creditVsSubscription")}
-            </h3>
+            <h3 className="font-semibold mb-2">{t("creditVsSubscription")}</h3>
             <p className="text-sm text-default-600">
               {t("creditVsSubscriptionAnswer")}
             </p>
           </div>
           <Divider />
           <div>
-            <h3 className="font-semibold mb-2">
-              {t("cancelAnytime")}
-            </h3>
+            <h3 className="font-semibold mb-2">{t("cancelAnytime")}</h3>
             <p className="text-sm text-default-600">
               {t("cancelAnytimeAnswer")}
             </p>
           </div>
           <Divider />
           <div>
-            <h3 className="font-semibold mb-2">
-              {t("paymentMethods")}
-            </h3>
+            <h3 className="font-semibold mb-2">{t("paymentMethods")}</h3>
             <p className="text-sm text-default-600">
               {t("paymentMethodsAnswer")}
             </p>

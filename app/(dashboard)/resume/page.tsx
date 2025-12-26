@@ -21,6 +21,7 @@ import { useTranslations, useLocale } from "next-intl";
 
 import { title } from "@/components/primitives";
 import { ResumePreviewModal } from "@/components/resume-preview-modal";
+import { usePageHeader } from "../use-page-header";
 
 interface Resume {
   id: number;
@@ -82,6 +83,41 @@ export default function ResumeListPage() {
   const [batchGithub, setBatchGithub] = useState("");
   const [isBatchUpdating, setIsBatchUpdating] = useState(false);
 
+  const { setHeader } = usePageHeader();
+
+  // Set page header
+  useEffect(() => {
+    setHeader(
+      <div className="flex items-center justify-between px-6 py-4">
+        <h1 className={title({ size: "sm" })}>{t("title")}</h1>
+        <div className="flex gap-2">
+          {selectedResumes.size > 0 && (
+            <>
+              <Button color="danger" variant="flat" onPress={handleBatchDelete}>
+                {tCommon("delete")} ({selectedResumes.size})
+              </Button>
+              <Button color="secondary" variant="flat" onPress={onBatchOpen}>
+                {t("batchUpdate")} ({selectedResumes.size})
+              </Button>
+            </>
+          )}
+          <Button
+            className="px-10 shadow-md"
+            color="primary"
+            radius="full"
+            startContent={<Plus size={18}/>}
+            variant="shadow"
+            onPress={onNewOpen}
+          >
+            {t("newResume")}
+          </Button>
+        </div>
+      </div>
+    );
+
+    return () => setHeader(null);
+  }, [setHeader, t, tCommon, selectedResumes.size, onNewOpen, onBatchOpen]);
+
   // Fetch resumes
   const fetchResumes = async () => {
     try {
@@ -112,7 +148,7 @@ export default function ResumeListPage() {
   }, []);
 
   // Create new resume
-  const handleCreateResume = async () => {
+  const handleGetStarted = async () => {
     if (!newResumeName.trim()) {
       addToast({
         title: "Please enter a resume name",
@@ -443,29 +479,6 @@ export default function ResumeListPage() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="mb-8 flex justify-between items-center">
-        <h1 className={title()}>{t("title")}</h1>
-        <div className="flex gap-2">
-          {selectedResumes.size > 0 && (
-            <>
-              <Button color="danger" variant="flat" onPress={handleBatchDelete}>
-                {tCommon("delete")} ({selectedResumes.size})
-              </Button>
-              <Button color="secondary" variant="flat" onPress={onBatchOpen}>
-                {t("batchUpdate")} ({selectedResumes.size})
-              </Button>
-            </>
-          )}
-          <Button
-            color="primary"
-            startContent={<Plus size={18} />}
-            onPress={onNewOpen}
-          >
-            {t("newResume")}
-          </Button>
-        </div>
-      </div>
-
       {resumes.length === 0 ? (
         <Card className="border-none shadow-none">
           <CardBody className="text-center py-12">
@@ -602,7 +615,7 @@ export default function ResumeListPage() {
               onChange={(e) => setNewResumeName(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  void handleCreateResume();
+                  void handleGetStarted();
                 }
               }}
             />
@@ -614,7 +627,7 @@ export default function ResumeListPage() {
             <Button
               color="primary"
               isLoading={isCreating}
-              onPress={handleCreateResume}
+              onPress={handleGetStarted}
             >
               {tCommon("create")}
             </Button>

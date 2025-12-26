@@ -38,7 +38,7 @@
     "title": "创建你的专业简历",
     "titleHighlight": "从这里开始",
     "subtitle": "轻松创建、管理和导出你的专业简历。\n现代化设计，一键导出 PDF，助你在求职中脱颖而出。",
-    "createResume": "创建简历",
+    "getStarted": "立即开始",
     "footer": "设计者"
   },
   "resume": {
@@ -409,6 +409,13 @@
     "notFound": "页面未找到",
     "serverError": "服务器错误，请稍后再试",
     "validation": "验证错误，请检查输入"
+  },
+  "sidebar": {
+    "resume": "简历",
+    "settings": "设置",
+    "subscription": "订阅",
+    "home": "首页",
+    "logout": "退出登录"
   },
   "chromeExtension": {
     "badge": "浏览器扩展",
