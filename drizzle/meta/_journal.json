@@ -43,6 +43,13 @@
       "when": 1766276119277,
       "tag": "0005_smiling_post",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1766750978402,
+      "tag": "0006_lean_jigsaw",
+      "breakpoints": true
     }
   ]
 }

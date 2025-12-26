@@ -42,6 +42,12 @@ export default function DashboardLayout({
       title: t("resume"),
     },
     {
+      key: "interviews",
+      href: "/interviews",
+      icon: "solar:case-round-bold-duotone",
+      title: t("interviews"),
+    },
+    {
       key: "settings",
       href: "/settings",
       icon: "solar:settings-bold-duotone",
@@ -52,6 +58,8 @@ export default function DashboardLayout({
   useEffect(() => {
     if (pathname.startsWith("/resume")) {
       setSelectedKey("resume");
+    } else if (pathname.startsWith("/interviews")) {
+      setSelectedKey("interviews");
     } else if (pathname.startsWith("/settings")) {
       setSelectedKey("settings");
     }

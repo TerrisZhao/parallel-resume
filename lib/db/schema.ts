@@ -62,6 +62,24 @@ export const creditTransactionTypeEnum = pgEnum("credit_transaction_type", [
   "subscription_grant",
 ]);
 
+// 面试类型枚举
+export const interviewTypeEnum = pgEnum("interview_type", [
+  "online",
+  "offline",
+  "phone",
+  "other",
+]);
+
+// 面试阶段枚举
+export const interviewStageEnum = pgEnum("interview_stage", [
+  "applied",
+  "screening",
+  "technical",
+  "onsite",
+  "offer",
+  "rejected",
+]);
+
 // 支付状态枚举
 export const paymentStatusEnum = pgEnum("payment_status", [
   "pending",
@@ -297,6 +315,33 @@ export const resumeProjects = pgTable(
   }),
 );
 
+// 面试记录表
+export const interviews = pgTable(
+  "interviews",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull(),
+    resumeId: integer("resume_id"), // 关联的简历ID
+    company: varchar("company", { length: 255 }).notNull(), // 公司名称
+    type: interviewTypeEnum("type").notNull(), // 面试类型
+    location: varchar("location", { length: 500 }), // 面试地点（线下）
+    videoLink: varchar("video_link", { length: 500 }), // 视频链接（线上）
+    interviewTime: timestamp("interview_time").notNull(), // 面试时间
+    stage: interviewStageEnum("stage").notNull().default("applied"), // 面试阶段
+    notes: text("notes"), // 备注
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    userIdIdx: index("interviews_user_id_idx").on(table.userId),
+    resumeIdIdx: index("interviews_resume_id_idx").on(table.resumeId),
+    stageIdx: index("interviews_stage_idx").on(table.stage),
+    interviewTimeIdx: index("interviews_interview_time_idx").on(
+      table.interviewTime,
+    ),
+  }),
+);
+
 // ==================== 订阅和支付相关表 ====================
 
 // 订阅套餐表
@@ -429,6 +474,7 @@ export const schema = {
   resumeWorkExperiences,
   resumeEducation,
   resumeProjects,
+  interviews,
   subscriptionPlans,
   subscriptions,
   userCredits,
