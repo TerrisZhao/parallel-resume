@@ -17,6 +17,7 @@ import {
   Calendar,
   Gift,
   Star,
+  Crown,
 } from "lucide-react";
 
 import { usePageHeader } from "../use-page-header";
@@ -103,25 +104,24 @@ export default function SubscriptionPage() {
       buttonText: tSub("buttons.buyNow"),
       buttonColor: "warning",
     },
-    // Subscription功能已禁用
-    // {
-    //   id: "pro-monthly",
-    //   name: tSub("plans.pro.name"),
-    //   type: "subscription",
-    //   price: 19.99,
-    //   interval: "month",
-    //   features: [
-    //     tSub("plans.pro.features.unlimitedAI"),
-    //     tSub("plans.pro.features.allFreeFeatures"),
-    //     tSub("plans.pro.features.unlimitedTemplates"),
-    //     tSub("plans.pro.features.prioritySupport"),
-    //     tSub("plans.pro.features.advancedAnalytics"),
-    //   ],
-    //   icon: <Crown className="w-6 h-6" />,
-    //   description: tSub("plans.pro.description"),
-    //   buttonText: tSub("buttons.subscribeNow"),
-    //   buttonColor: "secondary",
-    // },
+    {
+      id: "pro-monthly",
+      name: tSub("plans.pro.name"),
+      type: "subscription",
+      price: 19.99,
+      interval: "month",
+      features: [
+        tSub("plans.pro.features.unlimitedAI"),
+        tSub("plans.pro.features.allFreeFeatures"),
+        tSub("plans.pro.features.unlimitedTemplates"),
+        tSub("plans.pro.features.prioritySupport"),
+        tSub("plans.pro.features.advancedAnalytics"),
+      ],
+      icon: <Crown className="w-6 h-6" />,
+      description: tSub("plans.pro.description"),
+      buttonText: tSub("buttons.subscribeNow"),
+      buttonColor: "secondary",
+    },
   ];
 
   // Fetch user subscription info
@@ -242,9 +242,9 @@ export default function SubscriptionPage() {
     return (
       <Card
         key={plan.id}
-        className={`relative p-3 ${
+        className={`relative p-3 overflow-visible ${
           plan.popular
-            ? "bg-primary shadow-primary/20 overflow-visible shadow-2xl"
+            ? "bg-primary shadow-primary/20 shadow-2xl scale-105"
             : "border-medium border-default-100 bg-transparent"
         }`}
         shadow="none"
@@ -305,6 +305,17 @@ export default function SubscriptionPage() {
                 / {plan.credits} {t("credits")}
               </span>
             )}
+            {plan.interval && (
+              <span
+                className={`text-sm font-medium ${
+                  plan.popular
+                    ? "text-primary-foreground/50"
+                    : "text-default-400"
+                }`}
+              >
+                {plan.interval === "month" ? tSub("plans.pro.perMonth") : tSub("plans.pro.perYear")}
+              </span>
+            )}
           </p>
 
           {/* 功能列表 */}
@@ -359,14 +370,14 @@ export default function SubscriptionPage() {
   };
 
   return (
-    <div className="flex max-w-4xl mx-auto flex-col items-center py-12">
+    <div className="flex max-w-5xl mx-auto flex-col items-center py-12">
       {/* Page Subtitle */}
       <div className="flex max-w-xl flex-col text-center mb-12">
         <h2 className="text-large text-default-500">{t("subtitle")}</h2>
       </div>
 
       {/* 套餐卡片网格 */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 w-full mb-12">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 w-full mb-12">
         {plans.map((plan) => renderPlanCard(plan))}
       </div>
 

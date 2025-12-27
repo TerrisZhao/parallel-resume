@@ -93,18 +93,8 @@ export default function ManageSubscriptionPage() {
   useEffect(() => {
     setHeader(
       <div className="flex items-center justify-between gap-4 px-6 py-4">
-        <div className="flex items-center gap-3">
-          <Button
-            isIconOnly
-            size="sm"
-            variant="flat"
-            onPress={() => router.push("/subscription")}
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-          <div>
-            <h1 className={title({ size: "sm" })}>{t("title")}</h1>
-          </div>
+        <div>
+          <h1 className={title({ size: "sm" })}>{t("title")}</h1>
         </div>
         <div className="flex items-center gap-4">
           <Button

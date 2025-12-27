@@ -36,6 +36,8 @@ export default function DashboardLayout({
   const [pageHeader, setPageHeader] = useState<ReactNode>(null);
   const { theme, setTheme } = useTheme();
   const [currentLanguage, setCurrentLanguage] = useState<string>("system");
+  const [hasSubscription, setHasSubscription] = useState(false);
+  const [credits, setCredits] = useState(0);
 
   const items: SidebarItem[] = [
     {
@@ -73,6 +75,31 @@ export default function DashboardLayout({
       setCurrentLanguage((session.user as any).preferredLanguage);
     }
   }, [session?.user]);
+
+  useEffect(() => {
+    const fetchSubscriptionStatus = async () => {
+      try {
+        const response = await fetch("/api/subscription/status");
+
+        if (response.ok) {
+          const data = await response.json();
+
+          setCredits(data.credits || 0);
+          setHasSubscription(
+            data.subscription &&
+              (data.subscription.status === "active" ||
+                data.subscription.status === "trialing"),
+          );
+        }
+      } catch (error) {
+        console.error("Failed to fetch subscription status:", error);
+      }
+    };
+
+    if (session) {
+      fetchSubscriptionStatus();
+    }
+  }, [session]);
 
   const handleThemeToggle = async () => {
     const newTheme = theme === "dark" ? "light" : "dark";
@@ -141,12 +168,26 @@ export default function DashboardLayout({
         {session?.user && (
           <>
             <div className="flex items-center gap-3 px-2">
-              <Avatar
-                isBordered
-                name={session.user.name || undefined}
-                size="sm"
-                src={session.user.image || undefined}
-              />
+              <div className="relative">
+                <Avatar
+                  isBordered
+                  classNames={{
+                    base: hasSubscription ? "ring-2 ring-warning" : "",
+                  }}
+                  name={session.user.name || undefined}
+                  size="sm"
+                  src={session.user.image || undefined}
+                />
+                {hasSubscription && (
+                  <div className="absolute -top-0.5 -right-0.5 bg-warning rounded-full p-0.5">
+                    <Icon
+                      className="text-warning-foreground"
+                      icon="solar:crown-bold-duotone"
+                      width={12}
+                    />
+                  </div>
+                )}
+              </div>
               <div className="flex flex-col">
                 <p className="text-small font-medium text-default-600">
                   {session.user.name || session.user.email}
@@ -180,30 +221,49 @@ export default function DashboardLayout({
 
         {/* Bottom Actions */}
         <div className="mt-auto flex flex-col">
-          <Card className="relative mx-2 mb-8 overflow-visible" shadow="sm">
-            <CardBody className="items-center pb-8 pt-5 text-center">
-              <h3 className="text-medium font-medium text-default-700">
-                {t("upgradeToPro")}
-                <span aria-label="rocket-emoji" className="ml-2" role="img">
-                  🚀
-                </span>
-              </h3>
-              <p className="p-4 text-small text-default-500">
-                {t("upgradeDescription")}
-              </p>
-            </CardBody>
-            <div className="absolute -bottom-5 left-0 right-0 flex justify-center">
-              <Button
-                className="px-10 shadow-md"
-                color="primary"
-                radius="full"
-                variant="shadow"
-                onPress={() => router.push("/subscription")}
-              >
-                {t("upgrade")}
-              </Button>
-            </div>
-          </Card>
+          {!hasSubscription && credits === 0 && (
+            <Card className="relative mx-2 mb-8 overflow-visible" shadow="sm">
+              <CardBody className="items-center pb-8 pt-5 text-center">
+                <h3 className="text-medium font-medium text-default-700">
+                  {t("upgradeToPro")}
+                  <span aria-label="rocket-emoji" className="ml-2" role="img">
+                    🚀
+                  </span>
+                </h3>
+                <p className="p-4 text-small text-default-500">
+                  {t("upgradeDescription")}
+                </p>
+              </CardBody>
+              <div className="absolute -bottom-5 left-0 right-0 flex justify-center">
+                <Button
+                  className="px-10 shadow-md"
+                  color="primary"
+                  radius="full"
+                  variant="shadow"
+                  onPress={() => router.push("/subscription")}
+                >
+                  {t("upgrade")}
+                </Button>
+              </div>
+            </Card>
+          )}
+          {(hasSubscription || credits > 0) && (
+            <Button
+              fullWidth
+              className="justify-start text-default-500 data-[hover=true]:text-foreground mb-1"
+              startContent={
+                <Icon
+                  className="text-default-500"
+                  icon="solar:crown-bold-duotone"
+                  width={24}
+                />
+              }
+              variant="light"
+              onPress={() => router.push("/subscription/manage")}
+            >
+              {t("subscription")}
+            </Button>
+          )}
           <Button
             fullWidth
             className="justify-start text-default-500 data-[hover=true]:text-foreground"
