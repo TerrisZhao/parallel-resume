@@ -143,205 +143,207 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="flex h-screen">
-      <aside className="relative flex h-full w-72 flex-shrink-0 flex-col border-r border-divider p-6">
-        {/* Logo */}
-        <div
-          className="flex cursor-pointer items-center gap-2 px-2 transition-opacity hover:opacity-80"
-          role="button"
-          tabIndex={0}
-          onClick={() => router.push("/")}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              router.push("/");
-            }
-          }}
-        >
-          <Logo />
-          <span className="text-small font-bold">Parallel Resume</span>
-        </div>
-
-        <Spacer y={8} />
-
-        {/* User Info */}
-        {session?.user && (
-          <>
-            <div className="flex items-center gap-3 px-2">
-              <div className="relative">
-                <Avatar
-                  isBordered
-                  classNames={{
-                    base: hasSubscription ? "ring-2 ring-warning" : "",
-                  }}
-                  name={session.user.name || undefined}
-                  size="sm"
-                  src={session.user.image || undefined}
-                />
-                {hasSubscription && (
-                  <div className="absolute -top-0.5 -right-0.5 bg-warning rounded-full p-0.5">
-                    <Icon
-                      className="text-warning-foreground"
-                      icon="solar:crown-bold-duotone"
-                      width={12}
-                    />
-                  </div>
-                )}
-              </div>
-              <div className="flex flex-col">
-                <p className="text-small font-medium text-default-600">
-                  {session.user.name || session.user.email}
-                </p>
-                <p className="text-tiny text-default-400">
-                  {session.user.email}
-                </p>
-              </div>
-            </div>
-            <Spacer y={6} />
-          </>
-        )}
-
-        {/* Sidebar Navigation */}
-        <ScrollShadow className="-mr-6 h-full max-h-full py-6 pr-6">
-          <Sidebar
-            defaultSelectedKey={selectedKey}
-            items={items}
-            onSelect={(key) => {
-              const item = items.find((i) => i.key === key);
-
-              if (item?.href) {
-                router.push(item.href);
+    <div className=" h-screen bg-gradient-to-br from-rose-400 via-fuchsia-500 to-indigo-500 dark:from-rose-600 dark:via-fuchsia-700 dark:to-indigo-700 p-4">
+      <div className="flex h-full rounded-3xl overflow-hidden bg-background">
+        <aside className="relative flex h-full w-72 flex-shrink-0 flex-col border-r border-divider p-6">
+          {/* Logo */}
+          <div
+            className="flex cursor-pointer items-center gap-2 px-2 transition-opacity hover:opacity-80"
+            role="button"
+            tabIndex={0}
+            onClick={() => router.push("/")}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                router.push("/");
               }
             }}
-          />
-          <Spacer y={2} />
-        </ScrollShadow>
+          >
+            <Logo />
+            <span className="text-small font-bold">Parallel Resume</span>
+          </div>
 
-        <Spacer y={8} />
+          <Spacer y={8} />
 
-        {/* Bottom Actions */}
-        <div className="mt-auto flex flex-col">
-          {!hasSubscription && credits === 0 && (
-            <Card className="relative mx-2 mb-8 overflow-visible" shadow="sm">
-              <CardBody className="items-center pb-8 pt-5 text-center">
-                <h3 className="text-medium font-medium text-default-700">
-                  {t("upgradeToPro")}
-                  <span aria-label="rocket-emoji" className="ml-2" role="img">
-                    🚀
-                  </span>
-                </h3>
-                <p className="p-4 text-small text-default-500">
-                  {t("upgradeDescription")}
-                </p>
-              </CardBody>
-              <div className="absolute -bottom-5 left-0 right-0 flex justify-center">
-                <Button
-                  className="px-10 shadow-md"
-                  color="primary"
-                  radius="full"
-                  variant="shadow"
-                  onPress={() => router.push("/subscription")}
-                >
-                  {t("upgrade")}
-                </Button>
+          {/* User Info */}
+          {session?.user && (
+            <>
+              <div className="flex items-center gap-3 px-2">
+                <div className="relative">
+                  <Avatar
+                    isBordered
+                    classNames={{
+                      base: hasSubscription ? "ring-2 ring-warning" : "",
+                    }}
+                    name={session.user.name || undefined}
+                    size="sm"
+                    src={session.user.image || undefined}
+                  />
+                  {hasSubscription && (
+                    <div className="absolute -top-0.5 -right-0.5 bg-warning rounded-full p-0.5">
+                      <Icon
+                        className="text-warning-foreground"
+                        icon="solar:crown-bold-duotone"
+                        width={12}
+                      />
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col">
+                  <p className="text-small font-medium text-default-600">
+                    {session.user.name || session.user.email}
+                  </p>
+                  <p className="text-tiny text-default-400">
+                    {session.user.email}
+                  </p>
+                </div>
               </div>
-            </Card>
+              <Spacer y={6} />
+            </>
           )}
-          {(hasSubscription || credits > 0) && (
+
+          {/* Sidebar Navigation */}
+          <ScrollShadow className="-mr-6 h-full max-h-full py-6 pr-6">
+            <Sidebar
+              defaultSelectedKey={selectedKey}
+              items={items}
+              onSelect={(key) => {
+                const item = items.find((i) => i.key === key);
+
+                if (item?.href) {
+                  router.push(item.href);
+                }
+              }}
+            />
+            <Spacer y={2} />
+          </ScrollShadow>
+
+          <Spacer y={8} />
+
+          {/* Bottom Actions */}
+          <div className="mt-auto flex flex-col">
+            {!hasSubscription && credits === 0 && (
+              <Card className="relative mx-2 mb-8 overflow-visible" shadow="sm">
+                <CardBody className="items-center pb-8 pt-5 text-center">
+                  <h3 className="text-medium font-medium text-default-700">
+                    {t("upgradeToPro")}
+                    <span aria-label="rocket-emoji" className="ml-2" role="img">
+                      🚀
+                    </span>
+                  </h3>
+                  <p className="p-4 text-small text-default-500">
+                    {t("upgradeDescription")}
+                  </p>
+                </CardBody>
+                <div className="absolute -bottom-5 left-0 right-0 flex justify-center">
+                  <Button
+                    className="px-10 shadow-md"
+                    color="primary"
+                    radius="full"
+                    variant="shadow"
+                    onPress={() => router.push("/subscription")}
+                  >
+                    {t("upgrade")}
+                  </Button>
+                </div>
+              </Card>
+            )}
+            {(hasSubscription || credits > 0) && (
+              <Button
+                fullWidth
+                className="justify-start text-default-500 data-[hover=true]:text-foreground mb-1"
+                startContent={
+                  <Icon
+                    className="text-default-500"
+                    icon="solar:crown-bold-duotone"
+                    width={24}
+                  />
+                }
+                variant="light"
+                onPress={() => router.push("/subscription/manage")}
+              >
+                {t("subscription")}
+              </Button>
+            )}
             <Button
               fullWidth
-              className="justify-start text-default-500 data-[hover=true]:text-foreground mb-1"
+              className="justify-start text-default-500 data-[hover=true]:text-foreground"
               startContent={
                 <Icon
                   className="text-default-500"
-                  icon="solar:crown-bold-duotone"
+                  icon="solar:settings-bold-duotone"
                   width={24}
                 />
               }
               variant="light"
-              onPress={() => router.push("/subscription/manage")}
+              onPress={() => router.push("/settings")}
             >
-              {t("subscription")}
-            </Button>
-          )}
-          <Button
-            fullWidth
-            className="justify-start text-default-500 data-[hover=true]:text-foreground"
-            startContent={
-              <Icon
-                className="text-default-500"
-                icon="solar:settings-bold-duotone"
-                width={24}
-              />
-            }
-            variant="light"
-            onPress={() => router.push("/settings")}
-          >
-            {t("settings")}
-          </Button>
-          <Button
-            fullWidth
-            className="justify-start text-default-500 data-[hover=true]:text-foreground"
-            startContent={
-              <Icon
-                className="text-default-500"
-                icon="solar:question-circle-bold-duotone"
-                width={24}
-              />
-            }
-            variant="light"
-            onPress={() => router.push("/help")}
-          >
-            {t("help")}
-          </Button>
-          <Spacer y={2} />
-          <div className="flex items-center justify-between">
-            <Button
-              isIconOnly
-              className="text-default-500 data-[hover=true]:text-foreground"
-              variant="light"
-              onPress={() => signOut()}
-            >
-              <Icon icon="solar:logout-2-bold-duotone" width={24} />
+              {t("settings")}
             </Button>
             <Button
-              isIconOnly
-              className="text-default-500 data-[hover=true]:text-foreground"
+              fullWidth
+              className="justify-start text-default-500 data-[hover=true]:text-foreground"
+              startContent={
+                <Icon
+                  className="text-default-500"
+                  icon="solar:question-circle-bold-duotone"
+                  width={24}
+                />
+              }
               variant="light"
-              onPress={handleLanguageToggle}
+              onPress={() => router.push("/help")}
             >
-              <Icon icon="solar:global-bold-duotone" width={24} />
+              {t("help")}
             </Button>
-            <Button
-              isIconOnly
-              className="text-default-500 data-[hover=true]:text-foreground"
-              variant="light"
-              onPress={handleThemeToggle}
-            >
-              <Icon
-                icon={
-                  theme === "dark"
-                    ? "solar:moon-bold-duotone"
-                    : "solar:sun-bold-duotone"
-                }
-                width={24}
-              />
-            </Button>
-          </div>
-        </div>
-      </aside>
-      <PageHeaderContext.Provider value={{ setHeader: setPageHeader }}>
-        <main className="flex flex-1 flex-col overflow-hidden">
-          {/* 固定顶部横栏 */}
-          {pageHeader && (
-            <div className="flex-shrink-0 border-b border-divider bg-background">
-              {pageHeader}
+            <Spacer y={2} />
+            <div className="flex items-center justify-between">
+              <Button
+                isIconOnly
+                className="text-default-500 data-[hover=true]:text-foreground"
+                variant="light"
+                onPress={() => signOut()}
+              >
+                <Icon icon="solar:logout-2-bold-duotone" width={24} />
+              </Button>
+              <Button
+                isIconOnly
+                className="text-default-500 data-[hover=true]:text-foreground"
+                variant="light"
+                onPress={handleLanguageToggle}
+              >
+                <Icon icon="solar:global-bold-duotone" width={24} />
+              </Button>
+              <Button
+                isIconOnly
+                className="text-default-500 data-[hover=true]:text-foreground"
+                variant="light"
+                onPress={handleThemeToggle}
+              >
+                <Icon
+                  icon={
+                    theme === "dark"
+                      ? "solar:moon-bold-duotone"
+                      : "solar:sun-bold-duotone"
+                  }
+                  width={24}
+                />
+              </Button>
             </div>
-          )}
-          {/* 可滚动内容区 */}
-          <div className="flex-1 overflow-y-auto p-6">{children}</div>
-        </main>
-      </PageHeaderContext.Provider>
+          </div>
+        </aside>
+        <PageHeaderContext.Provider value={{ setHeader: setPageHeader }}>
+          <main className="flex flex-1 flex-col overflow-hidden">
+            {/* 固定顶部横栏 */}
+            {pageHeader && (
+              <div className="flex-shrink-0 border-b border-divider bg-background">
+                {pageHeader}
+              </div>
+            )}
+            {/* 可滚动内容区 */}
+            <div className="flex-1 overflow-y-auto p-6">{children}</div>
+          </main>
+        </PageHeaderContext.Provider>
+      </div>
     </div>
   );
 }
