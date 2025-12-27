@@ -246,19 +246,10 @@ export default function SubscriptionPage() {
           plan.popular
             ? "bg-primary shadow-primary/20 shadow-2xl scale-105"
             : plan.type === "subscription"
-              ? "shadow-lg backdrop-blur-md"
+              ? "bg-gradient-to-br from-rose-400 via-fuchsia-500 to-indigo-500 dark:from-rose-600 dark:via-fuchsia-700 dark:to-indigo-700 shadow-2xl"
               : "border-medium border-default-100 bg-transparent"
         }`}
         shadow="none"
-        style={
-          plan.type === "subscription"
-            ? {
-                background:
-                  "linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(168, 85, 247, 0.2) 50%, rgba(236, 72, 153, 0.2) 100%)",
-                position: "relative",
-              }
-            : undefined
-        }
       >
         {plan.popular && (
           <Chip
@@ -275,15 +266,15 @@ export default function SubscriptionPage() {
         <CardHeader className="flex flex-col items-start gap-2 pb-6 relative z-10">
           <h2
             className={`text-xl font-medium ${
-              plan.popular ? "text-primary-foreground" : ""
+              plan.popular || plan.type === "subscription" ? "text-white" : ""
             }`}
           >
             {plan.name}
           </h2>
           <p
             className={`text-medium ${
-              plan.popular
-                ? "text-primary-foreground/70"
+              plan.popular || plan.type === "subscription"
+                ? "text-white/80"
                 : "text-default-500"
             }`}
           >
@@ -291,15 +282,15 @@ export default function SubscriptionPage() {
           </p>
         </CardHeader>
 
-        <Divider className={`${plan.popular ? "bg-primary-foreground/20" : ""} relative z-10`} />
+        <Divider className={`${plan.popular || plan.type === "subscription" ? "bg-white/20" : ""} relative z-10`} />
 
         <CardBody className="gap-8 pt-6 relative z-10">
           {/* 价格展示 */}
           <p className="flex items-baseline gap-1">
             <span
               className={`inline bg-linear-to-br bg-clip-text text-4xl leading-7 font-semibold tracking-tight ${
-                plan.popular
-                  ? "text-primary-foreground"
+                plan.popular || plan.type === "subscription"
+                  ? "text-white"
                   : "from-foreground to-foreground-600 text-transparent"
               }`}
             >
@@ -308,8 +299,8 @@ export default function SubscriptionPage() {
             {plan.credits && (
               <span
                 className={`text-sm font-medium ${
-                  plan.popular
-                    ? "text-primary-foreground/50"
+                  plan.popular || plan.type === "subscription"
+                    ? "text-white/60"
                     : "text-default-400"
                 }`}
               >
@@ -319,8 +310,8 @@ export default function SubscriptionPage() {
             {plan.interval && (
               <span
                 className={`text-sm font-medium ${
-                  plan.popular
-                    ? "text-primary-foreground/50"
+                  plan.popular || plan.type === "subscription"
+                    ? "text-white/60"
                     : "text-default-400"
                 }`}
               >
@@ -335,13 +326,13 @@ export default function SubscriptionPage() {
               <li key={index} className="flex items-center gap-2">
                 <Check
                   className={`w-6 h-6 flex-shrink-0 ${
-                    plan.popular ? "text-primary-foreground" : "text-primary"
+                    plan.popular || plan.type === "subscription" ? "text-white" : "text-primary"
                   }`}
                 />
                 <p
                   className={`text-sm ${
-                    plan.popular
-                      ? "text-primary-foreground/70"
+                    plan.popular || plan.type === "subscription"
+                      ? "text-white/80"
                       : "text-default-500"
                   }`}
                 >
@@ -356,9 +347,11 @@ export default function SubscriptionPage() {
           <Button
             fullWidth
             className={
-              plan.popular
-                ? "bg-primary-foreground text-primary shadow-default-500/50 font-medium shadow-xs"
-                : ""
+              plan.type === "subscription"
+                ? "bg-white text-rose-600 dark:text-fuchsia-700 shadow-default-500/50 font-medium shadow-xs hover:bg-white/90"
+                : plan.popular
+                  ? "bg-primary-foreground text-primary shadow-default-500/50 font-medium shadow-xs"
+                  : ""
             }
             color={plan.buttonColor}
             isDisabled={isCurrentPlan || isSubscribed}
@@ -370,7 +363,7 @@ export default function SubscriptionPage() {
                 <Calendar className="w-5 h-5" />
               ) : null
             }
-            variant={isCurrentPlan || isSubscribed ? "flat" : plan.popular ? "solid" : "bordered"}
+            variant={isCurrentPlan || isSubscribed ? "flat" : plan.popular || plan.type === "subscription" ? "solid" : "bordered"}
             onPress={() => handleSelectPlan(plan)}
           >
             {isSubscribed ? tSub("buttons.currentPlan") : plan.buttonText}
