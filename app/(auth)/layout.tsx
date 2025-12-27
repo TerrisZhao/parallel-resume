@@ -6,9 +6,8 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative flex flex-col h-screen">
-      <Navbar minimal />
-      <main className="container mx-auto max-w-7xl flex-grow">{children}</main>
+    <div className="relative flex flex-col h-screen w-full">
+      <main className="flex-1 w-full">{children}</main>
     </div>
   );
 }
