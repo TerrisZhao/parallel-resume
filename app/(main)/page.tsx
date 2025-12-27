@@ -34,11 +34,12 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex min-h-screen w-full flex-col items-center bg-gradient-to-br from-rose-400 via-fuchsia-500 to-indigo-500 dark:from-rose-600 dark:via-fuchsia-700 dark:to-indigo-700 p-8 sm:p-10 lg:p-16">
+      <div className="h-12"></div>
       {/* Hero Section */}
       <MotionDiv
         animate="visible"
-        className="flex flex-col items-center justify-center gap-6 text-center w-full px-6 min-h-[calc(100vh-9rem)] bg-gradient-to-br from-indigo-50 via-blue-50 to-cyan-50 dark:from-slate-900 dark:via-indigo-950/50 dark:to-slate-900 rounded-3xl"
+        className="flex flex-col items-center min-h-[calc(100vh-12rem)] justify-center gap-8 text-center w-full p-8 bg-gradient-to-br from-indigo-50 via-blue-50/50 to-cyan-50 dark:from-slate-900 dark:via-indigo-950/50 dark:to-slate-900 rounded-3xl"
         initial="hidden"
         variants={containerVariants}
       >
@@ -81,15 +82,14 @@ export default function Home() {
       </MotionDiv>
 
       {/* Footer */}
-      <footer className="w-full flex items-center justify-center py-3">
+      <footer className="fixed bottom-0 left-0 right-0 w-full flex items-center justify-center py-3 z-40">
         <Link
           isExternal
           className="flex items-center gap-1 text-current"
           href="#"
           title="Resume Builder"
         >
-          <span className="text-default-600">2025 ｜ {t("footer")}</span>
-          <p className="text-primary">Terris</p>
+          <span className="text-default-600">2025 ｜ {t("footer")} Terris</span>
         </Link>
       </footer>
     </div>
