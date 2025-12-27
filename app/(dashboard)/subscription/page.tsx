@@ -245,9 +245,20 @@ export default function SubscriptionPage() {
         className={`relative p-3 overflow-visible ${
           plan.popular
             ? "bg-primary shadow-primary/20 shadow-2xl scale-105"
-            : "border-medium border-default-100 bg-transparent"
+            : plan.type === "subscription"
+              ? "shadow-lg backdrop-blur-md"
+              : "border-medium border-default-100 bg-transparent"
         }`}
         shadow="none"
+        style={
+          plan.type === "subscription"
+            ? {
+                background:
+                  "linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(168, 85, 247, 0.2) 50%, rgba(236, 72, 153, 0.2) 100%)",
+                position: "relative",
+              }
+            : undefined
+        }
       >
         {plan.popular && (
           <Chip
@@ -261,7 +272,7 @@ export default function SubscriptionPage() {
           </Chip>
         )}
 
-        <CardHeader className="flex flex-col items-start gap-2 pb-6">
+        <CardHeader className="flex flex-col items-start gap-2 pb-6 relative z-10">
           <h2
             className={`text-xl font-medium ${
               plan.popular ? "text-primary-foreground" : ""
@@ -280,9 +291,9 @@ export default function SubscriptionPage() {
           </p>
         </CardHeader>
 
-        <Divider className={plan.popular ? "bg-primary-foreground/20" : ""} />
+        <Divider className={`${plan.popular ? "bg-primary-foreground/20" : ""} relative z-10`} />
 
-        <CardBody className="gap-8 pt-6">
+        <CardBody className="gap-8 pt-6 relative z-10">
           {/* 价格展示 */}
           <p className="flex items-baseline gap-1">
             <span
@@ -341,7 +352,7 @@ export default function SubscriptionPage() {
           </ul>
         </CardBody>
 
-        <CardFooter>
+        <CardFooter className="relative z-10">
           <Button
             fullWidth
             className={
