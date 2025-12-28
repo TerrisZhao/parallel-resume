@@ -13,6 +13,13 @@ import { ScrollShadow } from "@heroui/scroll-shadow";
 import { Spacer } from "@heroui/spacer";
 import { Icon } from "@iconify/react";
 import { Card, CardBody } from "@heroui/card";
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+} from "@heroui/modal";
 import { useTheme } from "next-themes";
 
 import { PageHeaderContext } from "./page-header-context";
@@ -31,6 +38,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
   const t = useTranslations("sidebar");
+  const tCommon = useTranslations("common");
   const { data: session, update } = useSession();
   const [selectedKey, setSelectedKey] = useState("resume");
   const [pageHeader, setPageHeader] = useState<ReactNode>(null);
@@ -38,6 +46,7 @@ export default function DashboardLayout({
   const [currentLanguage, setCurrentLanguage] = useState<string>("system");
   const [hasSubscription, setHasSubscription] = useState(false);
   const [credits, setCredits] = useState(0);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const items: SidebarItem[] = [
     {
@@ -301,7 +310,7 @@ export default function DashboardLayout({
                 isIconOnly
                 className="text-default-500 data-[hover=true]:text-foreground"
                 variant="light"
-                onPress={() => signOut()}
+                onPress={() => setShowLogoutModal(true)}
               >
                 <Icon icon="solar:logout-2-bold-duotone" width={24} />
               </Button>
@@ -344,6 +353,34 @@ export default function DashboardLayout({
           </main>
         </PageHeaderContext.Provider>
       </div>
+      <Modal isOpen={showLogoutModal} onOpenChange={setShowLogoutModal}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                {t("logout")}
+              </ModalHeader>
+              <ModalBody>
+                <p>{t("logoutConfirm")}</p>
+              </ModalBody>
+              <ModalFooter>
+                <Button variant="light" onPress={onClose}>
+                  {tCommon("cancel")}
+                </Button>
+                <Button
+                  color="danger"
+                  onPress={() => {
+                    onClose();
+                    signOut();
+                  }}
+                >
+                  {t("logout")}
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </div>
   );
 }

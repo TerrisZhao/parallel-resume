@@ -32,7 +32,8 @@
     "user": "用户",
     "signedInAs": "登录为",
     "myResumes": "我的简历",
-    "logout": "登出"
+    "logout": "登出",
+    "logoutConfirm": "确定要退出登录吗？"
   },
   "home": {
     "title": "创建你的专业简历",
@@ -425,6 +426,7 @@
     "subscription": "订阅",
     "home": "首页",
     "logout": "退出登录",
+    "logoutConfirm": "确定要退出登录吗？",
     "upgradeToPro": "升级到专业版",
     "upgradeDescription": "免费获得 1 个月，解锁专业版所有功能。",
     "upgrade": "立即升级"
