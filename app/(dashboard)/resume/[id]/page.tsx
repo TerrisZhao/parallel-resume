@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, use } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { usePageHeader } from "../../use-page-header";
 import { Button } from "@heroui/button";
 import { Card, CardBody } from "@heroui/card";
 import { Input, Textarea } from "@heroui/input";
@@ -51,6 +50,8 @@ import {
   rectSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+
+import { usePageHeader } from "../../use-page-header";
 
 import {
   ResumeData,
@@ -211,9 +212,13 @@ function BatchStarIndicator({
                   key={imp.id}
                   className="space-y-2 border-b pb-4 last:border-0"
                 >
-                  <p className="text-sm font-medium">{t("item")} {index + 1}</p>
+                  <p className="text-sm font-medium">
+                    {t("item")} {index + 1}
+                  </p>
                   <div>
-                    <p className="text-xs text-default-500 mb-1">{t("originalContent")}</p>
+                    <p className="text-xs text-default-500 mb-1">
+                      {t("originalContent")}
+                    </p>
                     <p className="text-sm text-default-600 bg-default-100 p-2 rounded">
                       {imp.originalContent}
                     </p>
@@ -436,13 +441,17 @@ function ProjectStarIndicator({
           <ModalBody>
             <div className="space-y-4">
               <div>
-                <p className="text-sm font-medium mb-2">{t("originalContent")}</p>
+                <p className="text-sm font-medium mb-2">
+                  {t("originalContent")}
+                </p>
                 <p className="text-sm text-default-600 bg-default-100 p-3 rounded">
                   {content}
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium mb-2">{t("optimizedContent")}</p>
+                <p className="text-sm font-medium mb-2">
+                  {t("optimizedContent")}
+                </p>
                 <Textarea
                   minRows={5}
                   placeholder={t("optimizedContentPlaceholder")}
@@ -640,13 +649,17 @@ function StarIndicator({
           <ModalBody>
             <div className="space-y-4">
               <div>
-                <p className="text-sm font-medium mb-2">{t("originalContent")}</p>
+                <p className="text-sm font-medium mb-2">
+                  {t("originalContent")}
+                </p>
                 <p className="text-sm text-default-600 bg-default-100 p-3 rounded">
                   {content}
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium mb-2">{t("optimizedContent")}</p>
+                <p className="text-sm font-medium mb-2">
+                  {t("optimizedContent")}
+                </p>
                 <Textarea
                   minRows={5}
                   placeholder={t("optimizedContentPlaceholder")}
@@ -1225,7 +1238,9 @@ export default function ResumeEditPage({
             </div>
           ) : null}
           <div className="flex items-center gap-2">
-            <span className="text-sm text-default-600">{t("aiOptimization")}</span>
+            <span className="text-sm text-default-600">
+              {t("aiOptimization")}
+            </span>
             <Switch
               isSelected={isAiOptimizationEnabled}
               size="sm"
@@ -1273,7 +1288,7 @@ export default function ResumeEditPage({
             />
           </div>
         </div>
-      </div>
+      </div>,
     );
 
     return () => setHeader(null);
@@ -1758,7 +1773,9 @@ export default function ResumeEditPage({
         {/* Personal Information */}
         <Card>
           <CardBody className="space-y-4">
-            <h3 className="text-lg font-semibold">{t("personalInformation")}</h3>
+            <h3 className="text-lg font-semibold">
+              {t("personalInformation")}
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label={t("fullName")}
@@ -2007,7 +2024,9 @@ export default function ResumeEditPage({
               >
                 <CardBody className="space-y-3">
                   <div className="flex justify-between items-start">
-                    <h4 className="font-medium">{t("experience")} {expIndex + 1}</h4>
+                    <h4 className="font-medium">
+                      {t("experience")} {expIndex + 1}
+                    </h4>
                     <Button
                       isIconOnly
                       color="danger"
@@ -2235,7 +2254,9 @@ export default function ResumeEditPage({
               >
                 <CardBody className="space-y-3">
                   <div className="flex justify-between items-start">
-                    <h4 className="font-medium">{t("education")} {eduIndex + 1}</h4>
+                    <h4 className="font-medium">
+                      {t("education")} {eduIndex + 1}
+                    </h4>
                     <Button
                       isIconOnly
                       color="danger"
@@ -2342,7 +2363,9 @@ export default function ResumeEditPage({
               >
                 <CardBody className="space-y-3">
                   <div className="flex justify-between items-start">
-                    <h4 className="font-medium">{t("project")} {projIndex + 1}</h4>
+                    <h4 className="font-medium">
+                      {t("project")} {projIndex + 1}
+                    </h4>
                     <Button
                       isIconOnly
                       color="danger"
@@ -2425,7 +2448,9 @@ export default function ResumeEditPage({
                   </div>
                   <Divider />
                   <div className="space-y-2">
-                    <div className="text-sm font-medium">{t("technologies")}</div>
+                    <div className="text-sm font-medium">
+                      {t("technologies")}
+                    </div>
                     <div className="flex gap-2">
                       <Input
                         placeholder={t("addTechnologyPlaceholder")}
@@ -2471,7 +2496,9 @@ export default function ResumeEditPage({
         {/* Additional Information */}
         <Card>
           <CardBody className="space-y-4">
-            <h3 className="text-lg font-semibold">{t("additionalInformation")}</h3>
+            <h3 className="text-lg font-semibold">
+              {t("additionalInformation")}
+            </h3>
             <Textarea
               label={t("additionalInfo")}
               minRows={4}

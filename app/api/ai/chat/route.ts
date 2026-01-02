@@ -4,6 +4,11 @@ import { z } from "zod";
 
 import { authOptions } from "@/lib/auth/config";
 import { getUserAIConfig, callAI } from "@/lib/ai/client";
+import {
+  checkCreditsBalance,
+  calculateCreditsForUsage,
+  consumeCredits,
+} from "@/lib/credits/manager";
 
 const chatRequestSchema = z.object({
   prompt: z.string().min(1, "提示词不能为空"),
@@ -24,16 +29,50 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "未授权访问" }, { status: 401 });
     }
 
-    // 获取用户AI配置
-    const aiConfig = await getUserAIConfig(parseInt(session.user.id));
+    const userId = parseInt(session.user.id);
 
-    if (!aiConfig) {
+    // 获取用户AI配置（现在返回 config 和 mode）
+    const aiConfigData = await getUserAIConfig(userId);
+
+    if (!aiConfigData) {
       return NextResponse.json({ error: "请先配置AI模型" }, { status: 400 });
     }
+
+    const { config: aiConfig, mode } = aiConfigData;
 
     const body = await request.json();
     const { prompt, systemPrompt, temperature, maxTokens } =
       chatRequestSchema.parse(body);
+
+    // 如果是积分模式，检查积分余额（预估）
+    if (mode === "credits") {
+      // 预估消耗（按最大 token 计算）
+      const estimatedCredits = await calculateCreditsForUsage(
+        aiConfig.provider,
+        aiConfig.model,
+        {
+          promptTokens: 0,
+          completionTokens: maxTokens || 2000,
+          totalTokens: maxTokens || 2000,
+        },
+      );
+
+      const hasEnoughCredits = await checkCreditsBalance(
+        userId,
+        estimatedCredits,
+      );
+
+      if (!hasEnoughCredits) {
+        return NextResponse.json(
+          {
+            error: "积分余额不足",
+            requiredCredits: estimatedCredits,
+            mode: "credits",
+          },
+          { status: 402 }, // 402 Payment Required
+        );
+      }
+    }
 
     // 调用AI
     const response = await callAI({
@@ -44,10 +83,46 @@ export async function POST(request: NextRequest) {
       maxTokens,
     });
 
+    // 如果是积分模式，扣除积分
+    let creditsConsumed = 0;
+    let newBalance = 0;
+
+    if (mode === "credits") {
+      creditsConsumed = await calculateCreditsForUsage(
+        aiConfig.provider,
+        aiConfig.model,
+        response.usage,
+      );
+
+      const result = await consumeCredits(
+        userId,
+        creditsConsumed,
+        aiConfig.provider,
+        aiConfig.model,
+        response.usage,
+        `AI 调用 - ${prompt.substring(0, 50)}...`,
+      );
+
+      if (!result.success) {
+        // 理论上不应该发生，因为已经预检查了
+        return NextResponse.json(
+          { error: result.error || "积分扣除失败" },
+          { status: 500 },
+        );
+      }
+
+      newBalance = result.newBalance;
+    }
+
     return NextResponse.json({
       success: true,
       response: response.content,
       usage: response.usage,
+      mode,
+      ...(mode === "credits" && {
+        creditsConsumed,
+        creditsBalance: newBalance,
+      }),
     });
   } catch (error) {
     if (error instanceof z.ZodError) {

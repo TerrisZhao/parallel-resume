@@ -16,26 +16,33 @@ import {
   CreditCard,
   Calendar,
   Gift,
-  Star,
   Crown,
 } from "lucide-react";
 
 import { usePageHeader } from "../use-page-header";
 
-import { title, subtitle } from "@/components/primitives";
+import { title } from "@/components/primitives";
 
-// 套餐类型定义
-interface Plan {
-  id: string;
+// 数据库套餐类型定义
+interface DBPlan {
+  id: number;
   name: string;
   type: "free" | "credits" | "subscription";
   price: number;
-  credits?: number;
-  interval?: string;
+  credits: number | null;
+  interval: string | null;
+  intervalCount: number | null;
   features: string[];
+  stripePriceId: string | null;
+  description: string | null;
+  displayOrder: number;
+  isPopular: boolean;
+}
+
+// UI展示套餐类型定义
+interface Plan extends DBPlan {
   popular?: boolean;
   icon: React.ReactNode;
-  description: string;
   buttonText: string;
   buttonColor?:
     | "default"
@@ -63,66 +70,13 @@ export default function SubscriptionPage() {
   const [userSubscription, setUserSubscription] =
     useState<UserSubscription | null>(null);
   const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null);
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [isLoadingPlans, setIsLoadingPlans] = useState(true);
 
-  // Define three plans (subscription plan disabled)
-  const plans: Plan[] = [
-    {
-      id: "free",
-      name: tSub("plans.free.name"),
-      type: "free",
-      price: 0,
-      interval: "",
-      features: [
-        tSub("plans.free.features.basicEditing"),
-        tSub("plans.free.features.templates"),
-        tSub("plans.free.features.exportPDF"),
-        tSub("plans.free.features.aiOptimizations"),
-        tSub("plans.free.features.communitySupport"),
-      ],
-      icon: <Gift className="w-6 h-6" />,
-      description: tSub("plans.free.description"),
-      buttonText: tSub("buttons.currentPlan"),
-      buttonColor: "default",
-    },
-    {
-      id: "credits-100",
-      name: tSub("plans.credits.name"),
-      type: "credits",
-      price: 9.99,
-      credits: 100,
-      features: [
-        tSub("plans.credits.credits100"),
-        tSub("plans.credits.features.neverExpire"),
-        tSub("plans.credits.features.flexibleCredits"),
-        tSub("plans.credits.features.allFreeFeatures"),
-        tSub("plans.credits.features.prioritySupport"),
-        tSub("plans.credits.features.payAsYouGo"),
-      ],
-      popular: true,
-      icon: <Zap className="w-6 h-6" />,
-      description: tSub("plans.credits.description"),
-      buttonText: tSub("buttons.buyNow"),
-      buttonColor: "warning",
-    },
-    {
-      id: "pro-monthly",
-      name: tSub("plans.pro.name"),
-      type: "subscription",
-      price: 19.99,
-      interval: "month",
-      features: [
-        tSub("plans.pro.features.unlimitedAI"),
-        tSub("plans.pro.features.allFreeFeatures"),
-        tSub("plans.pro.features.unlimitedTemplates"),
-        tSub("plans.pro.features.prioritySupport"),
-        tSub("plans.pro.features.advancedAnalytics"),
-      ],
-      icon: <Crown className="w-6 h-6" />,
-      description: tSub("plans.pro.description"),
-      buttonText: tSub("buttons.subscribeNow"),
-      buttonColor: "secondary",
-    },
-  ];
+  // 获取套餐列表
+  useEffect(() => {
+    fetchPlans();
+  }, []);
 
   // Fetch user subscription info
   useEffect(() => {
@@ -130,6 +84,81 @@ export default function SubscriptionPage() {
       fetchUserSubscription();
     }
   }, [session]);
+
+  // 从数据库获取套餐并增强UI数据
+  const fetchPlans = async () => {
+    try {
+      setIsLoadingPlans(true);
+      const response = await fetch("/api/subscription/plans");
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch plans");
+      }
+
+      const data = await response.json();
+      const dbPlans: DBPlan[] = data.plans;
+
+      // 增强套餐数据，添加UI所需的字段
+      const enhancedPlans: Plan[] = dbPlans.map((plan) => {
+        // 根据类型设置图标
+        let icon: React.ReactNode;
+
+        if (plan.type === "free") {
+          icon = <Gift className="w-6 h-6" />;
+        } else if (plan.type === "credits") {
+          icon = <Zap className="w-6 h-6" />;
+        } else {
+          icon = <Crown className="w-6 h-6" />;
+        }
+
+        // 根据类型设置按钮文本
+        let buttonText: string;
+
+        if (plan.type === "free") {
+          buttonText = tSub("buttons.currentPlan");
+        } else if (plan.type === "credits") {
+          buttonText = tSub("buttons.buyNow");
+        } else {
+          buttonText = tSub("buttons.subscribeNow");
+        }
+
+        // 根据类型设置按钮颜色
+        let buttonColor:
+          | "default"
+          | "primary"
+          | "secondary"
+          | "success"
+          | "warning"
+          | "danger" = "default";
+
+        if (plan.type === "free") {
+          buttonColor = "default";
+        } else if (plan.type === "credits") {
+          buttonColor = "warning";
+        } else {
+          buttonColor = "secondary";
+        }
+
+        return {
+          ...plan,
+          icon,
+          buttonText,
+          buttonColor,
+          popular: plan.isPopular, // 直接使用数据库的 isPopular 字段
+        };
+      });
+
+      setPlans(enhancedPlans);
+    } catch (error) {
+      console.error("Failed to fetch plans:", error);
+      addToast({
+        title: t("failedToLoadPlans") || "Failed to load plans",
+        color: "danger",
+      });
+    } finally {
+      setIsLoadingPlans(false);
+    }
+  };
 
   // Set page header
   useEffect(() => {
@@ -197,7 +226,7 @@ export default function SubscriptionPage() {
       return;
     }
 
-    setLoadingPlanId(plan.id);
+    setLoadingPlanId(plan.name);
 
     try {
       // Call backend API to create Stripe Checkout session
@@ -207,13 +236,14 @@ export default function SubscriptionPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          planId: plan.id,
-          planType: plan.type,
+          planName: plan.name,
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create checkout session");
+        const errorData = await response.json();
+        console.error("Checkout creation failed:", errorData);
+        throw new Error(errorData.error || "Failed to create checkout session");
       }
 
       const { url } = await response.json();
@@ -222,8 +252,9 @@ export default function SubscriptionPage() {
       window.location.href = url;
     } catch (error) {
       console.error("Failed to process plan selection:", error);
+      const errorMessage = error instanceof Error ? error.message : t("failedToCreateCheckout");
       addToast({
-        title: t("failedToCreateCheckout"),
+        title: errorMessage,
         color: "danger",
       });
     } finally {
@@ -233,15 +264,19 @@ export default function SubscriptionPage() {
 
   // Render plan card
   const renderPlanCard = (plan: Plan) => {
-    const isCurrentPlan =
-      plan.type === "free" && !userSubscription?.subscriptionStatus;
+    // 用户是否有活跃订阅
+    const hasActiveSubscription = userSubscription?.subscriptionStatus === "active";
+
+    // 免费套餐是当前套餐的条件：是免费套餐且用户没有活跃订阅
+    const isCurrentPlan = plan.type === "free" && !hasActiveSubscription;
+
+    // 订阅套餐是否是当前订阅
     const isSubscribed =
-      plan.type === "subscription" &&
-      userSubscription?.subscriptionStatus === "active";
+      plan.type === "subscription" && hasActiveSubscription;
 
     return (
       <Card
-        key={plan.id}
+        key={plan.name}
         className={`relative p-3 overflow-visible ${
           plan.popular
             ? "bg-primary shadow-primary/20 shadow-2xl scale-105"
@@ -282,7 +317,9 @@ export default function SubscriptionPage() {
           </p>
         </CardHeader>
 
-        <Divider className={`${plan.popular || plan.type === "subscription" ? "bg-white/20" : ""} relative z-10`} />
+        <Divider
+          className={`${plan.popular || plan.type === "subscription" ? "bg-white/20" : ""} relative z-10`}
+        />
 
         <CardBody className="gap-8 pt-6 relative z-10">
           {/* 价格展示 */}
@@ -296,7 +333,7 @@ export default function SubscriptionPage() {
             >
               ${plan.price.toFixed(2)}
             </span>
-            {plan.credits && (
+            {plan.credits && plan.type !== "free" && (
               <span
                 className={`text-sm font-medium ${
                   plan.popular || plan.type === "subscription"
@@ -307,7 +344,7 @@ export default function SubscriptionPage() {
                 / {plan.credits} {t("credits")}
               </span>
             )}
-            {plan.interval && (
+            {plan.interval && plan.type === "subscription" && (
               <span
                 className={`text-sm font-medium ${
                   plan.popular || plan.type === "subscription"
@@ -315,7 +352,9 @@ export default function SubscriptionPage() {
                     : "text-default-400"
                 }`}
               >
-                {plan.interval === "month" ? tSub("plans.pro.perMonth") : tSub("plans.pro.perYear")}
+                {plan.interval === "month"
+                  ? tSub("plans.pro.perMonth")
+                  : tSub("plans.pro.perYear")}
               </span>
             )}
           </p>
@@ -326,7 +365,9 @@ export default function SubscriptionPage() {
               <li key={index} className="flex items-center gap-2">
                 <Check
                   className={`w-6 h-6 flex-shrink-0 ${
-                    plan.popular || plan.type === "subscription" ? "text-white" : "text-primary"
+                    plan.popular || plan.type === "subscription"
+                      ? "text-white"
+                      : "text-primary"
                   }`}
                 />
                 <p
@@ -344,30 +385,39 @@ export default function SubscriptionPage() {
         </CardBody>
 
         <CardFooter className="relative z-10">
-          <Button
-            fullWidth
-            className={
-              plan.type === "subscription"
-                ? "bg-white text-rose-600 dark:text-fuchsia-700 shadow-default-500/50 font-medium shadow-xs hover:bg-white/90"
-                : plan.popular
-                  ? "bg-primary-foreground text-primary shadow-default-500/50 font-medium shadow-xs"
-                  : ""
-            }
-            color={plan.buttonColor}
-            isDisabled={isCurrentPlan || isSubscribed}
-            isLoading={loadingPlanId === plan.id}
-            startContent={
-              plan.type === "credits" ? (
-                <CreditCard className="w-5 h-5" />
-              ) : plan.type === "subscription" ? (
-                <Calendar className="w-5 h-5" />
-              ) : null
-            }
-            variant={isCurrentPlan || isSubscribed ? "flat" : plan.popular || plan.type === "subscription" ? "solid" : "bordered"}
-            onPress={() => handleSelectPlan(plan)}
-          >
-            {isSubscribed ? tSub("buttons.currentPlan") : plan.buttonText}
-          </Button>
+          {/* 如果是免费套餐且用户有活跃订阅，则不显示按钮 */}
+          {!(plan.type === "free" && hasActiveSubscription) && (
+            <Button
+              fullWidth
+              className={
+                plan.type === "subscription"
+                  ? "bg-white text-rose-600 dark:text-fuchsia-700 shadow-default-500/50 font-medium shadow-xs hover:bg-white/90"
+                  : plan.popular
+                    ? "bg-primary-foreground text-primary shadow-default-500/50 font-medium shadow-xs"
+                    : ""
+              }
+              color={plan.buttonColor}
+              isDisabled={isCurrentPlan || isSubscribed}
+              isLoading={loadingPlanId === plan.name}
+              startContent={
+                plan.type === "credits" ? (
+                  <CreditCard className="w-5 h-5" />
+                ) : plan.type === "subscription" ? (
+                  <Calendar className="w-5 h-5" />
+                ) : null
+              }
+              variant={
+                isCurrentPlan || isSubscribed
+                  ? "flat"
+                  : plan.popular || plan.type === "subscription"
+                    ? "solid"
+                    : "bordered"
+              }
+              onPress={() => handleSelectPlan(plan)}
+            >
+              {isSubscribed ? tSub("buttons.currentPlan") : plan.buttonText}
+            </Button>
+          )}
         </CardFooter>
       </Card>
     );
@@ -382,7 +432,33 @@ export default function SubscriptionPage() {
 
       {/* 套餐卡片网格 */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 w-full mb-12">
-        {plans.map((plan) => renderPlanCard(plan))}
+        {isLoadingPlans ? (
+          // 加载占位符
+          <>
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="p-3">
+                <CardHeader className="flex flex-col items-start gap-2 pb-6">
+                  <div className="h-6 w-24 bg-default-200 rounded animate-pulse" />
+                  <div className="h-4 w-full bg-default-100 rounded animate-pulse" />
+                </CardHeader>
+                <Divider />
+                <CardBody className="gap-4 pt-6">
+                  <div className="h-10 w-32 bg-default-200 rounded animate-pulse" />
+                  <div className="space-y-2">
+                    {[1, 2, 3].map((j) => (
+                      <div
+                        key={j}
+                        className="h-4 w-full bg-default-100 rounded animate-pulse"
+                      />
+                    ))}
+                  </div>
+                </CardBody>
+              </Card>
+            ))}
+          </>
+        ) : (
+          plans.map((plan) => renderPlanCard(plan))
+        )}
       </div>
 
       {/* FAQ Section */}

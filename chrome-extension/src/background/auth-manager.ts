@@ -4,7 +4,12 @@
  */
 
 import { AuthState, UserInfo } from "../shared/types";
-import { STORAGE_KEYS, CACHE_TTL, API_BASE_URL, GOOGLE_CLIENT_ID } from "../shared/constants";
+import {
+  STORAGE_KEYS,
+  CACHE_TTL,
+  API_BASE_URL,
+  GOOGLE_CLIENT_ID,
+} from "../shared/constants";
 
 export class AuthManager {
   private clientId = GOOGLE_CLIENT_ID;
@@ -58,6 +63,7 @@ export class AuthManager {
   private async getGoogleToken(): Promise<string> {
     // 构建 OAuth URL
     const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
+
     authUrl.searchParams.set("client_id", this.clientId);
     authUrl.searchParams.set("response_type", "id_token");
     authUrl.searchParams.set("redirect_uri", this.redirectUri);
@@ -73,11 +79,13 @@ export class AuthManager {
         (redirectUrl) => {
           if (chrome.runtime.lastError) {
             reject(new Error(chrome.runtime.lastError.message));
+
             return;
           }
 
           if (!redirectUrl) {
             reject(new Error("No redirect URL received"));
+
             return;
           }
 
@@ -90,6 +98,7 @@ export class AuthManager {
 
             if (!idToken) {
               reject(new Error("No id_token found in response"));
+
               return;
             }
 
@@ -97,7 +106,7 @@ export class AuthManager {
           } catch (error) {
             reject(error);
           }
-        }
+        },
       );
     });
   }
@@ -107,8 +116,12 @@ export class AuthManager {
    */
   private generateNonce(): string {
     const array = new Uint8Array(16);
+
     crypto.getRandomValues(array);
-    return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join("");
+
+    return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join(
+      "",
+    );
   }
 
   /**
@@ -125,10 +138,12 @@ export class AuthManager {
 
     if (!response.ok) {
       const error = await response.json();
+
       throw new Error(error.error || "Token exchange failed");
     }
 
     const data = await response.json();
+
     return data.token;
   }
 
@@ -138,6 +153,7 @@ export class AuthManager {
   async validateToken(token?: string): Promise<boolean> {
     try {
       const tokenToValidate = token || (await this.getToken());
+
       if (!tokenToValidate) return false;
 
       const response = await fetch(`${API_BASE_URL}/api/auth/validate`, {
@@ -149,6 +165,7 @@ export class AuthManager {
       return response.ok;
     } catch (error) {
       console.error("Token validation failed:", error);
+
       return false;
     }
   }
@@ -176,6 +193,7 @@ export class AuthManager {
 
       // 吊销 Google token
       const authState = await this.getAuthState();
+
       if (authState?.token) {
         // 清除 Chrome Identity API 的缓存
         chrome.identity.clearAllCachedAuthTokens(() => {
@@ -203,19 +221,23 @@ export class AuthManager {
       // 检查 token 是否过期
       if (authState.expiresAt && Date.now() > authState.expiresAt) {
         await this.logout();
+
         return null;
       }
 
       // 验证 token 是否仍然有效
       const isValid = await this.validateToken(authState.token || undefined);
+
       if (!isValid) {
         await this.logout();
+
         return null;
       }
 
       return authState;
     } catch (error) {
       console.error("Failed to get auth state:", error);
+
       return null;
     }
   }
@@ -225,6 +247,7 @@ export class AuthManager {
    */
   async getToken(): Promise<string | null> {
     const authState = await this.getAuthState();
+
     return authState?.token || null;
   }
 
@@ -233,6 +256,7 @@ export class AuthManager {
    */
   async getUser(): Promise<UserInfo | null> {
     const authState = await this.getAuthState();
+
     return authState?.user || null;
   }
 
@@ -241,6 +265,7 @@ export class AuthManager {
    */
   async isAuthenticated(): Promise<boolean> {
     const authState = await this.getAuthState();
+
     return authState?.isAuthenticated || false;
   }
 }

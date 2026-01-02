@@ -1,15 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 
 import { authOptions } from "@/lib/auth/config";
 import { db } from "@/lib/db/drizzle";
-import { users } from "@/lib/db/schema";
-import {
-  stripe,
-  PLANS,
-  getOrCreateStripeCustomer,
-} from "@/lib/payments/stripe";
+import { users, subscriptionPlans } from "@/lib/db/schema";
+import { stripe, getOrCreateStripeCustomer } from "@/lib/payments/stripe";
 
 export const dynamic = "force-dynamic";
 
@@ -22,17 +18,30 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { planId, planType } = body;
+    const { planName } = body;
 
-    if (!planId || !planType) {
+    if (!planName) {
       return NextResponse.json({ error: "缺少必要参数" }, { status: 400 });
     }
 
-    // 获取套餐配置
-    const plan = PLANS[planId];
+    // 从数据库获取套餐配置（支持多语言查询）
+    const [plan] = await db
+      .select()
+      .from(subscriptionPlans)
+      .where(
+        or(
+          eq(subscriptionPlans.nameEn, planName),
+          eq(subscriptionPlans.nameZh, planName)
+        )
+      )
+      .limit(1);
 
     if (!plan) {
       return NextResponse.json({ error: "套餐不存在" }, { status: 404 });
+    }
+
+    if (!plan.isActive) {
+      return NextResponse.json({ error: "套餐已禁用" }, { status: 400 });
     }
 
     if (plan.type === "free") {
@@ -70,16 +79,16 @@ export async function POST(request: NextRequest) {
         line_items: [
           {
             price_data: {
-              currency: "usd",
+              currency: "nzd",
               product_data: {
-                name: plan.name,
-                description: plan.description,
+                name: `${plan.nameEn} / ${plan.nameZh}`,
+                description: plan.descriptionEn || plan.descriptionZh || "",
                 metadata: {
-                  planId: plan.id,
+                  planId: plan.id.toString(),
                   credits: plan.credits?.toString() || "0",
                 },
               },
-              unit_amount: Math.round(plan.price * 100), // 转换为分
+              unit_amount: Math.round(parseFloat(plan.price) * 100), // 转换为分
             },
             quantity: 1,
           },
@@ -88,7 +97,7 @@ export async function POST(request: NextRequest) {
         cancel_url: `${baseUrl}/subscription?canceled=true`,
         metadata: {
           userId: user.id.toString(),
-          planId: plan.id,
+          planId: plan.id.toString(),
           planType: plan.type,
           credits: plan.credits?.toString() || "0",
         },
@@ -116,13 +125,13 @@ export async function POST(request: NextRequest) {
         cancel_url: `${baseUrl}/subscription?canceled=true`,
         metadata: {
           userId: user.id.toString(),
-          planId: plan.id,
+          planId: plan.id.toString(),
           planType: plan.type,
         },
         subscription_data: {
           metadata: {
             userId: user.id.toString(),
-            planId: plan.id,
+            planId: plan.id.toString(),
           },
         },
       });

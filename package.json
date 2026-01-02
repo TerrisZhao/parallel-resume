@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start -p 3100",
     "lint": "eslint --fix",
+    "init": "npx tsx scripts/init.ts",
+    "db:reset": "npx tsx scripts/reset-database.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate"
   },

@@ -8,7 +8,8 @@ export const API_BASE_URL = "http://localhost:3100";
 // export const API_BASE_URL = "https://your-production-domain.com"; // 生产环境时取消注释
 
 // Google OAuth Client ID (与 Web 应用共用)
-export const GOOGLE_CLIENT_ID = "852912293818-5lnjv4abpq0ls8gjdml5evb2vfag061p.apps.googleusercontent.com";
+export const GOOGLE_CLIENT_ID =
+  "852912293818-5lnjv4abpq0ls8gjdml5evb2vfag061p.apps.googleusercontent.com";
 
 // Chrome storage 键名
 export const STORAGE_KEYS = {

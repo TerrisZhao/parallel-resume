@@ -17,8 +17,9 @@ import { Input, Textarea } from "@heroui/input";
 import { addToast } from "@heroui/toast";
 import { Plus, Edit, Trash2 } from "lucide-react";
 
-import { title } from "@/components/primitives";
 import { usePageHeader } from "../use-page-header";
+
+import { title } from "@/components/primitives";
 
 interface PreparationMaterial {
   id: number;
@@ -227,9 +228,7 @@ export default function InterviewPrepPage() {
             <div className="mt-4 space-y-4">
               {getMaterialsByCategory(category).length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-64">
-                  <p className="text-default-500 mb-2">
-                    {t("noMaterials")}
-                  </p>
+                  <p className="text-default-500 mb-2">{t("noMaterials")}</p>
                   <p className="text-sm text-default-400 mb-4">
                     {t("noMaterialsDescription")}
                   </p>
@@ -305,7 +304,11 @@ export default function InterviewPrepPage() {
                 <Button variant="flat" onPress={onClose}>
                   {tCommon("cancel")}
                 </Button>
-                <Button color="primary" isLoading={isSaving} onPress={handleSave}>
+                <Button
+                  color="primary"
+                  isLoading={isSaving}
+                  onPress={handleSave}
+                >
                   {tCommon("save")}
                 </Button>
               </ModalFooter>

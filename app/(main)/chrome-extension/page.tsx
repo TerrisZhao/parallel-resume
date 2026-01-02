@@ -124,7 +124,10 @@ export default function ChromeExtensionPage() {
           </p>
         </MotionDiv>
 
-        <MotionDiv className="mt-8 flex gap-4 justify-center" variants={itemVariants}>
+        <MotionDiv
+          className="mt-8 flex gap-4 justify-center"
+          variants={itemVariants}
+        >
           <Button
             className="font-semibold"
             color="primary"
@@ -158,7 +161,9 @@ export default function ChromeExtensionPage() {
         initial="hidden"
         variants={containerVariants}
       >
-        <h2 className="text-3xl font-bold text-center mb-8">{t("featuresTitle")}</h2>
+        <h2 className="text-3xl font-bold text-center mb-8">
+          {t("featuresTitle")}
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {features.map((feature, index) => (
             <MotionCard key={index} className="p-6" variants={itemVariants}>
@@ -177,12 +182,14 @@ export default function ChromeExtensionPage() {
       {/* How to Install Section */}
       <MotionDiv
         animate="visible"
-        id="how-to-install"
         className="mb-16"
+        id="how-to-install"
         initial="hidden"
         variants={containerVariants}
       >
-        <h2 className="text-3xl font-bold text-center mb-8">{t("stepsTitle")}</h2>
+        <h2 className="text-3xl font-bold text-center mb-8">
+          {t("stepsTitle")}
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {steps.map((step, index) => (
             <MotionCard key={index} className="p-6" variants={itemVariants}>

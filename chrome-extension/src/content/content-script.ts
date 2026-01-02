@@ -10,18 +10,22 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log("Content script received message:", message);
 
   if (message.type === "FILL_FORM") {
-    fillForm().then(() => {
-      sendResponse({ success: true });
-    }).catch((error) => {
-      sendResponse({ success: false, error: error.message });
-    });
+    fillForm()
+      .then(() => {
+        sendResponse({ success: true });
+      })
+      .catch((error) => {
+        sendResponse({ success: false, error: error.message });
+      });
 
     return true; // 异步响应
   }
 
   if (message.type === "DETECT_FIELDS") {
     const fields = detectFormFields();
+
     sendResponse({ success: true, data: fields });
+
     return true;
   }
 });
@@ -30,8 +34,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
  * 检测表单字段
  */
 function detectFormFields() {
-  const inputs = document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
-    'input[type="text"], input[type="email"], input[type="tel"], input[type="url"], textarea'
+  const inputs = document.querySelectorAll<
+    HTMLInputElement | HTMLTextAreaElement
+  >(
+    'input[type="text"], input[type="email"], input[type="tel"], input[type="url"], textarea',
   );
 
   const fields = Array.from(inputs).map((input) => {
@@ -45,6 +51,7 @@ function detectFormFields() {
   });
 
   console.log("Detected fields:", fields);
+
   return fields;
 }
 
@@ -167,6 +174,7 @@ function buildFieldMappings(resumeData: any): Record<string, string> {
   // 技能（转换为逗号分隔的字符串）
   if (resumeData.keySkills && resumeData.keySkills.length > 0) {
     const skillsStr = resumeData.keySkills.join(", ");
+
     mappings["skills"] = skillsStr;
     mappings["keyskills"] = skillsStr;
     mappings["key-skills"] = skillsStr;
@@ -184,7 +192,7 @@ function buildFieldMappings(resumeData: any): Record<string, string> {
 function findMatchingValue(
   element: HTMLInputElement | HTMLTextAreaElement,
   fieldMappings: Record<string, string>,
-  resumeData: any
+  resumeData: any,
 ): string | null {
   // 获取元素的标识符
   const name = (element.name || "").toLowerCase().replace(/[_-]/g, "");
@@ -193,8 +201,10 @@ function findMatchingValue(
 
   // 获取关联的 label
   let labelText = "";
+
   if (element.id) {
     const label = document.querySelector(`label[for="${element.id}"]`);
+
     if (label) {
       labelText = label.textContent?.toLowerCase() || "";
     }
@@ -202,6 +212,7 @@ function findMatchingValue(
 
   // 1. 首先尝试精确匹配
   const nameKey = (element.name || element.id || "").toLowerCase();
+
   if (fieldMappings[nameKey]) {
     return fieldMappings[nameKey];
   }
@@ -209,6 +220,7 @@ function findMatchingValue(
   // 2. 尝试去掉分隔符后的匹配
   for (const key in fieldMappings) {
     const normalizedKey = key.replace(/[_-]/g, "");
+
     if (name === normalizedKey || id === normalizedKey) {
       return fieldMappings[key];
     }
@@ -218,16 +230,24 @@ function findMatchingValue(
   if (resumeData.workExperiences && resumeData.workExperiences.length > 0) {
     const exp = resumeData.workExperiences[0]; // 使用最近的工作经历
 
-    if (/company|employer|organization|organisation/.test(name + id + labelText)) {
+    if (
+      /company|employer|organization|organisation/.test(name + id + labelText)
+    ) {
       return exp.company || "";
     }
     if (/position|title|jobtitle|job-title|role/.test(name + id + labelText)) {
       return exp.position || "";
     }
-    if (/start.*date|from.*date|begin.*date/.test(name + id + labelText + placeholder)) {
+    if (
+      /start.*date|from.*date|begin.*date/.test(
+        name + id + labelText + placeholder,
+      )
+    ) {
       return exp.startDate || "";
     }
-    if (/end.*date|to.*date|until.*date/.test(name + id + labelText + placeholder)) {
+    if (
+      /end.*date|to.*date|until.*date/.test(name + id + labelText + placeholder)
+    ) {
       return exp.endDate || "";
     }
     if (/responsibilit|dut|description/.test(name + id + labelText)) {
@@ -245,16 +265,26 @@ function findMatchingValue(
     if (/degree|qualification|diploma/.test(name + id + labelText)) {
       return edu.degree || "";
     }
-    if (/major|field.*study|specialization|programme|program/.test(name + id + labelText)) {
+    if (
+      /major|field.*study|specialization|programme|program/.test(
+        name + id + labelText,
+      )
+    ) {
       return edu.major || "";
     }
     if (/gpa|grade/.test(name + id + labelText)) {
       return edu.gpa || "";
     }
-    if (/education.*start|study.*from/.test(name + id + labelText + placeholder)) {
+    if (
+      /education.*start|study.*from/.test(name + id + labelText + placeholder)
+    ) {
       return edu.startDate || "";
     }
-    if (/education.*end|graduation.*date|study.*to/.test(name + id + labelText + placeholder)) {
+    if (
+      /education.*end|graduation.*date|study.*to/.test(
+        name + id + labelText + placeholder,
+      )
+    ) {
       return edu.endDate || "";
     }
   }
@@ -297,14 +327,17 @@ async function fillForm() {
   }
 
   const resumeData = response.data;
+
   console.log("Resume data:", resumeData);
 
   // 构建完整的字段映射
   const fieldMappings = buildFieldMappings(resumeData);
 
   // 填充字段
-  const inputs = document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
-    'input[type="text"], input[type="email"], input[type="tel"], input[type="url"], textarea, input[type="date"]'
+  const inputs = document.querySelectorAll<
+    HTMLInputElement | HTMLTextAreaElement
+  >(
+    'input[type="text"], input[type="email"], input[type="tel"], input[type="url"], textarea, input[type="date"]',
   );
 
   let filledCount = 0;
@@ -329,12 +362,12 @@ async function fillForm() {
  */
 function fillInputField(
   element: HTMLInputElement | HTMLTextAreaElement,
-  value: string
+  value: string,
 ) {
   // 设置值
   const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
     window.HTMLInputElement.prototype,
-    "value"
+    "value",
   )?.set;
 
   if (nativeInputValueSetter) {
@@ -360,9 +393,11 @@ function fillInputField(
  */
 async function getSelectedResumeId(): Promise<number> {
   const result = await chrome.storage.local.get("selectedResumeId");
+
   if (!result.selectedResumeId) {
     throw new Error("No resume selected");
   }
+
   return result.selectedResumeId;
 }
 
@@ -371,6 +406,7 @@ async function getSelectedResumeId(): Promise<number> {
  */
 function showNotification(message: string) {
   const notification = document.createElement("div");
+
   notification.textContent = message;
   notification.style.cssText = `
     position: fixed;

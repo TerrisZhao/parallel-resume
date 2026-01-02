@@ -3,17 +3,8 @@
  * 封装 Chrome storage API，提供缓存和数据管理功能
  */
 
-import {
-  ResumeData,
-  ResumeBasic,
-  ExtensionSettings,
-  StorageData,
-} from "../shared/types";
-import {
-  STORAGE_KEYS,
-  CACHE_TTL,
-  DEFAULT_SETTINGS,
-} from "../shared/constants";
+import { ResumeData, ExtensionSettings, StorageData } from "../shared/types";
+import { STORAGE_KEYS, CACHE_TTL, DEFAULT_SETTINGS } from "../shared/constants";
 
 export class StorageManager {
   /**
@@ -21,6 +12,7 @@ export class StorageManager {
    */
   async cacheResume(id: number, data: ResumeData): Promise<void> {
     const cache = await this.getResumeCache();
+
     cache[id] = {
       data,
       cachedAt: Date.now(),
@@ -43,6 +35,7 @@ export class StorageManager {
       // 缓存过期，删除
       delete cache[id];
       await chrome.storage.local.set({ [STORAGE_KEYS.RESUME_CACHE]: cache });
+
       return null;
     }
 
@@ -56,6 +49,7 @@ export class StorageManager {
     StorageData["resumeCache"] extends infer T ? NonNullable<T> : never
   > {
     const result = await chrome.storage.local.get(STORAGE_KEYS.RESUME_CACHE);
+
     return (result[STORAGE_KEYS.RESUME_CACHE] as any) || {};
   }
 
@@ -78,8 +72,9 @@ export class StorageManager {
    */
   async getSelectedResumeId(): Promise<number | null> {
     const result = await chrome.storage.local.get(
-      STORAGE_KEYS.SELECTED_RESUME_ID
+      STORAGE_KEYS.SELECTED_RESUME_ID,
     );
+
     return result[STORAGE_KEYS.SELECTED_RESUME_ID] || null;
   }
 
@@ -88,6 +83,7 @@ export class StorageManager {
    */
   async getSettings(): Promise<ExtensionSettings> {
     const result = await chrome.storage.local.get(STORAGE_KEYS.SETTINGS);
+
     return result[STORAGE_KEYS.SETTINGS] || DEFAULT_SETTINGS;
   }
 
@@ -97,6 +93,7 @@ export class StorageManager {
   async saveSettings(settings: Partial<ExtensionSettings>): Promise<void> {
     const currentSettings = await this.getSettings();
     const newSettings = { ...currentSettings, ...settings };
+
     await chrome.storage.local.set({ [STORAGE_KEYS.SETTINGS]: newSettings });
   }
 

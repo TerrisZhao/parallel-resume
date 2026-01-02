@@ -9,6 +9,7 @@ import {
   callGemini,
   callCustomModel,
 } from "./providers";
+import { getSystemConfigByMode, type AIConfigMode } from "./system-config";
 
 import { db } from "@/lib/db/drizzle";
 import { users } from "@/lib/db/schema";
@@ -16,13 +17,15 @@ import { decryptApiKey } from "@/lib/utils/crypto";
 
 /**
  * 从数据库获取用户的AI配置
+ * 现在支持三种模式：积分模式、订阅模式、自定义配置
  */
 export async function getUserAIConfig(
   userId: number,
-): Promise<AIConfig | null> {
+): Promise<{ config: AIConfig; mode: AIConfigMode } | null> {
   try {
     const result = await db
       .select({
+        aiConfigMode: users.aiConfigMode,
         aiProvider: users.aiProvider,
         aiModel: users.aiModel,
         aiApiKey: users.aiApiKey,
@@ -33,18 +36,55 @@ export async function getUserAIConfig(
       .where(and(eq(users.id, userId), isNull(users.deletedAt)))
       .limit(1);
 
-    if (result.length === 0 || !result[0].aiProvider || !result[0].aiApiKey) {
+    if (result.length === 0) {
       return null;
     }
 
-    const config = result[0];
+    const userData = result[0];
+    const mode = (userData.aiConfigMode || "custom") as AIConfigMode;
+
+    // 如果是积分模式或订阅模式，使用系统配置
+    if (mode === "credits" || mode === "subscription") {
+      const systemConfig = getSystemConfigByMode(mode);
+
+      if (!systemConfig) {
+        console.error(`系统配置不可用：${mode}`);
+
+        return null;
+      }
+
+      // 使用系统的 API Key 和 endpoint，但使用用户在数据库中选择的模型
+      const userModel = userData.aiModel || "";
+
+      if (!userModel) {
+        console.error(`用户未选择模型：userId=${userId}, mode=${mode}`);
+
+        return null;
+      }
+
+      return {
+        config: {
+          ...systemConfig,
+          model: userModel, // 使用用户选择的模型
+        },
+        mode,
+      };
+    }
+
+    // 自定义配置模式：从数据库读取用户配置
+    if (!userData.aiProvider || !userData.aiApiKey) {
+      return null;
+    }
 
     return {
-      provider: config.aiProvider as AIConfig["provider"],
-      model: config.aiModel || "",
-      apiKey: decryptApiKey(config.aiApiKey),
-      apiEndpoint: config.aiApiEndpoint || undefined,
-      customProviderName: config.aiCustomProviderName || undefined,
+      config: {
+        provider: userData.aiProvider as AIConfig["provider"],
+        model: userData.aiModel || "",
+        apiKey: decryptApiKey(userData.aiApiKey),
+        apiEndpoint: userData.aiApiEndpoint || undefined,
+        customProviderName: userData.aiCustomProviderName || undefined,
+      },
+      mode: "custom",
     };
   } catch (error) {
     console.error("获取AI配置失败:", error);

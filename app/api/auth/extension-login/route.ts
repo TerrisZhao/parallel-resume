@@ -15,7 +15,7 @@ const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 async function recordLoginHistory(
   userId: number,
   userAgent: string,
-  ipAddress: string | null
+  ipAddress: string | null,
 ) {
   try {
     const { deviceType, browser, os } = parseUserAgent(userAgent);
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     if (!googleToken) {
       return NextResponse.json(
         { error: "Missing Google token" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
     });
 
     const payload = ticket.getPayload();
+
     if (!payload?.email) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
@@ -95,6 +96,7 @@ export async function POST(request: NextRequest) {
       userName = newUser[0].name;
     } else {
       const user = existingUser[0];
+
       userId = user.id;
       userRole = user.role;
       userName = user.name;
@@ -119,6 +121,7 @@ export async function POST(request: NextRequest) {
     const cfConnectingIP = request.headers.get("cf-connecting-ip");
 
     let ipAddress = null;
+
     if (cfConnectingIP) ipAddress = cfConnectingIP;
     else if (realIP) ipAddress = realIP;
     else if (forwarded) ipAddress = forwarded.split(",")[0].trim();
@@ -155,13 +158,13 @@ export async function POST(request: NextRequest) {
     if (error.message?.includes("Token used too late")) {
       return NextResponse.json(
         { error: "Token expired. Please try again." },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
     return NextResponse.json(
       { error: "Authentication failed" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

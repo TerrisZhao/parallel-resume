@@ -62,7 +62,10 @@ export function AuthButton() {
             <DropdownItem key="resume" onPress={() => router.push("/resume")}>
               {t("myResumes")}
             </DropdownItem>
-            <DropdownItem key="settings" onPress={() => router.push("/settings")}>
+            <DropdownItem
+              key="settings"
+              onPress={() => router.push("/settings")}
+            >
               {t("settings")}
             </DropdownItem>
             {/* Subscription功能已禁用 */}

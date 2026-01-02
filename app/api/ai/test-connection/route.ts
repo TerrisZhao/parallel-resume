@@ -29,14 +29,20 @@ export async function POST(request: NextRequest) {
 
     if (!apiKey) {
       const userId = parseInt(session.user.id);
-      const savedConfig = await getUserAIConfig(userId);
+      const userConfigResult = await getUserAIConfig(userId);
 
-      if (!savedConfig || !savedConfig.apiKey) {
+      if (
+        !userConfigResult ||
+        !userConfigResult.config ||
+        !userConfigResult.config.apiKey
+      ) {
         return NextResponse.json(
           { success: false, error: "请先在个人设置中配置AI API Key" },
           { status: 400 },
         );
       }
+
+      const savedConfig = userConfigResult.config;
 
       apiKey = savedConfig.apiKey;
 

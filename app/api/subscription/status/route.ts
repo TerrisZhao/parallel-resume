@@ -61,6 +61,9 @@ export async function GET(request: NextRequest) {
 
     const credits = creditsData[0];
 
+    // 获取用户语言偏好（从请求或用户设置）
+    const locale = request.cookies.get("NEXT_LOCALE")?.value || "en";
+
     // 获取用户当前订阅
     const activeSubscription = await db
       .select({
@@ -70,7 +73,8 @@ export async function GET(request: NextRequest) {
         currentPeriodStart: subscriptions.currentPeriodStart,
         currentPeriodEnd: subscriptions.currentPeriodEnd,
         cancelAtPeriodEnd: subscriptions.cancelAtPeriodEnd,
-        planName: subscriptionPlans.name,
+        planNameEn: subscriptionPlans.nameEn,
+        planNameZh: subscriptionPlans.nameZh,
         planPrice: subscriptionPlans.price,
       })
       .from(subscriptions)
@@ -87,14 +91,39 @@ export async function GET(request: NextRequest) {
       .orderBy(desc(subscriptions.createdAt))
       .limit(1);
 
+    // 格式化订阅数据，将 planPrice 映射为 price，根据语言选择套餐名称
+    const subscriptionData = activeSubscription[0]
+      ? {
+          id: activeSubscription[0].id,
+          planId: activeSubscription[0].planId,
+          status: activeSubscription[0].status,
+          currentPeriodStart:
+            activeSubscription[0].currentPeriodStart?.toISOString() || null,
+          currentPeriodEnd:
+            activeSubscription[0].currentPeriodEnd?.toISOString() || null,
+          cancelAtPeriodEnd: activeSubscription[0].cancelAtPeriodEnd,
+          plan:
+            locale === "zh"
+              ? activeSubscription[0].planNameZh
+              : activeSubscription[0].planNameEn,
+          price: activeSubscription[0].planPrice
+            ? parseFloat(activeSubscription[0].planPrice)
+            : 0,
+        }
+      : null;
+
     const response = {
       credits: credits.balance,
       totalEarned: credits.totalEarned,
       totalSpent: credits.totalSpent,
-      subscription: activeSubscription[0] || null,
+      subscription: subscriptionData,
       subscriptionStatus: activeSubscription[0]?.status || null,
       subscriptionEndDate: activeSubscription[0]?.currentPeriodEnd || null,
-      plan: activeSubscription[0]?.planName || "免费套餐",
+      plan:
+        (locale === "zh"
+          ? activeSubscription[0]?.planNameZh
+          : activeSubscription[0]?.planNameEn) ||
+        (locale === "zh" ? "免费套餐" : "Free Plan"),
     };
 
     return NextResponse.json(response);

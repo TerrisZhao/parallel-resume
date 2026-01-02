@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Button } from "@heroui/button";
 import { Chip } from "@heroui/chip";
@@ -29,7 +29,6 @@ import {
   TrendingDown,
   AlertCircle,
   CheckCircle,
-  ArrowLeft,
   RefreshCw,
 } from "lucide-react";
 
@@ -72,6 +71,7 @@ export default function ManageSubscriptionPage() {
   const { data: session } = useSession();
   const router = useRouter();
   const { setHeader } = usePageHeader();
+  const locale = useLocale();
   const t = useTranslations("managePage");
   const [loading, setLoading] = useState(true);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -82,6 +82,35 @@ export default function ManageSubscriptionPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [canceling, setCanceling] = useState(false);
+
+  // Format date with time in user's timezone
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+
+    // Format time (HH:mm)
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    const timeStr = `${hours}:${minutes}`;
+
+    // Format date based on locale
+    if (locale === "zh") {
+      // Chinese format: 2020-05-01 21:00
+      const year = date.getFullYear();
+      const month = (date.getMonth() + 1).toString().padStart(2, "0");
+      const day = date.getDate().toString().padStart(2, "0");
+
+      return `${year}-${month}-${day} ${timeStr}`;
+    } else {
+      // English format: May 1, 2020 21:00
+      const dateStr = date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+
+      return `${dateStr} ${timeStr}`;
+    }
+  };
 
   useEffect(() => {
     if (session) {
@@ -313,17 +342,13 @@ export default function ManageSubscriptionPage() {
                   <div>
                     <p className="text-default-500">{t("periodStart")}</p>
                     <p className="font-medium">
-                      {new Date(
-                        subscription.currentPeriodStart,
-                      ).toLocaleDateString("en-US")}
+                      {formatDate(subscription.currentPeriodStart)}
                     </p>
                   </div>
                   <div>
                     <p className="text-default-500">{t("periodEnd")}</p>
                     <p className="font-medium">
-                      {new Date(
-                        subscription.currentPeriodEnd,
-                      ).toLocaleDateString("en-US")}
+                      {formatDate(subscription.currentPeriodEnd)}
                     </p>
                   </div>
                   <div>
@@ -353,9 +378,7 @@ export default function ManageSubscriptionPage() {
                   </p>
                   <p className="text-xs text-default-500 mt-1">
                     {t("subscriptionWillEnd")}{" "}
-                    {new Date(subscription.currentPeriodEnd).toLocaleDateString(
-                      "en-US",
-                    )}
+                    {formatDate(subscription.currentPeriodEnd)}
                   </p>
                 </div>
               </div>
@@ -413,11 +436,7 @@ export default function ManageSubscriptionPage() {
 
                   return (
                     <TableRow key={transaction.id}>
-                      <TableCell>
-                        {new Date(transaction.createdAt).toLocaleDateString(
-                          "zh-CN",
-                        )}
-                      </TableCell>
+                      <TableCell>{formatDate(transaction.createdAt)}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <span className={typeDisplay.color}>
@@ -470,9 +489,7 @@ export default function ManageSubscriptionPage() {
               <TableBody>
                 {payments.map((payment) => (
                   <TableRow key={payment.id}>
-                    <TableCell>
-                      {new Date(payment.createdAt).toLocaleDateString("zh-CN")}
-                    </TableCell>
+                    <TableCell>{formatDate(payment.createdAt)}</TableCell>
                     <TableCell>{payment.description}</TableCell>
                     <TableCell>
                       {payment.currency.toUpperCase()} $
@@ -524,9 +541,7 @@ export default function ManageSubscriptionPage() {
                     {subscription && (
                       <p className="text-sm text-default-500 mt-2">
                         {t("currentPeriodEnds")}{" "}
-                        {new Date(
-                          subscription.currentPeriodEnd,
-                        ).toLocaleDateString("en-US")}
+                        {formatDate(subscription.currentPeriodEnd)}
                       </p>
                     )}
                   </div>

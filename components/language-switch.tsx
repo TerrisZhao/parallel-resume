@@ -36,7 +36,7 @@ export const LanguageSwitch = () => {
   return (
     <Dropdown>
       <DropdownTrigger>
-        <Button isIconOnly variant="light" isLoading={isPending}>
+        <Button isIconOnly isLoading={isPending} variant="light">
           <Globe size={20} />
         </Button>
       </DropdownTrigger>

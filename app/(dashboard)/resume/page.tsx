@@ -19,9 +19,10 @@ import { Plus, Edit, Copy, Trash2, FileText, Calendar } from "lucide-react";
 import { addToast } from "@heroui/toast";
 import { useTranslations, useLocale } from "next-intl";
 
+import { usePageHeader } from "../use-page-header";
+
 import { title } from "@/components/primitives";
 import { ResumePreviewModal } from "@/components/resume-preview-modal";
-import { usePageHeader } from "../use-page-header";
 
 interface Resume {
   id: number;
@@ -105,14 +106,14 @@ export default function ResumeListPage() {
             className="px-10 shadow-md"
             color="primary"
             radius="full"
-            startContent={<Plus size={18}/>}
+            startContent={<Plus size={18} />}
             variant="shadow"
             onPress={onNewOpen}
           >
             {t("newResume")}
           </Button>
         </div>
-      </div>
+      </div>,
     );
 
     return () => setHeader(null);
@@ -484,9 +485,7 @@ export default function ResumeListPage() {
           <CardBody className="text-center py-12">
             <FileText className="mx-auto mb-4 text-default-400" size={128} />
             <h3 className="text-xl font-semibold mb-2">{t("noResumes")}</h3>
-            <p className="text-default-500 mb-4">
-              {t("noResumesDescription")}
-            </p>
+            <p className="text-default-500 mb-4">{t("noResumesDescription")}</p>
           </CardBody>
         </Card>
       ) : (
@@ -705,9 +704,7 @@ export default function ResumeListPage() {
                 ? t("deleteConfirm")
                 : t("deleteMultipleConfirm", { count: selectedResumes.size })}
             </p>
-            <p className="text-sm text-default-500 mt-2">
-              {t("cannotUndo")}
-            </p>
+            <p className="text-sm text-default-500 mt-2">{t("cannotUndo")}</p>
           </ModalBody>
           <ModalFooter>
             <Button variant="flat" onPress={onDeleteClose}>

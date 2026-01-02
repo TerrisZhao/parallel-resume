@@ -65,6 +65,7 @@ export async function middleware(request: NextRequest) {
     "/api/auth",
     "/api/auth/mobile-login",
     "/api/subscription/webhook",
+    "/api/subscription/plans",
   ];
 
   const isPublicPath = publicPaths.some((publicPath) =>

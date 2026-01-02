@@ -3,6 +3,7 @@
  */
 
 import React from "react";
+
 import { ResumeBasic } from "../../shared/types";
 
 interface ResumeSelectorProps {

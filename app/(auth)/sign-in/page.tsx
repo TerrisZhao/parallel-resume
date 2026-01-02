@@ -8,9 +8,9 @@ import { Divider } from "@heroui/divider";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { Icon } from "@iconify/react";
 
 import { title } from "@/components/primitives";
-import {Icon} from "@iconify/react";
 
 export default function SignInPage() {
   const t = useTranslations("auth");
@@ -71,9 +71,9 @@ export default function SignInPage() {
           <Button
             className="w-full"
             isLoading={isLoading}
+            startContent={<Icon icon="flat-color-icons:google" width={24} />}
             variant="bordered"
             onPress={handleGoogleSignIn}
-            startContent={<Icon icon="flat-color-icons:google" width={24} />}
           >
             {t("signInWith", { provider: "Google" })}
           </Button>

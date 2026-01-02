@@ -35,6 +35,13 @@ export const aiProviderEnum = pgEnum("ai_provider", [
   "custom",
 ]);
 
+// AI配置模式枚举
+export const aiConfigModeEnum = pgEnum("ai_config_mode", [
+  "credits",
+  "subscription",
+  "custom",
+]);
+
 // 订阅套餐类型枚举
 export const planTypeEnum = pgEnum("plan_type", [
   "free",
@@ -106,6 +113,7 @@ export const users = pgTable("users", {
     .notNull()
     .default("system"),
   // AI配置字段
+  aiConfigMode: aiConfigModeEnum("ai_config_mode"), // AI配置模式：credits, subscription, custom
   aiProvider: aiProviderEnum("ai_provider"), // AI提供商
   aiModel: varchar("ai_model", { length: 100 }), // 模型名称
   aiApiKey: text("ai_api_key"), // 加密后的API Key
@@ -360,10 +368,9 @@ export const interviewPreparationMaterials = pgTable(
     categoryIdx: index("interview_prep_materials_category_idx").on(
       table.category,
     ),
-    userIdCategoryIdx: index("interview_prep_materials_user_id_category_idx").on(
-      table.userId,
-      table.category,
-    ),
+    userIdCategoryIdx: index(
+      "interview_prep_materials_user_id_category_idx",
+    ).on(table.userId, table.category),
   }),
 );
 
@@ -394,17 +401,21 @@ export const interviewSpecificPreparations = pgTable(
 // 订阅套餐表
 export const subscriptionPlans = pgTable("subscription_plans", {
   id: serial("id").primaryKey(),
-  name: varchar("name", { length: 100 }).notNull(), // 套餐名称：Free, Starter, Pro等
+  nameEn: varchar("name_en", { length: 100 }).notNull(), // 英文套餐名称
+  nameZh: varchar("name_zh", { length: 100 }).notNull(), // 中文套餐名称
   type: planTypeEnum("type").notNull(), // 套餐类型
   price: decimal("price", { precision: 10, scale: 2 }).notNull().default("0"), // 价格
   credits: integer("credits"), // 充值套餐给予的积分数量
   interval: varchar("interval", { length: 20 }), // month, year, one_time
   intervalCount: integer("interval_count").default(1), // 间隔数量
-  features: json("features").$type<string[]>().default([]), // 功能列表
+  featuresEn: json("features_en").$type<string[]>().default([]), // 英文功能列表
+  featuresZh: json("features_zh").$type<string[]>().default([]), // 中文功能列表
   stripePriceId: varchar("stripe_price_id", { length: 255 }), // Stripe价格ID
   isActive: boolean("is_active").notNull().default(true), // 是否可用
+  isPopular: boolean("is_popular").notNull().default(false), // 是否显示为 Most Popular
   displayOrder: integer("display_order").notNull().default(0), // 显示顺序
-  description: text("description"), // 套餐描述
+  descriptionEn: text("description_en"), // 英文套餐描述
+  descriptionZh: text("description_zh"), // 中文套餐描述
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -491,7 +502,7 @@ export const payments = pgTable(
     stripeChargeId: varchar("stripe_charge_id", { length: 255 }), // Stripe收费ID
     stripeInvoiceId: varchar("stripe_invoice_id", { length: 255 }), // Stripe发票ID
     amount: decimal("amount", { precision: 10, scale: 2 }).notNull(), // 金额
-    currency: varchar("currency", { length: 3 }).notNull().default("usd"), // 货币
+    currency: varchar("currency", { length: 3 }).notNull().default("nzd"), // 货币
     status: paymentStatusEnum("status").notNull().default("pending"),
     creditsGranted: integer("credits_granted"), // 授予的积分数量
     description: text("description"),
@@ -507,6 +518,32 @@ export const payments = pgTable(
       table.stripePaymentIntentId,
     ),
     createdAtIdx: index("payments_created_at_idx").on(table.createdAt),
+  }),
+);
+
+// AI价格配置表（用于积分计费）
+export const aiPricingRules = pgTable(
+  "ai_pricing_rules",
+  {
+    id: serial("id").primaryKey(),
+    provider: aiProviderEnum("provider").notNull(), // AI提供商
+    model: varchar("model", { length: 100 }).notNull(), // 模型名称
+    creditsPerRequest: integer("credits_per_request"), // 每次请求消耗的积分（固定计费）
+    creditsPerKTokens: integer("credits_per_1k_tokens"), // 每1000个token消耗的积分（按token计费）
+    pricingType: varchar("pricing_type", { length: 20 })
+      .notNull()
+      .default("token"), // 计费类型：token 或 request
+    isActive: boolean("is_active").notNull().default(true),
+    description: text("description"), // 价格说明
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    providerModelIdx: index("ai_pricing_rules_provider_model_idx").on(
+      table.provider,
+      table.model,
+    ),
+    isActiveIdx: index("ai_pricing_rules_is_active_idx").on(table.isActive),
   }),
 );
 
@@ -529,4 +566,5 @@ export const schema = {
   userCredits,
   creditTransactions,
   payments,
+  aiPricingRules,
 };

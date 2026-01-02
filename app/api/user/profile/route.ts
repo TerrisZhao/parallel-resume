@@ -18,6 +18,7 @@ const updateProfileSchema = z.object({
   themeMode: z.enum(["light", "dark", "system"]).optional(),
   preferredLanguage: z.enum(["system", "en", "zh"]).optional(),
   // AI配置字段
+  aiConfigMode: z.enum(["credits", "subscription", "custom"]).optional(),
   aiProvider: z
     .enum(["openai", "deepseek", "claude", "gemini", "custom"])
     .optional(),
@@ -47,6 +48,7 @@ export async function GET() {
         emailVerified: users.emailVerified,
         themeMode: users.themeMode,
         preferredLanguage: users.preferredLanguage,
+        aiConfigMode: users.aiConfigMode,
         aiProvider: users.aiProvider,
         aiModel: users.aiModel,
         aiApiKey: users.aiApiKey,
@@ -119,6 +121,11 @@ export async function PUT(request: NextRequest) {
     }
 
     // 处理AI配置
+    if (validatedData.aiConfigMode !== undefined) {
+      updateData.aiConfigMode = validatedData.aiConfigMode;
+      updateData.aiConfigUpdatedAt = new Date();
+    }
+
     if (validatedData.aiProvider !== undefined) {
       updateData.aiProvider = validatedData.aiProvider;
       updateData.aiConfigUpdatedAt = new Date();
@@ -158,6 +165,7 @@ export async function PUT(request: NextRequest) {
         emailVerified: users.emailVerified,
         themeMode: users.themeMode,
         preferredLanguage: users.preferredLanguage,
+        aiConfigMode: users.aiConfigMode,
         aiProvider: users.aiProvider,
         aiModel: users.aiModel,
         aiApiKey: users.aiApiKey,

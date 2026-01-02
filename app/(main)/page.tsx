@@ -35,7 +35,7 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center bg-gradient-to-br from-rose-400 via-fuchsia-500 to-indigo-500 dark:from-rose-600 dark:via-fuchsia-700 dark:to-indigo-700 p-8 sm:p-10 lg:p-16">
-      <div className="h-12"></div>
+      <div className="h-12" />
       {/* Hero Section */}
       <MotionDiv
         animate="visible"

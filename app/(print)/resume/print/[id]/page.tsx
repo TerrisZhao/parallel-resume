@@ -597,9 +597,7 @@ export default async function PrintResumePage({
                       </div>
                     </div>
                     {exp.description && (
-                      <div className="entry-description">
-                        {exp.description}
-                      </div>
+                      <div className="entry-description">{exp.description}</div>
                     )}
                     {exp.responsibilities.filter((r) => r.trim()).length >
                       0 && (

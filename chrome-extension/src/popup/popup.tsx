@@ -4,7 +4,14 @@
 
 import React, { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
-import { AuthState, ResumeBasic, Message, MessageResponse } from "../shared/types";
+
+import {
+  AuthState,
+  ResumeBasic,
+  Message,
+  MessageResponse,
+} from "../shared/types";
+
 import LoginView from "./components/LoginView";
 import ResumeSelector from "./components/ResumeSelector";
 
@@ -34,6 +41,7 @@ const App: React.FC = () => {
       try {
         setLoading(true);
         const state = await sendMessage<AuthState>({ type: "GET_AUTH_STATE" });
+
         setAuthState(state);
 
         if (state?.isAuthenticated) {
@@ -57,17 +65,22 @@ const App: React.FC = () => {
       const resumeList = await sendMessage<ResumeBasic[]>({
         type: "GET_RESUMES",
       });
+
       setResumes(resumeList);
 
       // 获取已选中的简历 ID
       const result = await chrome.storage.local.get("selectedResumeId");
       const selected = result.selectedResumeId;
+
       if (selected) {
         setSelectedResumeId(selected);
       } else if (resumeList.length > 0) {
         // 默认选中第一个简历
         setSelectedResumeId(resumeList[0].id);
-        await sendMessage({ type: "SELECT_RESUME", data: { id: resumeList[0].id } });
+        await sendMessage({
+          type: "SELECT_RESUME",
+          data: { id: resumeList[0].id },
+        });
       }
     } catch (err: any) {
       console.error("Load resumes error:", err);
@@ -81,6 +94,7 @@ const App: React.FC = () => {
       setLoading(true);
       setError(null);
       const state = await sendMessage<AuthState>({ type: "LOGIN" });
+
       setAuthState(state);
 
       if (state?.isAuthenticated) {
@@ -132,7 +146,7 @@ const App: React.FC = () => {
 
   // 未登录状态
   if (!authState?.isAuthenticated) {
-    return <LoginView onLogin={handleLogin} loading={loading} error={error} />;
+    return <LoginView error={error} loading={loading} onLogin={handleLogin} />;
   }
 
   // 已登录状态
@@ -167,6 +181,7 @@ const App: React.FC = () => {
       <div className="actions">
         <button
           className="btn btn-primary"
+          disabled={!selectedResumeId}
           onClick={() => {
             // 通知 content script 开始填充
             chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -175,7 +190,6 @@ const App: React.FC = () => {
               }
             });
           }}
-          disabled={!selectedResumeId}
         >
           自动填充
         </button>
@@ -186,6 +200,7 @@ const App: React.FC = () => {
 
 // 渲染应用
 const root = document.getElementById("root");
+
 if (root) {
   createRoot(root).render(<App />);
 }

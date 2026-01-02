@@ -27,12 +27,13 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, loading, error }) => {
           智能填充求职表单，简化应聘流程
         </p>
 
-        <button
-          className="btn btn-google"
-          onClick={onLogin}
-          disabled={loading}
-        >
-          <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+        <button className="btn btn-google" disabled={loading} onClick={onLogin}>
+          <svg
+            height="18"
+            viewBox="0 0 18 18"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
             <g fill="none" fillRule="evenodd">
               <path
                 d="M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"

@@ -196,7 +196,6 @@ function filterResumeOptimizationModels(
 
     switch (provider) {
       case "openai":
-        // 只保留 GPT-4 和 GPT-3.5 Turbo 系列（chat/completion 模型）
         // 排除: embedding, moderation, whisper, davinci-002, text-embedding, ada, babbage, curie, davinci
         return (
           (modelLower.startsWith("gpt-5") ||

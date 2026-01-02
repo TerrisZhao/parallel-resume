@@ -5,6 +5,7 @@
 
 import { ResumeData, ResumeBasic } from "../shared/types";
 import { API_BASE_URL } from "../shared/constants";
+
 import { authManager } from "./auth-manager";
 import { storageManager } from "./storage-manager";
 
@@ -20,7 +21,7 @@ export class APIClient {
    */
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<T> {
     const token = await authManager.getToken();
 
@@ -43,13 +44,17 @@ export class APIClient {
     if (response.status === 401) {
       // Token 过期，尝试刷新
       await authManager.refreshToken();
+
       // 重试请求
       return this.request<T>(endpoint, options);
     }
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || `Request failed: ${response.statusText}`);
+
+      throw new Error(
+        error.message || `Request failed: ${response.statusText}`,
+      );
     }
 
     return response.json();
@@ -75,14 +80,13 @@ export class APIClient {
   async getResume(id: number): Promise<ResumeData> {
     // 先检查缓存
     const cached = await storageManager.getCachedResume(id);
+
     if (cached) {
       return cached;
     }
 
     // 从 API 获取
-    const response = await this.request<{ resume: any }>(
-      `/api/resumes/${id}`
-    );
+    const response = await this.request<{ resume: any }>(`/api/resumes/${id}`);
 
     // 转换为 ResumeData 格式
     const resumeData = this.transformResumeData(response.resume);
@@ -161,9 +165,11 @@ export class APIClient {
           Authorization: `Bearer ${token}`,
         },
       });
+
       return response.ok;
     } catch (error) {
       console.error("Token validation error:", error);
+
       return false;
     }
   }
@@ -173,6 +179,7 @@ export class APIClient {
    */
   async refreshResume(id: number): Promise<ResumeData> {
     await storageManager.clearResumeCache();
+
     return this.getResume(id);
   }
 }

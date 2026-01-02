@@ -6,8 +6,8 @@ import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import { Switch } from "@heroui/switch";
 import { Select, SelectItem } from "@heroui/select";
+import { RadioGroup, Radio } from "@heroui/radio";
 import { Tabs, Tab } from "@heroui/tabs";
-import { usePageHeader } from "../use-page-header";
 import {
   Modal,
   ModalContent,
@@ -38,7 +38,9 @@ import {
 import { useTheme } from "next-themes";
 import { useTranslations } from "next-intl";
 
-import { title, subtitle } from "@/components/primitives";
+import { usePageHeader } from "../use-page-header";
+
+import { title } from "@/components/primitives";
 
 // 登录历史类型定义
 interface LoginHistoryItem {
@@ -84,6 +86,7 @@ export default function SettingsPage() {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
   // AI配置状态
+  const [aiConfigMode, setAiConfigMode] = useState<string>("");
   const [aiProvider, setAiProvider] = useState<string>("");
   const [aiModel, setAiModel] = useState("");
   const [aiApiKey, setAiApiKey] = useState("");
@@ -95,9 +98,39 @@ export default function SettingsPage() {
   >(null);
   const [isUpdatingAiConfig, setIsUpdatingAiConfig] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
-  const [availableModels, setAvailableModels] = useState<string[]>([]);
+
+  // AI配置原始值（用于检测是否有修改）
+  const [originalAiConfigMode, setOriginalAiConfigMode] = useState<string>("");
+  const [originalAiProvider, setOriginalAiProvider] = useState<string>("");
+  const [originalAiModel, setOriginalAiModel] = useState("");
+  const [originalAiApiKey, setOriginalAiApiKey] = useState("");
+  const [originalAiApiEndpoint, setOriginalAiApiEndpoint] = useState("");
+  const [originalCustomProviderName, setOriginalCustomProviderName] =
+    useState("");
+  const [availableModels, setAvailableModels] = useState<
+    Array<{
+      id: string;
+      name: string;
+      pricing?: {
+        creditsPerRequest?: number | null;
+        creditsPerKTokens?: number | null;
+        pricingType?: string | null;
+        description?: string | null;
+      } | null;
+    }>
+  >([]);
   const [isLoadingModels, setIsLoadingModels] = useState(false);
   const [isApiKeyMasked, setIsApiKeyMasked] = useState(false);
+
+  // 订阅和积分状态
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [creditsBalance, setCreditsBalance] = useState(0);
+  const [isLoadingSubscriptionStatus, setIsLoadingSubscriptionStatus] =
+    useState(true);
+  const [systemCreditsProvider, setSystemCreditsProvider] =
+    useState<string>("");
+  const [systemSubscriptionProvider, setSystemSubscriptionProvider] =
+    useState<string>("");
 
   // AI提供商配置
   const AI_PROVIDERS = [
@@ -137,6 +170,32 @@ export default function SettingsPage() {
     });
   };
 
+  // 检查 AI 配置是否有变化
+  const hasAiConfigChanged = () => {
+    // 配置模式改变
+    if (aiConfigMode !== originalAiConfigMode) {
+      return true;
+    }
+
+    // 如果是积分或订阅模式，只需要比较模式和模型
+    if (aiConfigMode === "credits" || aiConfigMode === "subscription") {
+      return aiModel !== originalAiModel;
+    }
+
+    // 自定义配置模式，比较所有字段
+    if (aiConfigMode === "custom") {
+      return (
+        aiProvider !== originalAiProvider ||
+        aiModel !== originalAiModel ||
+        aiApiKey !== originalAiApiKey ||
+        aiApiEndpoint !== originalAiApiEndpoint ||
+        customProviderName !== originalCustomProviderName
+      );
+    }
+
+    return false;
+  };
+
   // 初始化姓名和主题模式（基于 session）
   useEffect(() => {
     if (session?.user?.name) {
@@ -165,24 +224,40 @@ export default function SettingsPage() {
         const data = await response.json();
         const user = data.user as any;
 
-        if (user?.aiProvider) {
-          setAiProvider(user.aiProvider);
+        // 初始化 AI 配置模式
+        const configMode = user?.aiConfigMode || "";
+        const provider = user?.aiProvider || "";
+        const model = user?.aiModel || "";
+        const endpoint = user?.aiApiEndpoint || "";
+        const customName = user?.aiCustomProviderName || "";
+        const maskedKey = user?.aiApiKeyMasked || "";
 
-          const userModel = user.aiModel || "";
+        setAiConfigMode(configMode);
+        setOriginalAiConfigMode(configMode);
 
-          setAiModel(userModel);
-          setAiApiEndpoint(user.aiApiEndpoint || "");
-          setCustomProviderName(user.aiCustomProviderName || "");
+        if (provider) {
+          setAiProvider(provider);
+          setOriginalAiProvider(provider);
+
+          setAiModel(model);
+          setOriginalAiModel(model);
+
+          setAiApiEndpoint(endpoint);
+          setOriginalAiApiEndpoint(endpoint);
+
+          setCustomProviderName(customName);
+          setOriginalCustomProviderName(customName);
 
           // 使用遮罩后的 API Key（如果存在）
-          if (user.aiApiKeyMasked) {
-            setAiApiKey(user.aiApiKeyMasked);
+          if (maskedKey) {
+            setAiApiKey(maskedKey);
+            setOriginalAiApiKey(maskedKey);
             setIsApiKeyMasked(true);
           }
 
           // 初始时至少让当前模型出现在下拉列表中，避免下拉为空
-          if (userModel) {
-            setAvailableModels([userModel]);
+          if (model) {
+            setAvailableModels([{ id: model, name: model, pricing: null }]);
           }
         }
       } catch (error) {
@@ -192,6 +267,121 @@ export default function SettingsPage() {
 
     void initAIConfig();
   }, [status]);
+
+  // 获取用户订阅状态和积分余额
+  useEffect(() => {
+    const fetchSubscriptionStatus = async () => {
+      if (status !== "authenticated") return;
+
+      setIsLoadingSubscriptionStatus(true);
+      try {
+        // 获取订阅状态
+        const statusResponse = await fetch("/api/subscription/status");
+        const statusData = await statusResponse.json();
+
+        if (statusResponse.ok) {
+          setHasActiveSubscription(
+            statusData.subscription?.status === "active" ||
+              statusData.subscription?.status === "trialing",
+          );
+          setCreditsBalance(statusData.credits || 0);
+        }
+
+        // 获取可用模式和系统配置
+        const modesResponse = await fetch("/api/ai/available-modes");
+        const modesData = await modesResponse.json();
+
+        if (modesResponse.ok && modesData.modes) {
+          if (modesData.modes.credits?.provider) {
+            setSystemCreditsProvider(modesData.modes.credits.provider);
+          }
+          if (modesData.modes.subscription?.provider) {
+            setSystemSubscriptionProvider(
+              modesData.modes.subscription.provider,
+            );
+          }
+
+          // 保存预设模型列表
+          if (aiConfigMode === "credits" && modesData.modes.credits?.models) {
+            setAvailableModels(modesData.modes.credits.models);
+          } else if (
+            aiConfigMode === "subscription" &&
+            modesData.modes.subscription?.models
+          ) {
+            setAvailableModels(modesData.modes.subscription.models);
+          }
+        }
+      } catch (error) {
+        console.error("获取订阅状态失败:", error);
+      } finally {
+        setIsLoadingSubscriptionStatus(false);
+      }
+    };
+
+    void fetchSubscriptionStatus();
+  }, [status]);
+
+  // 当用户切换配置模式时，加载对应的模型列表
+  useEffect(() => {
+    const loadSystemModels = async () => {
+      if (aiConfigMode === "credits" || aiConfigMode === "subscription") {
+        try {
+          const response = await fetch("/api/ai/available-modes");
+          const data = await response.json();
+
+          console.log("Available modes data:", data);
+
+          if (response.ok && data.modes) {
+            let newModels: typeof availableModels = [];
+
+            if (aiConfigMode === "credits") {
+              setAiProvider(systemCreditsProvider);
+              if (data.modes.credits?.models) {
+                console.log("Credits models:", data.modes.credits.models);
+                newModels = data.modes.credits.models;
+              } else {
+                console.log("No credits models found");
+              }
+            } else if (aiConfigMode === "subscription") {
+              setAiProvider(systemSubscriptionProvider);
+              if (data.modes.subscription?.models) {
+                console.log(
+                  "Subscription models:",
+                  data.modes.subscription.models,
+                );
+                newModels = data.modes.subscription.models;
+              } else {
+                console.log("No subscription models found");
+              }
+            }
+
+            setAvailableModels(newModels);
+
+            // 检查当前选择的模型是否在新的模型列表中
+            // 只有在模型列表不为空且当前模型不在列表中时，才重置
+            if (
+              newModels.length > 0 &&
+              aiModel &&
+              !newModels.find((m) => m.id === aiModel)
+            ) {
+              console.log(
+                `Current model ${aiModel} not found in new list, resetting`,
+              );
+              setAiModel("");
+            }
+          }
+        } catch (error) {
+          console.error("获取预设模型列表失败:", error);
+        }
+      }
+      // 自定义模式下，不需要做任何操作，保持用户的配置
+    };
+
+    // 只有当 aiConfigMode 有值时才加载（避免初始化时的空值触发）
+    if (aiConfigMode) {
+      void loadSystemModels();
+    }
+  }, [aiConfigMode, systemCreditsProvider, systemSubscriptionProvider]);
 
   // 点击外部区域取消编辑
   useEffect(() => {
@@ -271,9 +461,47 @@ export default function SettingsPage() {
     }
   };
 
-  // 加载指定提供商的模型列表
+  // 加载积分/订阅模式的预设模型列表
+  const handleLoadSystemModels = async () => {
+    setIsLoadingModels(true);
+    try {
+      const response = await fetch("/api/ai/available-modes");
+      const data = await response.json();
+
+      if (!response.ok || !data.modes) {
+        throw new Error("获取预设模型列表失败");
+      }
+
+      if (aiConfigMode === "credits" && data.modes.credits?.models) {
+        setAvailableModels(data.modes.credits.models);
+        showToast(t("modelsUpdated"), "success");
+      } else if (
+        aiConfigMode === "subscription" &&
+        data.modes.subscription?.models
+      ) {
+        setAvailableModels(data.modes.subscription.models);
+        showToast(t("modelsUpdated"), "success");
+      }
+    } catch (error) {
+      console.error("获取预设模型列表失败:", error);
+      showToast(
+        error instanceof Error ? error.message : t("modelsLoadFailed"),
+        "error",
+      );
+    } finally {
+      setIsLoadingModels(false);
+    }
+  };
+
+  // 加载指定提供商的模型列表（自定义模式）
   const handleLoadModels = async () => {
-    if (!aiProvider || (!aiApiKey && !isApiKeyMasked)) {
+    if (!aiProvider) {
+      showToast(t("pleaseSelectProvider"), "error");
+
+      return;
+    }
+
+    if (!aiApiKey && !isApiKeyMasked) {
       showToast(t("pleaseSelectProvider"), "error");
 
       return;
@@ -298,22 +526,23 @@ export default function SettingsPage() {
         throw new Error(data.error || t("modelsLoadFailed"));
       }
 
-      const models: string[] = (data.models || []).map(
-        (m: { id?: string; name?: string }) => m.id || m.name,
-      );
+      const models = data.models || [];
 
       if (!models.length) {
         showToast(t("modelsNotFound"), "error");
       }
 
       // 确保当前已选模型在列表中
-      const merged = new Set(models);
+      const modelIds = new Set(models.map((m: any) => m.id));
 
-      if (aiModel) {
-        merged.add(aiModel);
+      if (aiModel && !modelIds.has(aiModel)) {
+        models.push({ id: aiModel, name: aiModel, pricing: null });
       }
 
-      const sortedModels = Array.from(merged).sort();
+      // 按模型 ID 排序
+      const sortedModels = models.sort((a: any, b: any) =>
+        a.id.localeCompare(b.id),
+      );
 
       setAvailableModels(sortedModels);
       showToast(t("modelsUpdated"), "success");
@@ -452,6 +681,44 @@ export default function SettingsPage() {
 
   // 保存AI配置
   const handleSaveAiConfig = async () => {
+    // 如果是通用配置模式（credits 或 subscription），只需要保存模式和模型
+    if (aiConfigMode === "credits" || aiConfigMode === "subscription") {
+      setIsUpdatingAiConfig(true);
+      try {
+        const response = await fetch("/api/user/profile", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            aiConfigMode,
+            aiModel,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || t("configSaveFailed"));
+        }
+
+        // 更新原始值（不需要更新 session，避免页面刷新）
+        setOriginalAiConfigMode(aiConfigMode);
+        setOriginalAiModel(aiModel);
+
+        showToast(t("configSaved"), "success");
+      } catch (error) {
+        console.error("保存AI配置失败:", error);
+        showToast(
+          error instanceof Error ? error.message : t("configSaveFailed"),
+          "error",
+        );
+      } finally {
+        setIsUpdatingAiConfig(false);
+      }
+
+      return;
+    }
+
+    // 自定义配置模式 - 保持原有逻辑
     if (!aiProvider || !aiModel || (!aiApiKey && !isApiKeyMasked)) {
       showToast(t("pleaseCompleteConfig"), "error");
 
@@ -464,6 +731,7 @@ export default function SettingsPage() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          aiConfigMode: "custom",
           aiProvider,
           aiModel,
           // 只有在用户输入了新的明文 key 时才更新后端
@@ -480,23 +748,21 @@ export default function SettingsPage() {
         throw new Error(data.error || t("configSaveFailed"));
       }
 
-      // 更新session
-      await update({
-        ...session,
-        user: {
-          ...session?.user,
-          aiProvider,
-          aiModel,
-          aiApiKeyMasked: data.user.aiApiKeyMasked,
-          aiApiEndpoint,
-          aiCustomProviderName: customProviderName,
-        },
-      });
-
       showToast(t("configSaved"), "success");
+
       // 更新为遮盖后的Key
-      setAiApiKey(data.user.aiApiKeyMasked || "");
+      const maskedKey = data.user.aiApiKeyMasked || "";
+
+      setAiApiKey(maskedKey);
       setIsApiKeyMasked(Boolean(data.user.aiApiKeyMasked));
+
+      // 更新原始值（不需要更新 session，避免页面刷新）
+      setOriginalAiConfigMode("custom");
+      setOriginalAiProvider(aiProvider);
+      setOriginalAiModel(aiModel);
+      setOriginalAiApiKey(maskedKey);
+      setOriginalAiApiEndpoint(aiApiEndpoint);
+      setOriginalCustomProviderName(customProviderName);
     } catch (error) {
       console.error("保存AI配置失败:", error);
       showToast(
@@ -742,171 +1008,373 @@ export default function SettingsPage() {
                 <h3 className="text-lg font-semibold">{t("aiConfig")}</h3>
               </CardHeader>
               <CardBody className="space-y-4">
-                {/* AI提供商选择 */}
-                <Select
-                  label={t("aiProvider")}
-                  placeholder={t("aiProviderPlaceholder")}
-                  selectedKeys={aiProvider ? [aiProvider] : []}
-                  onSelectionChange={(keys) => {
-                    const selected = Array.from(keys)[0] as string;
-
-                    setAiProvider(selected);
-                    // 重置相关字段
-                    setAiModel("");
-                    setAvailableModels([]);
-                    if (selected !== "custom") {
-                      const provider = AI_PROVIDERS.find(
-                        (p) => p.value === selected,
-                      );
-
-                      setAiApiEndpoint(provider?.defaultEndpoint || "");
-                    }
+                {/* AI配置模式选择 */}
+                <RadioGroup
+                  isDisabled={isLoadingSubscriptionStatus}
+                  label={t("aiConfigMode")}
+                  orientation="horizontal"
+                  value={aiConfigMode}
+                  onValueChange={(value) => {
+                    setAiConfigMode(value);
                   }}
                 >
-                  {AI_PROVIDERS.map((provider) => (
-                    <SelectItem key={provider.value}>
-                      {provider.label}
-                    </SelectItem>
-                  ))}
-                </Select>
+                  <Radio value="credits">{t("creditsMode")}</Radio>
+                  <Radio value="subscription">{t("subscriptionMode")}</Radio>
+                  <Radio value="custom">{t("customMode")}</Radio>
+                </RadioGroup>
 
-                {/* 自定义提供商名称 */}
-                {aiProvider === "custom" && (
-                  <Input
-                    label={t("providerName")}
-                    placeholder={t("providerNamePlaceholder")}
-                    value={customProviderName}
-                    onChange={(e) => setCustomProviderName(e.target.value)}
-                  />
-                )}
+                {/* 根据选择的模式显示对应的提示信息 */}
+                {!isLoadingSubscriptionStatus && (
+                  <div className="p-4 bg-default-100 rounded-lg">
+                    {aiConfigMode === "credits" && (
+                      <div className="space-y-2">
+                        <p className="text-sm text-default-700">
+                          {t("creditsModeTip")}
+                        </p>
+                        {creditsBalance > 0 ? (
+                          <p className="text-sm font-medium text-success">
+                            {t("currentCredits")}: {creditsBalance}
+                          </p>
+                        ) : (
+                          <p className="text-sm font-medium text-danger">
+                            {t("noCredits")} -{" "}
+                            <a
+                              className="text-primary underline hover:text-primary-600"
+                              href="/subscription"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                router.push("/subscription");
+                              }}
+                            >
+                              {t("goToRecharge")}
+                            </a>
+                          </p>
+                        )}
+                      </div>
+                    )}
 
-                {/* 自定义模型名称 */}
-                {aiProvider === "custom" && (
-                  <Input
-                    label={t("modelName")}
-                    placeholder={t("modelNamePlaceholder")}
-                    value={aiModel}
-                    onChange={(e) => setAiModel(e.target.value)}
-                  />
-                )}
+                    {aiConfigMode === "subscription" && (
+                      <div className="space-y-2">
+                        <p className="text-sm text-default-700">
+                          {t("subscriptionModeTip")}
+                        </p>
+                        {hasActiveSubscription ? (
+                          <p className="text-sm font-medium text-success">
+                            {t("subscriptionActive")}
+                          </p>
+                        ) : (
+                          <p className="text-sm font-medium text-danger">
+                            {t("noActiveSubscription")} -{" "}
+                            <a
+                              className="text-primary underline hover:text-primary-600"
+                              href="/subscription"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                router.push("/subscription");
+                              }}
+                            >
+                              {t("goToSubscribe")}
+                            </a>
+                          </p>
+                        )}
+                      </div>
+                    )}
 
-                {/* API Key输入 */}
-                {aiProvider && (
-                  <Input
-                    endContent={
-                      <Button
-                        isIconOnly
-                        className="min-w-8 w-8 h-8"
-                        size="sm"
-                        variant="light"
-                        onPress={() => setShowApiKey(!showApiKey)}
-                      >
-                        {showApiKey ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </Button>
-                    }
-                    label={t("apiKey")}
-                    placeholder={t("apiKeyPlaceholder")}
-                    type={showApiKey ? "text" : "password"}
-                    value={aiApiKey}
-                    onChange={(e) => {
-                      setAiApiKey(e.target.value);
-                      // 一旦用户修改输入，就认为当前值是明文 key
-                      setIsApiKeyMasked(false);
-                    }}
-                  />
-                )}
-
-                {/* API端点 */}
-                {aiProvider && (
-                  <Input
-                    label={t("apiEndpoint")}
-                    placeholder={t("apiEndpointPlaceholder")}
-                    value={aiApiEndpoint}
-                    onChange={(e) => setAiApiEndpoint(e.target.value)}
-                  />
-                )}
-
-                {/* 模型选择 */}
-                {aiProvider && aiProvider !== "custom" && (
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1">
-                      <Select
-                        isDisabled={availableModels.length === 0}
-                        label={t("modelName")}
-                        placeholder={t("modelPlaceholder")}
-                        selectedKeys={aiModel ? [aiModel] : []}
-                        onSelectionChange={(keys) =>
-                          setAiModel(Array.from(keys)[0] as string)
-                        }
-                      >
-                        {availableModels.map((model) => (
-                          <SelectItem key={model}>{model}</SelectItem>
-                        ))}
-                      </Select>
-                    </div>
-                    <Button
-                      isIconOnly
-                      className="p-2"
-                      color="primary"
-                      isDisabled={
-                        isLoadingModels ||
-                        !aiProvider ||
-                        (!aiApiKey && !isApiKeyMasked)
-                      }
-                      isLoading={isLoadingModels}
-                      size="lg"
-                      variant="flat"
-                      onPress={handleLoadModels}
-                    >
-                      <RotateCw />
-                    </Button>
+                    {aiConfigMode === "custom" && (
+                      <p className="text-sm text-default-700">
+                        {t("customConfigDescription")}
+                      </p>
+                    )}
                   </div>
                 )}
 
-                {/* 操作按钮 */}
-                {aiProvider && (
+                {/* 积分模式 - 独立的模型选择 */}
+                {aiConfigMode === "credits" && (
+                  <>
+                    <Select
+                      isDisabled={
+                        availableModels.length === 0 || creditsBalance <= 0
+                      }
+                      label={t("modelName")}
+                      placeholder={t("modelPlaceholder")}
+                      selectedKeys={aiModel ? [aiModel] : []}
+                      onSelectionChange={(keys) =>
+                        setAiModel(Array.from(keys)[0] as string)
+                      }
+                    >
+                      {availableModels.map((model) => {
+                        console.log("Credits mode - Model:", model);
+                        console.log("Pricing object:", model.pricing);
+                        console.log(
+                          "creditsPerRequest:",
+                          model.pricing?.creditsPerRequest,
+                        );
+                        console.log(
+                          "creditsPerKTokens:",
+                          model.pricing?.creditsPerKTokens,
+                        );
+
+                        const displayName = model.pricing?.creditsPerRequest
+                          ? `${model.name} (${model.pricing.creditsPerRequest} ${t("creditsPerRequest")})`
+                          : model.name;
+
+                        console.log("Display name:", displayName);
+
+                        return (
+                          <SelectItem key={model.id}>{displayName}</SelectItem>
+                        );
+                      })}
+                    </Select>
+                  </>
+                )}
+
+                {/* 订阅模式 - 独立的模型选择 */}
+                {aiConfigMode === "subscription" && (
+                  <>
+                    <Select
+                      isDisabled={
+                        availableModels.length === 0 || !hasActiveSubscription
+                      }
+                      label={t("modelName")}
+                      placeholder={t("modelPlaceholder")}
+                      selectedKeys={aiModel ? [aiModel] : []}
+                      onSelectionChange={(keys) =>
+                        setAiModel(Array.from(keys)[0] as string)
+                      }
+                    >
+                      {availableModels.map((model) => {
+                        const displayName = `${model.name} (${t("unlimitedUsage")})`;
+
+                        return (
+                          <SelectItem key={model.id}>{displayName}</SelectItem>
+                        );
+                      })}
+                    </Select>
+                  </>
+                )}
+
+                {/* 当选择 custom 模式时，显示所有配置字段 */}
+                {aiConfigMode !== "credits" &&
+                  aiConfigMode !== "subscription" && (
+                    <>
+                      {/* AI提供商选择 */}
+                      <Select
+                        label={t("aiProvider")}
+                        placeholder={t("aiProviderPlaceholder")}
+                        selectedKeys={aiProvider ? [aiProvider] : []}
+                        onSelectionChange={(keys) => {
+                          const selected = Array.from(keys)[0] as string;
+
+                          setAiProvider(selected);
+                          // 重置相关字段
+                          setAiModel("");
+                          setAvailableModels([]);
+                          if (selected !== "custom") {
+                            const provider = AI_PROVIDERS.find(
+                              (p) => p.value === selected,
+                            );
+
+                            setAiApiEndpoint(provider?.defaultEndpoint || "");
+                          }
+                        }}
+                      >
+                        {AI_PROVIDERS.map((provider) => (
+                          <SelectItem key={provider.value}>
+                            {provider.label}
+                          </SelectItem>
+                        ))}
+                      </Select>
+
+                      {/* 自定义提供商名称 */}
+                      {aiProvider === "custom" && (
+                        <Input
+                          label={t("providerName")}
+                          placeholder={t("providerNamePlaceholder")}
+                          value={customProviderName}
+                          onChange={(e) =>
+                            setCustomProviderName(e.target.value)
+                          }
+                        />
+                      )}
+
+                      {/* 自定义模型名称 */}
+                      {aiProvider === "custom" && (
+                        <Input
+                          label={t("modelName")}
+                          placeholder={t("modelNamePlaceholder")}
+                          value={aiModel}
+                          onChange={(e) => setAiModel(e.target.value)}
+                        />
+                      )}
+
+                      {/* API Key输入 */}
+                      {aiProvider && (
+                        <Input
+                          endContent={
+                            <Button
+                              isIconOnly
+                              className="min-w-8 w-8 h-8"
+                              size="sm"
+                              variant="light"
+                              onPress={() => setShowApiKey(!showApiKey)}
+                            >
+                              {showApiKey ? (
+                                <EyeOff size={18} />
+                              ) : (
+                                <Eye size={18} />
+                              )}
+                            </Button>
+                          }
+                          label={t("apiKey")}
+                          placeholder={t("apiKeyPlaceholder")}
+                          type={showApiKey ? "text" : "password"}
+                          value={aiApiKey}
+                          onChange={(e) => {
+                            setAiApiKey(e.target.value);
+                            // 一旦用户修改输入，就认为当前值是明文 key
+                            setIsApiKeyMasked(false);
+                          }}
+                        />
+                      )}
+
+                      {/* API端点 */}
+                      {aiProvider && (
+                        <Input
+                          label={t("apiEndpoint")}
+                          placeholder={t("apiEndpointPlaceholder")}
+                          value={aiApiEndpoint}
+                          onChange={(e) => setAiApiEndpoint(e.target.value)}
+                        />
+                      )}
+
+                      {/* 模型选择 */}
+                      {aiProvider && aiProvider !== "custom" && (
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1">
+                            <Select
+                              isDisabled={availableModels.length === 0}
+                              label={t("modelName")}
+                              placeholder={t("modelPlaceholder")}
+                              selectedKeys={aiModel ? [aiModel] : []}
+                              onSelectionChange={(keys) =>
+                                setAiModel(Array.from(keys)[0] as string)
+                              }
+                            >
+                              {availableModels.map((model) => {
+                                // 根据配置模式决定显示什么价格信息
+                                let priceDescription: string | undefined;
+
+                                if (aiConfigMode === "credits") {
+                                  // 积分模式：显示每次请求的固定积分数
+                                  if (model.pricing?.creditsPerRequest) {
+                                    priceDescription = `${model.pricing.creditsPerRequest} ${t("creditsPerRequest")}`;
+                                  }
+                                } else if (aiConfigMode === "subscription") {
+                                  // 订阅模式：显示无限使用
+                                  priceDescription = t("unlimitedUsage");
+                                }
+                                // 自定义模式：不显示价格（或显示服务商价格，如果有的话）
+
+                                return (
+                                  <SelectItem
+                                    key={model.id}
+                                    description={priceDescription}
+                                  >
+                                    {model.name}
+                                  </SelectItem>
+                                );
+                              })}
+                            </Select>
+                          </div>
+                          <Button
+                            isIconOnly
+                            className="p-2"
+                            color="primary"
+                            isDisabled={
+                              isLoadingModels ||
+                              !aiProvider ||
+                              (!aiApiKey && !isApiKeyMasked)
+                            }
+                            isLoading={isLoadingModels}
+                            size="lg"
+                            variant="flat"
+                            onPress={handleLoadModels}
+                          >
+                            <RotateCw />
+                          </Button>
+                        </div>
+                      )}
+
+                      {/* 操作按钮 - 自定义配置模式 */}
+                      {aiProvider && (
+                        <div className="flex gap-2">
+                          <Button
+                            color={
+                              connectionTestResult === "success"
+                                ? "success"
+                                : connectionTestResult === "error"
+                                  ? "danger"
+                                  : "primary"
+                            }
+                            isLoading={isTestingConnection}
+                            startContent={
+                              !isTestingConnection &&
+                              connectionTestResult === "success" ? (
+                                <CheckCircle className="w-4 h-4" />
+                              ) : !isTestingConnection &&
+                                connectionTestResult === "error" ? (
+                                <XCircle className="w-4 h-4" />
+                              ) : undefined
+                            }
+                            variant="bordered"
+                            onPress={handleTestConnection}
+                          >
+                            {t("testConnection")}
+                          </Button>
+                          <Button
+                            color="primary"
+                            isDisabled={
+                              connectionTestResult !== "success" ||
+                              !hasAiConfigChanged()
+                            }
+                            isLoading={isUpdatingAiConfig}
+                            onPress={handleSaveAiConfig}
+                          >
+                            {tCommon("save")}
+                          </Button>
+                          {(session?.user as any)?.aiProvider && (
+                            <Button
+                              color="danger"
+                              isLoading={isUpdatingAiConfig}
+                              variant="light"
+                              onPress={handleClearAiConfig}
+                            >
+                              {tCommon("clear")}
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                {/* 保存按钮 - 通用配置模式 */}
+                {(aiConfigMode === "credits" ||
+                  aiConfigMode === "subscription") && (
                   <div className="flex gap-2">
                     <Button
-                      color={
-                        connectionTestResult === "success"
-                          ? "success"
-                          : connectionTestResult === "error"
-                            ? "danger"
-                            : "primary"
-                      }
-                      isLoading={isTestingConnection}
-                      startContent={
-                        !isTestingConnection &&
-                        connectionTestResult === "success" ? (
-                          <CheckCircle className="w-4 h-4" />
-                        ) : !isTestingConnection &&
-                          connectionTestResult === "error" ? (
-                          <XCircle className="w-4 h-4" />
-                        ) : undefined
-                      }
-                      variant="bordered"
-                      onPress={handleTestConnection}
-                    >
-                      {t("testConnection")}
-                    </Button>
-                    <Button
                       color="primary"
-                      isDisabled={connectionTestResult !== "success"}
+                      isDisabled={
+                        !hasAiConfigChanged() ||
+                        !aiModel ||
+                        (aiConfigMode === "credits" && creditsBalance <= 0) ||
+                        (aiConfigMode === "subscription" &&
+                          !hasActiveSubscription)
+                      }
                       isLoading={isUpdatingAiConfig}
                       onPress={handleSaveAiConfig}
                     >
                       {tCommon("save")}
                     </Button>
-                    {(session?.user as any)?.aiProvider && (
-                      <Button
-                        color="danger"
-                        isLoading={isUpdatingAiConfig}
-                        variant="light"
-                        onPress={handleClearAiConfig}
-                      >
-                        {tCommon("clear")}
-                      </Button>
-                    )}
                   </div>
                 )}
               </CardBody>

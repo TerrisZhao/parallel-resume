@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
+import { eq, and } from "drizzle-orm";
 
 import { authOptions } from "@/lib/auth/config";
 import { listAIModels } from "@/lib/ai/models";
 import { getUserAIConfig } from "@/lib/ai/client";
+import { db } from "@/lib/db/drizzle";
+import { aiPricingRules } from "@/lib/db/schema";
 
 const listModelsSchema = z.object({
   provider: z.enum(["openai", "deepseek", "claude", "gemini", "custom"]),
@@ -29,14 +32,20 @@ export async function POST(request: NextRequest) {
 
     if (!apiKey) {
       const userId = parseInt(session.user.id);
-      const savedConfig = await getUserAIConfig(userId);
+      const userConfigResult = await getUserAIConfig(userId);
 
-      if (!savedConfig || !savedConfig.apiKey) {
+      if (
+        !userConfigResult ||
+        !userConfigResult.config ||
+        !userConfigResult.config.apiKey
+      ) {
         return NextResponse.json(
           { success: false, error: "请先在个人设置中配置AI API Key" },
           { status: 400 },
         );
       }
+
+      const savedConfig = userConfigResult.config;
 
       apiKey = savedConfig.apiKey;
 
@@ -52,9 +61,37 @@ export async function POST(request: NextRequest) {
       apiEndpoint,
     });
 
+    // 查询所有模型的价格信息
+    const pricingRulesData = await db
+      .select()
+      .from(aiPricingRules)
+      .where(
+        and(
+          eq(aiPricingRules.provider, config.provider),
+          eq(aiPricingRules.isActive, true),
+        ),
+      );
+
+    // 创建价格映射
+    const pricingMap = new Map(
+      pricingRulesData.map((rule: any) => [
+        rule.model,
+        {
+          creditsPerRequest: rule.creditsPerRequest,
+          creditsPerKTokens: rule.creditsPerKTokens,
+          pricingType: rule.pricingType,
+          description: rule.description,
+        },
+      ]),
+    );
+
     return NextResponse.json({
       success: true,
-      models: models.map((id) => ({ id, name: id })),
+      models: models.map((id) => ({
+        id,
+        name: id,
+        pricing: pricingMap.get(id) || null,
+      })),
     });
   } catch (error) {
     if (error instanceof z.ZodError) {

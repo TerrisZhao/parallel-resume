@@ -73,12 +73,23 @@ pnpm install
 cp env.example .env
 ```
 
-编辑 `.env` 文件并配置：
-- 数据库连接字符串
-- NextAuth 配置
-- Google OAuth 凭证（可选）
+编辑 `.env` 文件并配置必需的环境变量（详见下方环境变量章节）
 
-4. 初始化数据库
+4. 运行初始化脚本（推荐）
+```bash
+pnpm init
+```
+
+这个命令会自动完成以下步骤：
+- ✓ 检查所有必需的环境变量
+- ✓ 测试数据库连接
+- ✓ 运行数据库迁移
+- ✓ 填充订阅计划数据
+- ✓ 填充 AI 价格规则
+- ✓ 创建测试用户（可选）
+- ✓ 验证配置
+
+**或者手动初始化：**
 ```bash
 pnpm db:generate
 pnpm db:migrate
@@ -107,19 +118,50 @@ docker run -p 3100:3100 parallel-resume
 
 ## 📝 环境变量
 
-必需的环境变量：
+### 必需的环境变量
 
 ```env
 # 数据库
 DATABASE_URL=postgresql://user:password@localhost:5432/parallel-resume
 
-# NextAuth
+# NextAuth 配置
 NEXTAUTH_URL=http://localhost:3100
-NEXTAUTH_SECRET=your-secret-key
+NEXTAUTH_SECRET=your-secret-key-here-change-this-in-production
 
-# Google OAuth（可选）
+# AI 配置加密密钥（32字节 = 64个十六进制字符）
+ENCRYPTION_KEY=your-64-character-hex-string
+
+# 通用 AI 配置（积分模式和订阅模式共用）
+COMMON_AI_PROVIDER=openai
+COMMON_AI_API_KEY=your-openai-api-key
+COMMON_AI_API_ENDPOINT=https://api.openai.com/v1
+
+# 订阅模式默认模型
+DEFAULT_SUBSCRIPTION_MODEL=gpt-5.2
+```
+
+### 推荐配置（可选）
+
+```env
+# Google OAuth
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# Stripe 支付
+STRIPE_SECRET_KEY=sk_test_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# Cloudflare R2（文件存储）
+R2_ACCESS_KEY_ID=your-access-key-id
+R2_SECRET_ACCESS_KEY=your-secret-access-key
+R2_ENDPOINT=https://your-account-id.r2.cloudflarestorage.com
+R2_PUBLIC_BASE_URL=https://your-r2-public-url
+
+# 积分计费配置
+FREE_SIGNUP_CREDITS=100
+DEFAULT_CREDITS_PER_1K_TOKENS=5
+ALLOW_NEGATIVE_CREDITS=false
 ```
 
 ## 🤝 贡献

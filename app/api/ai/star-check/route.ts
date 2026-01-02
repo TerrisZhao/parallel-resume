@@ -9,6 +9,11 @@ import {
   getBatchStarCheckPrompt,
   STAR_CHECK_SYSTEM_PROMPT,
 } from "@/lib/ai/prompts";
+import {
+  checkCreditsBalance,
+  calculateCreditsForUsage,
+  consumeCredits,
+} from "@/lib/credits/manager";
 
 const starCheckSchema = z.object({
   content: z.string().min(1, "内容不能为空").optional(),
@@ -34,24 +39,58 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "未授权访问" }, { status: 401 });
     }
 
-    // 获取用户AI配置
-    const aiConfig = await getUserAIConfig(parseInt(session.user.id));
+    const userId = parseInt(session.user.id);
 
-    if (!aiConfig) {
+    // 获取用户AI配置（现在返回 config 和 mode）
+    const aiConfigData = await getUserAIConfig(userId);
+
+    if (!aiConfigData || !aiConfigData.config) {
       return NextResponse.json(
         { error: "请先在设置中配置AI模型" },
         { status: 400 },
       );
     }
 
+    const { config: aiConfig, mode } = aiConfigData;
+
     const body = await request.json();
     const { content, items, jobDescription } = starCheckSchema.parse(body);
 
     // 判断是批量检测还是单条检测
     const isBatch = items && items.length > 0;
+    const maxTokens = isBatch ? 4000 : 2000;
     const prompt = isBatch
       ? getBatchStarCheckPrompt(items, jobDescription)
       : getStarCheckPrompt(content!, jobDescription);
+
+    // 如果是积分模式，检查积分余额（预估）
+    if (mode === "credits") {
+      const estimatedCredits = await calculateCreditsForUsage(
+        aiConfig.provider,
+        aiConfig.model,
+        {
+          promptTokens: 0,
+          completionTokens: maxTokens,
+          totalTokens: maxTokens,
+        },
+      );
+
+      const hasEnoughCredits = await checkCreditsBalance(
+        userId,
+        estimatedCredits,
+      );
+
+      if (!hasEnoughCredits) {
+        return NextResponse.json(
+          {
+            error: "积分余额不足",
+            requiredCredits: estimatedCredits,
+            mode: "credits",
+          },
+          { status: 402 },
+        );
+      }
+    }
 
     // 调用AI进行STAR检测和优化
     const response = await callAI({
@@ -59,8 +98,40 @@ export async function POST(request: NextRequest) {
       prompt,
       systemPrompt: STAR_CHECK_SYSTEM_PROMPT,
       temperature: 0.7,
-      maxTokens: isBatch ? 4000 : 2000, // 批量检测需要更多 tokens
+      maxTokens,
     });
+
+    // 如果是积分模式，扣除积分
+    let creditsConsumed = 0;
+    let newBalance = 0;
+
+    if (mode === "credits") {
+      creditsConsumed = await calculateCreditsForUsage(
+        aiConfig.provider,
+        aiConfig.model,
+        response.usage,
+      );
+
+      const result = await consumeCredits(
+        userId,
+        creditsConsumed,
+        aiConfig.provider,
+        aiConfig.model,
+        response.usage,
+        isBatch
+          ? `STAR批量检测 - ${items!.length}条`
+          : `STAR检测 - ${content!.substring(0, 30)}...`,
+      );
+
+      if (!result.success) {
+        return NextResponse.json(
+          { error: result.error || "积分扣除失败" },
+          { status: 500 },
+        );
+      }
+
+      newBalance = result.newBalance;
+    }
 
     // 尝试解析AI返回的JSON
     let result;
@@ -131,6 +202,11 @@ export async function POST(request: NextRequest) {
         results: result.results,
         overallSatisfied: result.overallSatisfied || null,
         usage: response.usage,
+        mode,
+        ...(mode === "credits" && {
+          creditsConsumed,
+          creditsBalance: newBalance,
+        }),
       });
     } else {
       // 单条检测结果验证
@@ -157,6 +233,11 @@ export async function POST(request: NextRequest) {
         improvedContent: result.improvedContent || "",
         suggestions: result.suggestions || "",
         usage: response.usage,
+        mode,
+        ...(mode === "credits" && {
+          creditsConsumed,
+          creditsBalance: newBalance,
+        }),
       });
     }
   } catch (error) {

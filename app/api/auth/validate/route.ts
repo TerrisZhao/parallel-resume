@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
 
     // 检查用户是否仍然存在且未被删除
     const userId = parseInt(payload.sub || "0");
+
     if (userId) {
       const user = await db
         .select({
@@ -40,14 +41,14 @@ export async function GET(request: NextRequest) {
       if (user.length === 0) {
         return NextResponse.json(
           { error: "User not found or inactive" },
-          { status: 401 }
+          { status: 401 },
         );
       }
 
       if (!user[0].isActive) {
         return NextResponse.json(
           { error: "User account is inactive" },
-          { status: 403 }
+          { status: 403 },
         );
       }
 

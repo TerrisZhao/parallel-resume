@@ -3,10 +3,11 @@
  * 处理插件的后台逻辑、消息传递和 API 调用
  */
 
+import { Message, MessageResponse } from "../shared/types";
+
 import { authManager } from "./auth-manager";
 import { apiClient } from "./api-client";
 import { storageManager } from "./storage-manager";
-import { Message, MessageResponse } from "../shared/types";
 
 // 监听安装事件
 chrome.runtime.onInstalled.addListener(() => {
@@ -18,7 +19,7 @@ chrome.runtime.onMessage.addListener(
   (
     message: Message,
     sender: chrome.runtime.MessageSender,
-    sendResponse: (response: MessageResponse) => void
+    sendResponse: (response: MessageResponse) => void,
   ) => {
     handleMessage(message, sender)
       .then((data) => {
@@ -34,7 +35,7 @@ chrome.runtime.onMessage.addListener(
 
     // 返回 true 表示异步发送响应
     return true;
-  }
+  },
 );
 
 /**
@@ -42,7 +43,7 @@ chrome.runtime.onMessage.addListener(
  */
 async function handleMessage(
   message: Message,
-  sender: chrome.runtime.MessageSender
+  sender: chrome.runtime.MessageSender,
 ): Promise<any> {
   switch (message.type) {
     case "GET_AUTH_STATE":
@@ -53,6 +54,7 @@ async function handleMessage(
 
     case "LOGOUT":
       await authManager.logout();
+
       return { success: true };
 
     case "GET_RESUMES":
@@ -62,6 +64,7 @@ async function handleMessage(
       if (!message.data?.id) {
         throw new Error("Resume ID is required");
       }
+
       return await apiClient.getResume(message.data.id);
 
     case "SELECT_RESUME":
@@ -69,6 +72,7 @@ async function handleMessage(
         throw new Error("Resume ID is required");
       }
       await storageManager.setSelectedResumeId(message.data.id);
+
       return { success: true };
 
     default:
@@ -86,13 +90,18 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
 });
 
 // 定期检查 token 有效性（每小时）
-setInterval(async () => {
-  const isAuth = await authManager.isAuthenticated();
-  if (isAuth) {
-    const isValid = await authManager.validateToken();
-    if (!isValid) {
-      console.log("Token expired, logging out");
-      await authManager.logout();
+setInterval(
+  async () => {
+    const isAuth = await authManager.isAuthenticated();
+
+    if (isAuth) {
+      const isValid = await authManager.validateToken();
+
+      if (!isValid) {
+        console.log("Token expired, logging out");
+        await authManager.logout();
+      }
     }
-  }
-}, 60 * 60 * 1000); // 1 hour
+  },
+  60 * 60 * 1000,
+); // 1 hour
