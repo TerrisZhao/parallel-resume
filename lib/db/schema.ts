@@ -107,6 +107,7 @@ export const users = pgTable("users", {
   providerId: varchar("provider_id", { length: 255 }),
   role: userRoleEnum("role").notNull().default("user"),
   emailVerified: boolean("email_verified").notNull().default(false),
+  firstLoginCompleted: boolean("first_login_completed").notNull().default(false),
   isActive: boolean("is_active").notNull().default(true),
   themeMode: themeModeEnum("theme_mode").notNull().default("system"),
   preferredLanguage: languagePreferenceEnum("preferred_language")

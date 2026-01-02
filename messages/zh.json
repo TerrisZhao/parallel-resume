@@ -161,6 +161,8 @@
     "emailNotifications": "邮件通知",
     "emailNotificationsDesc": "接收重要更新和通知邮件",
     "security": "安全设置",
+    "changePassword": "修改密码",
+    "passwordChanged": "密码修改成功",
     "loginHistory": "登录历史",
     "loading": "加载中...",
     "noLoginHistory": "暂无登录历史记录",
@@ -576,5 +578,19 @@
       "benefit4": "跨设备同步，所有数据云端保存",
       "benefit5": "完全免费，无需额外付费"
     }
+  },
+  "setPasswordModal": {
+    "title": "设置您的密码",
+    "description": "为了更好地保护您的账号安全，请为您的账号设置密码。您可以使用此密码在其他设备上登录。",
+    "newPassword": "新密码",
+    "confirmPassword": "确认密码",
+    "passwordPlaceholder": "请输入密码（至少8个字符）",
+    "passwordRequirements": "密码长度至少为8个字符",
+    "setPassword": "设置密码",
+    "skip": "暂时跳过",
+    "success": "密码设置成功",
+    "failed": "密码设置失败",
+    "passwordTooShort": "密码长度至少为8个字符",
+    "passwordMismatch": "两次输入的密码不一致"
   }
 }

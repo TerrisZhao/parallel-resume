@@ -25,6 +25,7 @@ import { useTheme } from "next-themes";
 import { PageHeaderContext } from "./page-header-context";
 
 import { Logo } from "@/components/logo";
+import { SetPasswordModal } from "@/components/set-password-modal";
 
 const Sidebar = dynamic(() => import("@/components/sidebar"), {
   ssr: false,
@@ -47,6 +48,8 @@ export default function DashboardLayout({
   const [hasSubscription, setHasSubscription] = useState(false);
   const [credits, setCredits] = useState(0);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
+  const [hasCheckedPassword, setHasCheckedPassword] = useState(false);
 
   const items: SidebarItem[] = [
     {
@@ -109,6 +112,35 @@ export default function DashboardLayout({
       fetchSubscriptionStatus();
     }
   }, [session]);
+
+  // 检查用户是否需要设置密码（仅首次登录）
+  useEffect(() => {
+    const checkPasswordSetup = async () => {
+      if (!session || hasCheckedPassword) {
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/user/profile");
+
+        if (response.ok) {
+          const data = await response.json();
+          const user = data.user;
+
+          // 如果用户没有完成首次登录设置，且没有密码（Google登录或测试账号）
+          if (!user.firstLoginCompleted) {
+            setShowSetPasswordModal(true);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to check password setup:", error);
+      } finally {
+        setHasCheckedPassword(true);
+      }
+    };
+
+    checkPasswordSetup();
+  }, [session, hasCheckedPassword]);
 
   const handleThemeToggle = async () => {
     const newTheme = theme === "dark" ? "light" : "dark";
@@ -381,6 +413,16 @@ export default function DashboardLayout({
           )}
         </ModalContent>
       </Modal>
+      <SetPasswordModal
+        isOpen={showSetPasswordModal}
+        onClose={() => setShowSetPasswordModal(false)}
+        onSuccess={() => {
+          // 刷新用户数据
+          if (update) {
+            update();
+          }
+        }}
+      />
     </div>
   );
 }

@@ -325,8 +325,8 @@ async function seedSubscriptionPlans() {
         featuresEn: ["500 credits", "Pay as you go", "Never expire", "Best value"],
         featuresZh: ["500 积分", "按需使用", "永不过期", "性价比最高"],
         stripePriceId: null, // Credits 类型套餐会动态创建价格
-        isActive: true,
-        isPopular: true,
+        isActive: false,
+        isPopular: false,
         displayOrder: 4,
         description: "Best value",
         descriptionEn: "Best value",
@@ -359,7 +359,7 @@ async function seedSubscriptionPlans() {
           "节省 17%",
         ],
         stripePriceId: null, // 如需启用年付套餐，需要在 Stripe 创建对应的 Price ID
-        isActive: true,
+        isActive: false,
         isPopular: false,
         displayOrder: 5,
         description: "Annual billing saves more",
@@ -447,7 +447,8 @@ async function createTestUser() {
     const testPassword = "password123";
 
     // 哈希密码
-    const bcrypt = await import("bcryptjs");
+    const bcryptModule = await import("bcryptjs");
+    const bcrypt = bcryptModule.default || bcryptModule;
     const passwordHash = await bcrypt.hash(testPassword, 10);
 
     // 创建测试用户
@@ -458,7 +459,9 @@ async function createTestUser() {
         name: "Test User",
         passwordHash: passwordHash,
         provider: "credentials",
+        role: "owner",
         emailVerified: true,
+        firstLoginCompleted: false, // 首次登录需要设置密码
         aiConfigMode: "credits",
       })
       .returning({ id: users.id });
@@ -466,18 +469,7 @@ async function createTestUser() {
     logSuccess(`已创建测试用户: ${testEmail} (ID: ${user.id})`);
     log(`  邮箱: ${testEmail}`, colors.cyan);
     log(`  密码: ${testPassword}`, colors.cyan);
-
-    // 为测试用户分配初始积分
-    const freeCredits = parseInt(process.env.FREE_SIGNUP_CREDITS || "100");
-
-    await db.insert(userCredits).values({
-      userId: user.id,
-      balance: freeCredits,
-      totalEarned: freeCredits,
-      totalSpent: 0,
-    });
-
-    logSuccess(`已分配初始积分: ${freeCredits}`);
+    log(`  角色: owner`, colors.cyan);
   } catch (error) {
     logError("创建测试用户失败！");
     console.error(error);

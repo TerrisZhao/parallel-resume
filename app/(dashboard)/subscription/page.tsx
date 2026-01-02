@@ -276,7 +276,7 @@ export default function SubscriptionPage() {
 
     return (
       <Card
-        key={plan.name}
+        key={plan.id}
         className={`relative p-3 overflow-visible ${
           plan.popular
             ? "bg-primary shadow-primary/20 shadow-2xl scale-105"

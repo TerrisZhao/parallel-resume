@@ -161,6 +161,8 @@
     "emailNotifications": "Email Notifications",
     "emailNotificationsDesc": "Receive important updates and notification emails",
     "security": "Security Settings",
+    "changePassword": "Change Password",
+    "passwordChanged": "Password changed successfully",
     "loginHistory": "Login History",
     "loading": "Loading...",
     "noLoginHistory": "No login history records",
@@ -576,5 +578,18 @@
       "benefit4": "Cross-device sync with all data saved in the cloud",
       "benefit5": "Completely free with no additional fees"
     }
+  },
+  "setPasswordModal": {
+    "title": "Set Your Password",
+    "description": "For better security, please set a password for your account. You can use this password to sign in on other devices.",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm Password",
+    "passwordRequirements": "Password must be at least 8 characters long",
+    "setPassword": "Set Password",
+    "skip": "Skip for Now",
+    "success": "Password set successfully",
+    "failed": "Failed to set password",
+    "passwordTooShort": "Password must be at least 8 characters",
+    "passwordMismatch": "Passwords do not match"
   }
 }

@@ -41,6 +41,7 @@ import { useTranslations } from "next-intl";
 import { usePageHeader } from "../use-page-header";
 
 import { title } from "@/components/primitives";
+import { SetPasswordModal } from "@/components/set-password-modal";
 
 // 登录历史类型定义
 interface LoginHistoryItem {
@@ -84,6 +85,9 @@ export default function SettingsPage() {
   const [loginHistory, setLoginHistory] = useState<LoginHistoryItem[]>([]);
   const [isLoginHistoryOpen, setIsLoginHistoryOpen] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
+  // 密码设置状态
+  const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
 
   // AI配置状态
   const [aiConfigMode, setAiConfigMode] = useState<string>("");
@@ -1502,6 +1506,13 @@ export default function SettingsPage() {
                 <Button
                   className="w-full justify-start"
                   variant="flat"
+                  onPress={() => setShowSetPasswordModal(true)}
+                >
+                  {t("changePassword")}
+                </Button>
+                <Button
+                  className="w-full justify-start"
+                  variant="flat"
                   onPress={handleOpenLoginHistory}
                 >
                   {t("loginHistory")}
@@ -1614,6 +1625,16 @@ export default function SettingsPage() {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      {/* 密码设置模态框 */}
+      <SetPasswordModal
+        isOpen={showSetPasswordModal}
+        showSkip={false}
+        onClose={() => setShowSetPasswordModal(false)}
+        onSuccess={() => {
+          showToast(t("passwordChanged"), "success");
+        }}
+      />
     </div>
   );
 }
