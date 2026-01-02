@@ -152,7 +152,7 @@ async function handleSubscriptionCreated(event: Stripe.Event) {
     const allPlans = await db.select().from(subscriptionPlans);
 
     console.log(
-      allPlans.map((p) => `id:${p.id} ${p.nameEn}/${p.nameZh}`).join(", ")
+      allPlans.map((p: { id: any; nameEn: any; nameZh: any; }) => `id:${p.id} ${p.nameEn}/${p.nameZh}`).join(", ")
     );
 
     return;
