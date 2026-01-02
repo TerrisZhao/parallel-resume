@@ -23,6 +23,7 @@ import { usePageHeader } from "../use-page-header";
 
 import { title } from "@/components/primitives";
 import { ResumePreviewModal } from "@/components/resume-preview-modal";
+import {Icon} from "@iconify/react";
 
 interface Resume {
   id: number;
@@ -483,9 +484,9 @@ export default function ResumeListPage() {
       {resumes.length === 0 ? (
         <Card className="border-none shadow-none">
           <CardBody className="text-center py-12">
-            <FileText className="mx-auto mb-4 text-default-400" size={128} />
+            <Icon className="mx-auto mb-4 text-default-400" icon={"solar:documents-bold-duotone"} width={128} />
             <h3 className="text-xl font-semibold mb-2">{t("noResumes")}</h3>
-            <p className="text-default-500 mb-4">{t("noResumesDescription")}</p>
+            <p className="text-default-500 mb-4"> {t("noResumesDescription")}</p>
           </CardBody>
         </Card>
       ) : (

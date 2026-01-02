@@ -51,6 +51,7 @@ export default function DashboardLayout({
   const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
   const [hasCheckedPassword, setHasCheckedPassword] = useState(false);
 
+  // 根据用户角色动态生成 sidebar items
   const items: SidebarItem[] = [
     {
       key: "resume",
@@ -70,6 +71,17 @@ export default function DashboardLayout({
       icon: "solar:clipboard-list-bold-duotone",
       title: t("interviewPrep"),
     },
+    // 仅 owner 可以看到系统后台
+    ...((session?.user as any)?.role === "owner"
+      ? [
+          {
+            key: "admin",
+            href: "/admin",
+            icon: "solar:settings-minimalistic-bold-duotone",
+            title: t("admin"),
+          },
+        ]
+      : []),
   ];
 
   useEffect(() => {
@@ -79,6 +91,8 @@ export default function DashboardLayout({
       setSelectedKey("interviews");
     } else if (pathname.startsWith("/interview-prep")) {
       setSelectedKey("interview-prep");
+    } else if (pathname.startsWith("/admin")) {
+      setSelectedKey("admin");
     } else if (pathname.startsWith("/settings")) {
       setSelectedKey("settings");
     } else if (pathname.startsWith("/help")) {

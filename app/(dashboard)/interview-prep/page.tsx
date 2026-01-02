@@ -20,6 +20,7 @@ import { Plus, Edit, Trash2 } from "lucide-react";
 import { usePageHeader } from "../use-page-header";
 
 import { title } from "@/components/primitives";
+import {Icon} from "@iconify/react";
 
 interface PreparationMaterial {
   id: number;
@@ -222,17 +223,19 @@ export default function InterviewPrepPage() {
       <Tabs
         selectedKey={selectedCategory}
         onSelectionChange={(key) => setSelectedCategory(key as string)}
+        className={"justify-center"}
       >
         {CATEGORIES.map((category) => (
           <Tab key={category} title={t(`categories.${category}`)}>
             <div className="mt-4 space-y-4">
               {getMaterialsByCategory(category).length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-64">
-                  <p className="text-default-500 mb-2">{t("noMaterials")}</p>
-                  <p className="text-sm text-default-400 mb-4">
-                    {t("noMaterialsDescription")}
-                  </p>
-                </div>
+                <Card className="border-none shadow-none">
+                  <CardBody className="text-center py-12">
+                    <Icon className="mx-auto mb-4 text-default-400" icon={"solar:clipboard-list-bold-duotone"} width={128} />
+                    <h3 className="text-xl font-semibold mb-2">{t("noMaterials")}</h3>
+                    <p className="text-default-500 mb-4"> {t("noMaterialsDescription")}</p>
+                  </CardBody>
+                </Card>
               ) : (
                 getMaterialsByCategory(category).map((material) => (
                   <Card key={material.id}>

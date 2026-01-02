@@ -447,6 +447,7 @@
     "resume": "Resumes",
     "interviews": "Interviews",
     "interviewPrep": "Interview Prep",
+    "admin": "System Admin",
     "settings": "Settings",
     "help": "Help & Feedback",
     "subscription": "Subscription",
@@ -591,5 +592,16 @@
     "failed": "Failed to set password",
     "passwordTooShort": "Password must be at least 8 characters",
     "passwordMismatch": "Passwords do not match"
+  },
+  "admin": {
+    "title": "System Admin",
+    "loading": "Loading...",
+    "users": "User Management",
+    "subscriptions": "Subscription Management",
+    "userManagement": "User Management",
+    "userManagementDesc": "Manage all users and their permissions",
+    "subscriptionManagement": "Subscription Management",
+    "subscriptionManagementDesc": "Manage user subscriptions and payments",
+    "backToDashboard": "Back to Dashboard"
   }
 }

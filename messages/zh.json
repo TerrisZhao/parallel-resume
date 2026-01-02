@@ -447,6 +447,7 @@
     "resume": "简历",
     "interviews": "面试看板",
     "interviewPrep": "面试准备",
+    "admin": "系统后台",
     "settings": "设置",
     "help": "帮助与反馈",
     "subscription": "订阅",
@@ -592,5 +593,16 @@
     "failed": "密码设置失败",
     "passwordTooShort": "密码长度至少为8个字符",
     "passwordMismatch": "两次输入的密码不一致"
+  },
+  "admin": {
+    "title": "系统后台",
+    "loading": "加载中...",
+    "users": "用户管理",
+    "subscriptions": "订阅管理",
+    "userManagement": "用户管理",
+    "userManagementDesc": "管理所有用户及其权限",
+    "subscriptionManagement": "订阅管理",
+    "subscriptionManagementDesc": "管理用户订阅和支付信息",
+    "backToDashboard": "返回控制台"
   }
 }

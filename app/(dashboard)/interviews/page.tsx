@@ -24,12 +24,13 @@ import {
   Calendar,
   FileText,
   Edit,
-  Trash2,
+  Trash2, FileVideoCamera,
 } from "lucide-react";
 
 import { usePageHeader } from "../use-page-header";
 
 import { title } from "@/components/primitives";
+import {Icon} from "@iconify/react";
 
 interface Interview {
   id: number;
@@ -388,12 +389,13 @@ export default function InterviewsPage() {
   return (
     <div className="flex flex-col h-full">
       {interviews.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-64">
-          <p className="text-default-500 mb-2">{t("noInterviews")}</p>
-          <p className="text-sm text-default-400 mb-4">
-            {t("noInterviewsDescription")}
-          </p>
-        </div>
+        <Card className="border-none shadow-none">
+          <CardBody className="text-center py-12">
+            <Icon className="mx-auto mb-4 text-default-400" icon={"solar:case-round-bold-duotone"} width={128} />
+            <h3 className="text-xl font-semibold mb-2">{t("noInterviews")}</h3>
+            <p className="text-default-500 mb-4"> {t("noInterviewsDescription")}</p>
+          </CardBody>
+        </Card>
       ) : (
         <div className="flex-1 overflow-y-hidden">
           <div className="flex h-full">
