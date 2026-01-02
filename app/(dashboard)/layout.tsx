@@ -79,6 +79,14 @@ export default function DashboardLayout({
       setSelectedKey("interviews");
     } else if (pathname.startsWith("/interview-prep")) {
       setSelectedKey("interview-prep");
+    } else if (pathname.startsWith("/settings")) {
+      setSelectedKey("settings");
+    } else if (pathname.startsWith("/help")) {
+      setSelectedKey("help");
+    } else if (pathname.startsWith("/subscription")) {
+      setSelectedKey("subscription");
+    } else {
+      setSelectedKey("");
     }
   }, [pathname]);
 
@@ -292,10 +300,18 @@ export default function DashboardLayout({
             {(hasSubscription || credits > 0) && (
               <Button
                 fullWidth
-                className="justify-start text-default-500 data-[hover=true]:text-foreground mb-1"
+                className={`justify-start mb-1 ${
+                  selectedKey === "subscription"
+                    ? "bg-default-100 text-foreground"
+                    : "text-default-500 data-[hover=true]:text-foreground"
+                }`}
                 startContent={
                   <Icon
-                    className="text-default-500"
+                    className={
+                      selectedKey === "subscription"
+                        ? "text-primary"
+                        : "text-default-500"
+                    }
                     icon="solar:crown-bold-duotone"
                     width={24}
                   />
@@ -308,10 +324,18 @@ export default function DashboardLayout({
             )}
             <Button
               fullWidth
-              className="justify-start text-default-500 data-[hover=true]:text-foreground"
+              className={`justify-start ${
+                selectedKey === "settings"
+                  ? "bg-default-100 text-foreground"
+                  : "text-default-500 data-[hover=true]:text-foreground"
+              }`}
               startContent={
                 <Icon
-                  className="text-default-500"
+                  className={
+                    selectedKey === "settings"
+                      ? "text-primary"
+                      : "text-default-500"
+                  }
                   icon="solar:settings-bold-duotone"
                   width={24}
                 />
@@ -323,10 +347,16 @@ export default function DashboardLayout({
             </Button>
             <Button
               fullWidth
-              className="justify-start text-default-500 data-[hover=true]:text-foreground"
+              className={`justify-start ${
+                selectedKey === "help"
+                  ? "bg-default-100 text-foreground"
+                  : "text-default-500 data-[hover=true]:text-foreground"
+              }`}
               startContent={
                 <Icon
-                  className="text-default-500"
+                  className={
+                    selectedKey === "help" ? "text-primary" : "text-default-500"
+                  }
                   icon="solar:question-circle-bold-duotone"
                   width={24}
                 />

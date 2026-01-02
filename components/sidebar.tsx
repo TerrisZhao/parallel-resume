@@ -121,7 +121,7 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
               isCompact || isNestType ? null : item.icon ? (
                 <Icon
                   className={clsx(
-                    "text-default-500 group-data-[selected=true]:text-foreground",
+                    "text-default-500 group-data-[selected=true]:text-primary",
                     iconClassName,
                   )}
                   icon={item.icon}
@@ -139,7 +139,7 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
                   {item.icon ? (
                     <Icon
                       className={clsx(
-                        "text-default-500 group-data-[selected=true]:text-foreground",
+                        "text-default-500 group-data-[selected=true]:text-primary",
                         iconClassName,
                       )}
                       icon={item.icon}
@@ -168,7 +168,7 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
                       >
                         <Icon
                           className={clsx(
-                            "text-default-500 group-data-[selected=true]:text-foreground",
+                            "text-default-500 group-data-[selected=true]:text-primary",
                             iconClassName,
                           )}
                           icon={item.icon}
@@ -229,7 +229,7 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
               isCompact ? null : item.icon ? (
                 <Icon
                   className={clsx(
-                    "text-default-500 group-data-[selected=true]:text-foreground",
+                    "text-default-500 group-data-[selected=true]:text-primary",
                     iconClassName,
                   )}
                   icon={item.icon}
@@ -248,7 +248,7 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
                   {item.icon ? (
                     <Icon
                       className={clsx(
-                        "text-default-500 group-data-[selected=true]:text-foreground",
+                        "text-default-500 group-data-[selected=true]:text-primary",
                         iconClassName,
                       )}
                       icon={item.icon}
