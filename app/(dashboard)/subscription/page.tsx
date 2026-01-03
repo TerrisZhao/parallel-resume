@@ -226,7 +226,7 @@ export default function SubscriptionPage() {
       return;
     }
 
-    setLoadingPlanId(plan.name);
+    setLoadingPlanId(plan.id.toString());
 
     try {
       // Call backend API to create Stripe Checkout session
@@ -236,7 +236,7 @@ export default function SubscriptionPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          planName: plan.name,
+          planId: plan.id,
         }),
       });
 
@@ -398,7 +398,7 @@ export default function SubscriptionPage() {
               }
               color={plan.buttonColor}
               isDisabled={isCurrentPlan || isSubscribed}
-              isLoading={loadingPlanId === plan.name}
+              isLoading={loadingPlanId === plan.id.toString()}
               startContent={
                 plan.type === "credits" ? (
                   <CreditCard className="w-5 h-5" />

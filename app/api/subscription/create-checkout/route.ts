@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { eq, or } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 import { authOptions } from "@/lib/auth/config";
 import { db } from "@/lib/db/drizzle";
@@ -18,22 +18,17 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { planName } = body;
+    const { planId } = body;
 
-    if (!planName) {
+    if (!planId) {
       return NextResponse.json({ error: "缺少必要参数" }, { status: 400 });
     }
 
-    // 从数据库获取套餐配置（支持多语言查询）
+    // 从数据库获取套餐配置（通过 id 查询）
     const [plan] = await db
       .select()
       .from(subscriptionPlans)
-      .where(
-        or(
-          eq(subscriptionPlans.nameEn, planName),
-          eq(subscriptionPlans.nameZh, planName)
-        )
-      )
+      .where(eq(subscriptionPlans.id, Number(planId)))
       .limit(1);
 
     if (!plan) {
