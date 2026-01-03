@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 import { useSession, signOut } from "next-auth/react";
 import dynamic from "next/dynamic";
 import { Avatar } from "@heroui/avatar";
+import { Badge } from "@heroui/badge";
 import { Button } from "@heroui/button";
 import { ScrollShadow } from "@heroui/scroll-shadow";
 import { Spacer } from "@heroui/spacer";
@@ -51,6 +52,7 @@ export default function DashboardLayout({
   const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
   const [hasCheckedPassword, setHasCheckedPassword] = useState(false);
   const [hideUpgradeCard, setHideUpgradeCard] = useState(false);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
 
   // 根据用户角色动态生成 sidebar items
   const items: SidebarItem[] = [
@@ -100,6 +102,8 @@ export default function DashboardLayout({
       setSelectedKey("help");
     } else if (pathname.startsWith("/subscription")) {
       setSelectedKey("subscription");
+    } else if (pathname.startsWith("/messages")) {
+      setSelectedKey("messages");
     } else {
       setSelectedKey("");
     }
@@ -164,6 +168,34 @@ export default function DashboardLayout({
 
     checkPasswordSetup();
   }, [session, hasCheckedPassword]);
+
+  // 获取未读消息数量
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      if (!session) {
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/messages/unread-count");
+
+        if (response.ok) {
+          const data = await response.json();
+
+          setUnreadMessagesCount(data.unreadCount || 0);
+        }
+      } catch (error) {
+        console.error("Failed to fetch unread messages count:", error);
+      }
+    };
+
+    fetchUnreadCount();
+
+    // 每分钟刷新一次未读消息数量
+    const interval = setInterval(fetchUnreadCount, 60000);
+
+    return () => clearInterval(interval);
+  }, [session]);
 
   const handleThemeToggle = async () => {
     const newTheme = theme === "dark" ? "light" : "dark";
@@ -391,7 +423,7 @@ export default function DashboardLayout({
               {t("help")}
             </Button>
             <Spacer y={2} />
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-1">
               <Button
                 isIconOnly
                 className="text-default-500 data-[hover=true]:text-foreground"
@@ -423,6 +455,26 @@ export default function DashboardLayout({
                   width={24}
                 />
               </Button>
+              <Badge
+                color="danger"
+                content={unreadMessagesCount}
+                isInvisible={unreadMessagesCount === 0}
+                shape="circle"
+                size="sm"
+              >
+                <Button
+                  isIconOnly
+                  className={
+                    selectedKey === "messages"
+                      ? "text-primary"
+                      : "text-default-500 data-[hover=true]:text-foreground"
+                  }
+                  variant="light"
+                  onPress={() => router.push("/messages")}
+                >
+                  <Icon icon="solar:letter-bold-duotone" width={24} />
+                </Button>
+              </Badge>
             </div>
           </div>
         </aside>

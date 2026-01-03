@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/config";
 import { db } from "@/lib/db/drizzle";
-import { users, creditTransactions, userCredits } from "@/lib/db/schema";
+import { users, creditTransactions, userCredits, messages } from "@/lib/db/schema";
 import { eq, and, isNull, desc, sql } from "drizzle-orm";
 import { z } from "zod";
 
@@ -108,6 +108,23 @@ export async function POST(
         })
         .where(eq(userCredits.userId, userId));
     }
+
+    // 发送站内信通知用户
+    await db.insert(messages).values({
+      userId: userId,
+      type: "credits",
+      title: "积分到账通知",
+      content: `恭喜您！管理员向您赠送了 ${validatedData.amount} 积分，当前积分余额为 ${newBalance}。您可以使用积分购买更多服务。`,
+      isRead: false,
+      metadata: {
+        amount: validatedData.amount,
+        newBalance: newBalance,
+        grantedBy: session.user.email,
+        link: "/subscription/manage",
+      },
+      relatedId: transaction[0]?.id,
+      relatedType: "credit_transaction",
+    });
 
     return NextResponse.json({
       message: "积分赠送成功",

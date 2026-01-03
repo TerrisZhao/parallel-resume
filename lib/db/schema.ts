@@ -97,6 +97,15 @@ export const paymentStatusEnum = pgEnum("payment_status", [
   "refunded",
 ]);
 
+// 消息类型枚举
+export const messageTypeEnum = pgEnum("message_type", [
+  "system",
+  "notification",
+  "announcement",
+  "credits",
+  "subscription",
+]);
+
 // 用户表
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -548,6 +557,30 @@ export const aiPricingRules = pgTable(
   }),
 );
 
+// 站内消息表
+export const messages = pgTable(
+  "messages",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull(), // 接收消息的用户ID
+    type: messageTypeEnum("type").notNull().default("notification"), // 消息类型
+    title: varchar("title", { length: 255 }).notNull(), // 消息标题
+    content: text("content").notNull(), // 消息内容
+    isRead: boolean("is_read").notNull().default(false), // 是否已读
+    metadata: json("metadata"), // 额外的元数据（如链接、图标等）
+    relatedId: integer("related_id"), // 关联的ID（如订单ID、简历ID等）
+    relatedType: varchar("related_type", { length: 50 }), // 关联类型
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    readAt: timestamp("read_at"), // 已读时间
+  },
+  (table) => ({
+    userIdIdx: index("messages_user_id_idx").on(table.userId),
+    isReadIdx: index("messages_is_read_idx").on(table.isRead),
+    typeIdx: index("messages_type_idx").on(table.type),
+    createdAtIdx: index("messages_created_at_idx").on(table.createdAt),
+  }),
+);
+
 // 导出所有表
 export const schema = {
   users,
@@ -568,4 +601,5 @@ export const schema = {
   creditTransactions,
   payments,
   aiPricingRules,
+  messages,
 };

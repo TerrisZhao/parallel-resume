@@ -677,5 +677,16 @@
     "noPlans": "No subscription plans found",
     "editPlan": "Edit Plan",
     "priceIdDescription": "Stripe Price ID for this plan"
+  },
+  "messages": {
+    "title": "Messages",
+    "description": "View and manage your notifications",
+    "markAllRead": "Mark All as Read",
+    "noMessages": "No messages yet",
+    "system": "System Message",
+    "notification": "Notification",
+    "announcement": "Announcement",
+    "credits": "Credits Message",
+    "subscription": "Subscription Message"
   }
 }
