@@ -372,13 +372,11 @@ export default function UsersPage() {
           );
         case "subscription":
           return (
-            <Chip
-              color={user.isSubscribed ? "success" : "default"}
-              size="sm"
-              variant="flat"
-            >
-              {user.isSubscribed ? t("subscribed") : t("notSubscribed")}
-            </Chip>
+            <Icon
+              icon="solar:crown-bold"
+              width={20}
+              className={user.isSubscribed ? "text-warning" : "text-default-300"}
+            />
           );
         case "status":
           return (
