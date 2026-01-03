@@ -508,7 +508,12 @@ export default function DashboardLayout({
             </div>
           </div>
         </aside>
-        <PageHeaderContext.Provider value={{ setHeader: setPageHeader, refreshUnreadCount: fetchUnreadCount }}>
+        <PageHeaderContext.Provider
+          value={{
+            setHeader: setPageHeader,
+            refreshUnreadCount: fetchUnreadCount,
+          }}
+        >
           <main className="flex flex-1 flex-col overflow-hidden bg-background">
             {/* 固定顶部横栏 */}
             {pageHeader && (
