@@ -213,7 +213,9 @@ export default function InterviewPrepPage() {
 
   if (isLoading) {
     return (
+      <div className="flex h-full items-center justify-center">
         <Loading />
+      </div>
     );
   }
 
@@ -232,7 +234,7 @@ export default function InterviewPrepPage() {
                   <CardBody className="text-center py-12">
                     <Icon className="mx-auto mb-4 text-default-400" icon={"solar:clipboard-list-bold-duotone"} width={128} />
                     <h3 className="text-xl font-semibold mb-2">{t("noMaterials")}</h3>
-                    <p className="text-default-500 mb-4"> {t("noMaterialsDescription")}</p>
+                    <p className="text-default-500 mb-4">{t("noMaterialsDescription")}</p>
                   </CardBody>
                 </Card>
               ) : (

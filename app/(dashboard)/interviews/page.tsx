@@ -381,20 +381,22 @@ export default function InterviewsPage() {
 
   if (isLoading) {
     return (
+      <div className="flex h-full items-center justify-center">
         <Loading />
+      </div>
     );
   }
 
   return (
     <div className="flex flex-col h-full">
       {interviews.length === 0 ? (
-        <Card className="border-none shadow-none">
-          <CardBody className="text-center py-12">
-            <Icon className="mx-auto mb-4 text-default-400" icon={"solar:case-round-bold-duotone"} width={128} />
+        <div className="flex h-full flex-col items-center justify-center gap-4">
+          <Icon className="text-default-300" icon={"solar:case-round-bold-duotone"} width={120} />
+          <div className="text-center">
             <h3 className="text-xl font-semibold mb-2">{t("noInterviews")}</h3>
-            <p className="text-default-500 mb-4"> {t("noInterviewsDescription")}</p>
-          </CardBody>
-        </Card>
+            <p className="text-default-500">{t("noInterviewsDescription")}</p>
+          </div>
+        </div>
       ) : (
         <div className="flex-1 overflow-y-hidden">
           <div className="flex h-full">

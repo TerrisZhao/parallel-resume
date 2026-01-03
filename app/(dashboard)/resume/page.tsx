@@ -469,20 +469,22 @@ export default function ResumeListPage() {
 
   if (isLoading) {
     return (
-      <Loading />
+      <div className="flex h-full items-center justify-center">
+        <Loading />
+      </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto h-full">
       {resumes.length === 0 ? (
-        <Card className="border-none shadow-none">
-          <CardBody className="text-center py-12">
-            <Icon className="mx-auto mb-4 text-default-400" icon={"solar:documents-bold-duotone"} width={128} />
+        <div className="flex h-full flex-col items-center justify-center gap-4">
+          <Icon className="text-default-300" icon={"solar:documents-bold-duotone"} width={120} />
+          <div className="text-center">
             <h3 className="text-xl font-semibold mb-2">{t("noResumes")}</h3>
-            <p className="text-default-500 mb-4"> {t("noResumesDescription")}</p>
-          </CardBody>
-        </Card>
+            <p className="text-default-500">{t("noResumesDescription")}</p>
+          </div>
+        </div>
       ) : (
         <div>
           <div className="mb-4 flex items-center gap-2">

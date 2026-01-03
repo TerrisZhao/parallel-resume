@@ -35,6 +35,7 @@ import {
 import { usePageHeader } from "../../use-page-header";
 
 import { title } from "@/components/primitives";
+import { Loading } from "@/components/loading";
 
 // 订阅信息类型
 interface Subscription {
@@ -309,10 +310,8 @@ export default function ManageSubscriptionPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="flex items-center justify-center h-64">
-          <RefreshCw className="w-8 h-8 animate-spin text-primary" />
-        </div>
+      <div className="flex h-full items-center justify-center">
+        <Loading />
       </div>
     );
   }
