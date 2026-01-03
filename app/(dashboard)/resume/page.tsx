@@ -503,6 +503,7 @@ export default function ResumeListPage() {
                 key={resume.id}
                 isFooterBlurred
                 className="border-none relative"
+                shadow={"sm"}
                 radius="lg"
               >
                 <div className="absolute top-2 left-2 z-20">

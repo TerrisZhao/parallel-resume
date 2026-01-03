@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/config";
 import { db } from "@/lib/db/drizzle";
-import { users, creditTransactions } from "@/lib/db/schema";
-import { eq, and, isNull, desc } from "drizzle-orm";
+import { users, creditTransactions, userCredits } from "@/lib/db/schema";
+import { eq, and, isNull, desc, sql } from "drizzle-orm";
 import { z } from "zod";
 
 const grantCreditsSchema = z.object({
@@ -80,6 +80,34 @@ export async function POST(
         },
       })
       .returning();
+
+    // 更新或创建用户积分余额记录
+    const existingCredits = await db
+      .select()
+      .from(userCredits)
+      .where(eq(userCredits.userId, userId))
+      .limit(1);
+
+    if (existingCredits.length === 0) {
+      // 如果用户没有积分记录，创建一个
+      await db.insert(userCredits).values({
+        userId: userId,
+        balance: newBalance,
+        totalEarned: validatedData.amount,
+        totalSpent: 0,
+        updatedAt: new Date(),
+      });
+    } else {
+      // 更新现有积分记录
+      await db
+        .update(userCredits)
+        .set({
+          balance: sql`${userCredits.balance} + ${validatedData.amount}`,
+          totalEarned: sql`${userCredits.totalEarned} + ${validatedData.amount}`,
+          updatedAt: new Date(),
+        })
+        .where(eq(userCredits.userId, userId));
+    }
 
     return NextResponse.json({
       message: "积分赠送成功",

@@ -50,6 +50,7 @@ export default function DashboardLayout({
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
   const [hasCheckedPassword, setHasCheckedPassword] = useState(false);
+  const [hideUpgradeCard, setHideUpgradeCard] = useState(false);
 
   // 根据用户角色动态生成 sidebar items
   const items: SidebarItem[] = [
@@ -206,9 +207,9 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className=" h-screen bg-gradient-to-br from-rose-400 via-fuchsia-500 to-indigo-500 dark:from-rose-600 dark:via-fuchsia-700 dark:to-indigo-700 p-4">
-      <div className="flex h-full rounded-3xl overflow-hidden bg-background">
-        <aside className="relative flex h-full w-72 flex-shrink-0 flex-col border-r border-divider p-6">
+    <div className=" h-screen bg-gradient-to-br from-rose-400 via-fuchsia-500/50 to-indigo-500 dark:from-rose-400 dark:via-fuchsia-500/50 dark:to-indigo-500 p-3">
+      <div className="flex h-full rounded-3xl overflow-hidden">
+        <aside className="relative flex h-full w-72 flex-shrink-0 flex-col border-r border-divider p-6 bg-background/95 dark:bg-background/80 backdrop-blur-lg backdrop-saturate-150">
           {/* Logo */}
           <div
             className="flex cursor-pointer items-center gap-2 px-2 transition-opacity hover:opacity-80"
@@ -285,8 +286,17 @@ export default function DashboardLayout({
 
           {/* Bottom Actions */}
           <div className="mt-auto flex flex-col">
-            {!hasSubscription && credits === 0 && (
-              <Card className="relative mx-2 mb-8 overflow-visible" shadow="sm">
+            {!hasSubscription && credits === 0 && !hideUpgradeCard && (
+              <Card className="relative mx-2 mb-8 overflow-visible bg-background/10 backdrop-blur-lg backdrop-saturate-150" shadow="sm">
+                <Button
+                  isIconOnly
+                  className="absolute right-2 top-2 z-10 min-w-unit-6 w-6 h-6 text-default-400 data-[hover=true]:text-default-600"
+                  size="sm"
+                  variant="light"
+                  onPress={() => setHideUpgradeCard(true)}
+                >
+                  <Icon icon="solar:close-circle-bold" width={18} />
+                </Button>
                 <CardBody className="items-center pb-8 pt-5 text-center">
                   <h3 className="text-medium font-medium text-default-700">
                     {t("upgradeToPro")}
@@ -311,7 +321,7 @@ export default function DashboardLayout({
                 </div>
               </Card>
             )}
-            {(hasSubscription || credits > 0) && (
+            {(hasSubscription || credits > 0 || hideUpgradeCard) && (
               <Button
                 fullWidth
                 className={`justify-start mb-1 ${
@@ -417,10 +427,10 @@ export default function DashboardLayout({
           </div>
         </aside>
         <PageHeaderContext.Provider value={{ setHeader: setPageHeader }}>
-          <main className="flex flex-1 flex-col overflow-hidden">
+          <main className="flex flex-1 flex-col overflow-hidden bg-background">
             {/* 固定顶部横栏 */}
             {pageHeader && (
-              <div className="flex-shrink-0 border-b border-divider bg-background">
+              <div className="flex-shrink-0 border-b border-divider">
                 {pageHeader}
               </div>
             )}

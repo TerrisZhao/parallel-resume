@@ -34,12 +34,12 @@ export default function Home() {
   };
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center bg-gradient-to-br from-rose-400 via-fuchsia-500 to-indigo-500 dark:from-rose-600 dark:via-fuchsia-700 dark:to-indigo-700 p-8 sm:p-10 lg:p-16">
+    <div className="flex min-h-screen w-full flex-col items-center bg-gradient-to-br from-rose-400 via-fuchsia-500/50 to-indigo-500 dark:from-rose-400 dark:via-fuchsia-500/50 dark:to-indigo-500 p-8 sm:p-10 lg:p-16">
       <div className="h-12" />
       {/* Hero Section */}
       <MotionDiv
         animate="visible"
-        className="flex flex-col items-center min-h-[calc(100vh-12rem)] justify-center gap-8 text-center w-full p-8 bg-gradient-to-br from-indigo-50 via-blue-50/50 to-cyan-50 dark:from-slate-900 dark:via-indigo-950/50 dark:to-slate-900 rounded-3xl"
+        className="flex flex-col items-center min-h-[calc(100vh-12rem)] justify-center gap-8 text-center w-full p-8 bg-background/70 backdrop-blur-lg backdrop-saturate-150 rounded-3xl"
         initial="hidden"
         variants={containerVariants}
       >

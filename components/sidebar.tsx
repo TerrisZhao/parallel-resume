@@ -283,7 +283,8 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
           itemClasses={{
             ...itemClasses,
             base: clsx(
-              "px-3 min-h-11 rounded-large h-[44px] data-[selected=true]:bg-default-100",
+              // "px-3 min-h-11 rounded-large h-[44px] data-[selected=true]:bg-default-100",
+              "px-3 min-h-11 rounded-large h-[44px]",
               itemClasses?.base,
             ),
             title: clsx(

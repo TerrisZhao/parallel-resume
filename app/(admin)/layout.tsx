@@ -81,9 +81,9 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="h-screen bg-gradient-to-br from-rose-400 via-fuchsia-500 to-indigo-500 dark:from-rose-600 dark:via-fuchsia-700 dark:to-indigo-700 p-4">
-      <div className="flex h-full rounded-3xl overflow-hidden bg-background">
-        <aside className="relative flex h-full w-72 flex-shrink-0 flex-col border-r border-divider p-6">
+      <div className=" h-screen bg-gradient-to-br from-rose-400 via-fuchsia-500/50 to-indigo-500 dark:from-rose-400 dark:via-fuchsia-500/50 dark:to-indigo-500 p-3">
+        <div className="flex h-full rounded-3xl overflow-hidden">
+          <aside className="relative flex h-full w-72 flex-shrink-0 flex-col border-r border-divider p-6 bg-background/95 dark:bg-background/80 backdrop-blur-lg backdrop-saturate-150">
           {/* Logo and Title */}
           <div
             className="flex cursor-pointer items-center gap-2 px-2 transition-opacity hover:opacity-80"
@@ -143,7 +143,7 @@ export default function AdminLayout({
           </div>
         </aside>
 
-        <main className="flex flex-1 flex-col overflow-hidden">
+        <main className="flex flex-1 flex-col overflow-hidden bg-background">
           {/* Content */}
           <div className="flex-1 overflow-y-auto">{children}</div>
         </main>
