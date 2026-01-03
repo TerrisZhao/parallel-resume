@@ -64,7 +64,7 @@ export default function InterviewPrepPage() {
   useEffect(() => {
     setHeader(
       <div className="flex items-center justify-between px-6 py-4">
-        <h1 className={title({ size: "sm" })}>{t("title")}</h1>
+        <h1 className="text-2xl leading-[32px] font-bold">{t("title")}</h1>
         <Button
           className="px-10 shadow-md"
           color="primary"

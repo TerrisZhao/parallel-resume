@@ -123,7 +123,7 @@ export default function ManageSubscriptionPage() {
     setHeader(
       <div className="flex items-center justify-between gap-4 px-6 py-4">
         <div>
-          <h1 className={title({ size: "sm" })}>{t("title")}</h1>
+          <h1 className="text-2xl leading-[32px] font-bold">{t("title")}</h1>
         </div>
         <div className="flex items-center gap-4">
           <Button

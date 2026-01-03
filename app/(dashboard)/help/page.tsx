@@ -14,7 +14,7 @@ export default function HelpPage() {
   useEffect(() => {
     setHeader(
       <div className="px-6 py-4">
-        <h1 className={title({ size: "sm" })}>{t("title")}</h1>
+        <h1 className="text-2xl leading-[32px] font-bold">{t("title")}</h1>
       </div>,
     );
 
