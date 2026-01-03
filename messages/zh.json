@@ -458,7 +458,11 @@
     "logoutConfirm": "确定要退出登录吗？",
     "upgradeToPro": "升级到专业版",
     "upgradeDescription": "免费获得 1 个月，解锁专业版所有功能。",
-    "upgrade": "立即升级"
+    "upgrade": "立即升级",
+    "logoutButtonTitle": "退出登录",
+    "languageButtonTitle": "Switch Language",
+    "themeButtonTitle": "切换主题",
+    "messagesButtonTitle": "消息"
   },
   "help": {
     "title": "帮助与反馈",

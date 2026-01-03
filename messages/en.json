@@ -458,7 +458,11 @@
     "logoutConfirm": "Are you sure you want to log out?",
     "upgradeToPro": "Upgrade to Pro",
     "upgradeDescription": "Get 1 month free and unlock all the features of the pro plan.",
-    "upgrade": "Upgrade"
+    "upgrade": "Upgrade",
+    "logoutButtonTitle": "Log Out",
+    "languageButtonTitle": "切换语言",
+    "themeButtonTitle": "Toggle Theme",
+    "messagesButtonTitle": "Messages"
   },
   "help": {
     "title": "Help & Feedback",

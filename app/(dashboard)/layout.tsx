@@ -4,7 +4,7 @@ import type { SidebarItem } from "@/components/sidebar";
 
 import { useEffect, useState, ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useSession, signOut } from "next-auth/react";
 import dynamic from "next/dynamic";
 import { Avatar } from "@heroui/avatar";
@@ -39,6 +39,7 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const locale = useLocale();
   const t = useTranslations("sidebar");
   const tCommon = useTranslations("common");
   const { data: session, update } = useSession();
@@ -166,7 +167,7 @@ export default function DashboardLayout({
               // 检查跳过日期是否是今天
               const skippedDate = new Date(user.passwordSetupSkippedAt);
               const today = new Date();
-              
+
               // 比较日期（忽略时间部分）
               const skippedDateStr = skippedDate.toDateString();
               const todayStr = today.toDateString();
@@ -239,7 +240,7 @@ export default function DashboardLayout({
   };
 
   const handleLanguageToggle = async () => {
-    const languages = ["system", "en", "zh"];
+    const languages = ["en", "zh"];
     const currentIndex = languages.indexOf(currentLanguage);
     const newLanguage = languages[(currentIndex + 1) % languages.length];
 
@@ -341,7 +342,10 @@ export default function DashboardLayout({
           {/* Bottom Actions */}
           <div className="mt-auto flex flex-col">
             {!hasSubscription && credits === 0 && !hideUpgradeCard && (
-              <Card className="relative mx-2 mb-8 overflow-visible bg-background/10 backdrop-blur-lg backdrop-saturate-150" shadow="sm">
+              <Card
+                className="relative mx-2 mb-8 overflow-visible bg-background/10 backdrop-blur-lg backdrop-saturate-150"
+                shadow="sm"
+              >
                 <Button
                   isIconOnly
                   className="absolute right-2 top-2 z-10 min-w-unit-6 w-6 h-6 text-default-400 data-[hover=true]:text-default-600"
@@ -449,6 +453,7 @@ export default function DashboardLayout({
               <Button
                 isIconOnly
                 className="text-default-500 data-[hover=true]:text-foreground"
+                title={t("logoutButtonTitle")}
                 variant="light"
                 onPress={() => setShowLogoutModal(true)}
               >
@@ -457,6 +462,7 @@ export default function DashboardLayout({
               <Button
                 isIconOnly
                 className="text-default-500 data-[hover=true]:text-foreground"
+                title={t("languageButtonTitle")}
                 variant="light"
                 onPress={handleLanguageToggle}
               >
@@ -465,6 +471,7 @@ export default function DashboardLayout({
               <Button
                 isIconOnly
                 className="text-default-500 data-[hover=true]:text-foreground"
+                title={t("themeButtonTitle")}
                 variant="light"
                 onPress={handleThemeToggle}
               >
@@ -491,6 +498,7 @@ export default function DashboardLayout({
                       ? "text-primary"
                       : "text-default-500 data-[hover=true]:text-foreground"
                   }
+                  title={t("messagesButtonTitle")}
                   variant="light"
                   onPress={() => router.push("/messages")}
                 >
