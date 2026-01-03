@@ -63,7 +63,7 @@ import {
 import { ResumePreviewModal } from "@/components/resume-preview-modal";
 import { MonthYearPicker } from "@/components/month-year-picker";
 import { normalizeDateString } from "@/lib/utils/date";
-import {Loading} from "@/components/loading";
+import { Loading } from "@/components/loading";
 
 // STAR 检测组件
 interface StarCheckResult {
@@ -1288,6 +1288,17 @@ export default function ResumeEditPage({
               }}
             />
           </div>
+          <Button
+            className="px-4 shadow-md"
+            color="primary"
+            radius="full"
+            size="sm"
+            startContent={<Eye size={18} />}
+            variant="shadow"
+            onPress={onOpen}
+          >
+            {t("preview")}
+          </Button>
         </div>
       </div>,
     );
@@ -1303,6 +1314,7 @@ export default function ResumeEditPage({
     isAiOptimizationEnabled,
     resolvedParams.id,
     t,
+    onOpen,
   ]);
 
   // Toggle between simple list and grouped format
@@ -1737,9 +1749,7 @@ export default function ResumeEditPage({
   };
 
   if (isLoading) {
-    return (
-        <Loading />
-    );
+    return <Loading />;
   }
 
   return (
@@ -2507,18 +2517,6 @@ export default function ResumeEditPage({
             />
           </CardBody>
         </Card>
-      </div>
-
-      <div className="flex justify-center mb-4">
-        <div className="sticky top-4 z-30">
-          <Button
-            color="primary"
-            startContent={<Eye size={18} />}
-            onPress={onOpen}
-          >
-            {t("preview")}
-          </Button>
-        </div>
       </div>
 
       {/* Preview Modal */}
