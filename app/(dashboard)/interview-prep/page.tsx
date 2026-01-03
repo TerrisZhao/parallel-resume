@@ -14,6 +14,7 @@ import {
   useDisclosure,
 } from "@heroui/modal";
 import { Input, Textarea } from "@heroui/input";
+import { Select, SelectItem } from "@heroui/select";
 import { addToast } from "@heroui/toast";
 import { Plus, Edit, Trash2 } from "lucide-react";
 
@@ -58,6 +59,7 @@ export default function InterviewPrepPage() {
   const [formData, setFormData] = useState({
     title: "",
     content: "",
+    category: "self_intro",
   });
 
   // Set page header
@@ -108,6 +110,7 @@ export default function InterviewPrepPage() {
     setFormData({
       title: "",
       content: "",
+      category: selectedCategory,
     });
     onOpen();
   };
@@ -117,6 +120,7 @@ export default function InterviewPrepPage() {
     setFormData({
       title: material.title,
       content: material.content,
+      category: material.category,
     });
     onOpen();
   };
@@ -171,7 +175,7 @@ export default function InterviewPrepPage() {
       const payload = {
         title: formData.title,
         content: formData.content,
-        category: selectedCategory,
+        category: formData.category,
       };
 
       const response = editingMaterial
@@ -293,6 +297,23 @@ export default function InterviewPrepPage() {
                     setFormData({ ...formData, title: e.target.value })
                   }
                 />
+                <Select
+                  isRequired
+                  label={t("category")}
+                  selectedKeys={[formData.category]}
+                  onSelectionChange={(keys) =>
+                    setFormData({
+                      ...formData,
+                      category: Array.from(keys)[0] as string,
+                    })
+                  }
+                >
+                  {CATEGORIES.map((category) => (
+                    <SelectItem key={category}>
+                      {t(`categories.${category}`)}
+                    </SelectItem>
+                  ))}
+                </Select>
                 <Textarea
                   isRequired
                   label={t("content")}

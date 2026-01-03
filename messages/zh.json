@@ -515,6 +515,7 @@
     "materialTitlePlaceholder": "例如：我的自我介绍",
     "content": "内容",
     "contentPlaceholder": "在这里写下你的准备内容...",
+    "category": "分类",
     "createdSuccess": "准备资料创建成功",
     "updatedSuccess": "准备资料更新成功",
     "deletedSuccess": "准备资料删除成功",

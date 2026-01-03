@@ -515,6 +515,7 @@
     "materialTitlePlaceholder": "e.g., My Self Introduction",
     "content": "Content",
     "contentPlaceholder": "Write your preparation content here...",
+    "category": "Category",
     "createdSuccess": "Preparation material created successfully",
     "updatedSuccess": "Preparation material updated successfully",
     "deletedSuccess": "Preparation material deleted successfully",
