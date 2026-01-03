@@ -63,6 +63,7 @@ import {
 import { ResumePreviewModal } from "@/components/resume-preview-modal";
 import { MonthYearPicker } from "@/components/month-year-picker";
 import { normalizeDateString } from "@/lib/utils/date";
+import {Loading} from "@/components/loading";
 
 // STAR 检测组件
 interface StarCheckResult {
@@ -1737,11 +1738,7 @@ export default function ResumeEditPage({
 
   if (isLoading) {
     return (
-      <div className="max-w-5xl mx-auto">
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-        </div>
-      </div>
+        <Loading />
     );
   }
 

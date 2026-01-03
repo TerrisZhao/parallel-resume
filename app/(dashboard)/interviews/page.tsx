@@ -31,6 +31,7 @@ import { usePageHeader } from "../use-page-header";
 
 import { title } from "@/components/primitives";
 import {Icon} from "@iconify/react";
+import {Loading} from "@/components/loading";
 
 interface Interview {
   id: number;
@@ -380,9 +381,7 @@ export default function InterviewsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
+        <Loading />
     );
   }
 

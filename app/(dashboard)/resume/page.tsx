@@ -24,6 +24,7 @@ import { usePageHeader } from "../use-page-header";
 import { title } from "@/components/primitives";
 import { ResumePreviewModal } from "@/components/resume-preview-modal";
 import {Icon} from "@iconify/react";
+import {Loading} from "@/components/loading";
 
 interface Resume {
   id: number;
@@ -468,14 +469,7 @@ export default function ResumeListPage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className={title()}>{t("title")}</h1>
-        </div>
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-        </div>
-      </div>
+      <Loading />
     );
   }
 
