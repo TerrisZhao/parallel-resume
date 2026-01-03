@@ -25,7 +25,7 @@ interface Message {
 export default function MessagesPage() {
   const t = useTranslations("messages");
   const tCommon = useTranslations("common");
-  const { setHeader } = useContext(PageHeaderContext);
+  const { setHeader, refreshUnreadCount } = useContext(PageHeaderContext);
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
@@ -90,6 +90,10 @@ export default function MessagesPage() {
               : msg
           )
         );
+        // 刷新未读消息数量
+        if (refreshUnreadCount) {
+          refreshUnreadCount();
+        }
       }
     } catch (error) {
       console.error("Failed to mark message as read:", error);
@@ -126,6 +130,10 @@ export default function MessagesPage() {
             readAt: msg.readAt || new Date().toISOString(),
           }))
         );
+        // 刷新未读消息数量
+        if (refreshUnreadCount) {
+          refreshUnreadCount();
+        }
       }
     } catch (error) {
       console.error("Failed to mark all messages as read:", error);

@@ -2,7 +2,7 @@
 
 import type { SidebarItem } from "@/components/sidebar";
 
-import { useEffect, useState, ReactNode } from "react";
+import { useEffect, useState, ReactNode, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { useSession, signOut } from "next-auth/react";
@@ -193,32 +193,32 @@ export default function DashboardLayout({
   }, [session, hasCheckedPassword]);
 
   // 获取未读消息数量
+  const fetchUnreadCount = useCallback(async () => {
+    if (!session) {
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/messages/unread-count");
+
+      if (response.ok) {
+        const data = await response.json();
+
+        setUnreadMessagesCount(data.unreadCount || 0);
+      }
+    } catch (error) {
+      console.error("Failed to fetch unread messages count:", error);
+    }
+  }, [session]);
+
   useEffect(() => {
-    const fetchUnreadCount = async () => {
-      if (!session) {
-        return;
-      }
-
-      try {
-        const response = await fetch("/api/messages/unread-count");
-
-        if (response.ok) {
-          const data = await response.json();
-
-          setUnreadMessagesCount(data.unreadCount || 0);
-        }
-      } catch (error) {
-        console.error("Failed to fetch unread messages count:", error);
-      }
-    };
-
     fetchUnreadCount();
 
     // 每分钟刷新一次未读消息数量
     const interval = setInterval(fetchUnreadCount, 60000);
 
     return () => clearInterval(interval);
-  }, [session]);
+  }, [fetchUnreadCount]);
 
   const handleThemeToggle = async () => {
     const newTheme = theme === "dark" ? "light" : "dark";
@@ -508,7 +508,7 @@ export default function DashboardLayout({
             </div>
           </div>
         </aside>
-        <PageHeaderContext.Provider value={{ setHeader: setPageHeader }}>
+        <PageHeaderContext.Provider value={{ setHeader: setPageHeader, refreshUnreadCount: fetchUnreadCount }}>
           <main className="flex flex-1 flex-col overflow-hidden bg-background">
             {/* 固定顶部横栏 */}
             {pageHeader && (
