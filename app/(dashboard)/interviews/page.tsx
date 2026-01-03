@@ -32,6 +32,7 @@ import { usePageHeader } from "../use-page-header";
 import { title } from "@/components/primitives";
 import {Icon} from "@iconify/react";
 import {Loading} from "@/components/loading";
+import InterviewWizard from "@/components/calendar-booking/interview-wizard";
 
 interface Interview {
   id: number;
@@ -83,7 +84,6 @@ export default function InterviewsPage() {
   const [editingInterview, setEditingInterview] = useState<Interview | null>(
     null,
   );
-  const [isSaving, setIsSaving] = useState(false);
   const [draggedItem, setDraggedItem] = useState<Interview | null>(null);
   const [viewingInterview, setViewingInterview] = useState<Interview | null>(
     null,
@@ -102,17 +102,16 @@ export default function InterviewsPage() {
     null,
   );
 
-  // Form state
-  const [formData, setFormData] = useState({
-    company: "",
-    type: "online" as Interview["type"],
-    location: "",
-    videoLink: "",
-    resumeId: "",
-    interviewTime: "",
-    stage: "applied",
-    notes: "",
-  });
+  // Wizard initial data for editing
+  const [wizardInitialData, setWizardInitialData] = useState<Partial<{
+    company: string;
+    type: "online" | "offline" | "phone" | "other";
+    location: string;
+    videoLink: string;
+    resumeId: number;
+    stage: string;
+    notes: string;
+  }> | undefined>(undefined);
 
   // Set page header
   useEffect(() => {
@@ -169,30 +168,20 @@ export default function InterviewsPage() {
 
   const handleAddNew = () => {
     setEditingInterview(null);
-    setFormData({
-      company: "",
-      type: "online",
-      location: "",
-      videoLink: "",
-      resumeId: "",
-      interviewTime: "",
-      stage: "applied",
-      notes: "",
-    });
+    setWizardInitialData(undefined);
     onOpen();
   };
 
   const handleEdit = (interview: Interview) => {
     setEditingInterview(interview);
-    setFormData({
+    setWizardInitialData({
       company: interview.company,
       type: interview.type,
-      location: interview.location || "",
-      videoLink: interview.videoLink || "",
-      resumeId: interview.resumeId?.toString() || "",
-      interviewTime: interview.interviewTime,
+      location: interview.location,
+      videoLink: interview.videoLink,
+      resumeId: interview.resumeId,
       stage: interview.stage,
-      notes: interview.notes || "",
+      notes: interview.notes,
     });
     onViewClose();
     onOpen();
@@ -231,27 +220,26 @@ export default function InterviewsPage() {
     }
   };
 
-  const handleSave = async () => {
-    if (!formData.company || !formData.interviewTime) {
-      addToast({
-        title: "Please fill in required fields",
-        color: "danger",
-      });
-
-      return;
-    }
-
-    setIsSaving(true);
+  const handleWizardSubmit = async (data: {
+    company: string;
+    type: "online" | "offline" | "phone" | "other";
+    location?: string;
+    videoLink?: string;
+    resumeId?: number;
+    stage: string;
+    notes?: string;
+    interviewTime: string;
+  }) => {
     try {
       const payload = {
-        company: formData.company,
-        type: formData.type,
-        location: formData.location || undefined,
-        videoLink: formData.videoLink || undefined,
-        resumeId: formData.resumeId ? parseInt(formData.resumeId) : undefined,
-        interviewTime: formData.interviewTime,
-        stage: formData.stage,
-        notes: formData.notes || undefined,
+        company: data.company,
+        type: data.type,
+        location: data.location || undefined,
+        videoLink: data.videoLink || undefined,
+        resumeId: data.resumeId,
+        interviewTime: data.interviewTime,
+        stage: data.stage,
+        notes: data.notes || undefined,
       };
 
       const response = editingInterview
@@ -282,8 +270,7 @@ export default function InterviewsPage() {
         title: editingInterview ? t("failedToUpdate") : t("failedToCreate"),
         color: "danger",
       });
-    } finally {
-      setIsSaving(false);
+      throw error;
     }
   };
 
@@ -490,127 +477,23 @@ export default function InterviewsPage() {
         </div>
       )}
 
-      {/* Add/Edit Interview Modal */}
-      <Modal isOpen={isOpen} size="2xl" onOpenChange={onClose}>
+      {/* Add/Edit Interview Modal with Wizard */}
+      <Modal
+        isOpen={isOpen}
+        size="3xl"
+        onOpenChange={onClose}
+        scrollBehavior="inside"
+      >
         <ModalContent>
           {(onClose) => (
-            <>
-              <ModalHeader>
-                {editingInterview ? t("editInterview") : t("addInterview")}
-              </ModalHeader>
-              <ModalBody className="gap-4">
-                <Input
-                  isRequired
-                  label={t("company")}
-                  placeholder={t("companyPlaceholder")}
-                  value={formData.company}
-                  onChange={(e) =>
-                    setFormData({ ...formData, company: e.target.value })
-                  }
-                />
-                <Select
-                  isRequired
-                  label={t("interviewType")}
-                  selectedKeys={[formData.type]}
-                  onSelectionChange={(keys) =>
-                    setFormData({
-                      ...formData,
-                      type: Array.from(keys)[0] as Interview["type"],
-                    })
-                  }
-                >
-                  <SelectItem key="online">
-                    {t("interviewTypeOnline")}
-                  </SelectItem>
-                  <SelectItem key="offline">
-                    {t("interviewTypeOffline")}
-                  </SelectItem>
-                  <SelectItem key="phone">{t("interviewTypePhone")}</SelectItem>
-                  <SelectItem key="other">{t("interviewTypeOther")}</SelectItem>
-                </Select>
-                {formData.type === "offline" && (
-                  <Input
-                    label={t("location")}
-                    placeholder={t("locationPlaceholder")}
-                    value={formData.location}
-                    onChange={(e) =>
-                      setFormData({ ...formData, location: e.target.value })
-                    }
-                  />
-                )}
-                {formData.type === "online" && (
-                  <Input
-                    label={t("videoLink")}
-                    placeholder={t("videoLinkPlaceholder")}
-                    value={formData.videoLink}
-                    onChange={(e) =>
-                      setFormData({ ...formData, videoLink: e.target.value })
-                    }
-                  />
-                )}
-                <Select
-                  label={t("relatedResume")}
-                  placeholder={t("selectResume")}
-                  selectedKeys={formData.resumeId ? [formData.resumeId] : []}
-                  onSelectionChange={(keys) =>
-                    setFormData({
-                      ...formData,
-                      resumeId: Array.from(keys)[0] as string,
-                    })
-                  }
-                >
-                  {resumes.map((resume) => (
-                    <SelectItem key={resume.id.toString()}>
-                      {resume.name}
-                    </SelectItem>
-                  ))}
-                </Select>
-                <Input
-                  isRequired
-                  label={t("interviewTime")}
-                  type="datetime-local"
-                  value={formData.interviewTime}
-                  onChange={(e) =>
-                    setFormData({ ...formData, interviewTime: e.target.value })
-                  }
-                />
-                <Select
-                  isRequired
-                  label={t("stage")}
-                  selectedKeys={[formData.stage]}
-                  onSelectionChange={(keys) =>
-                    setFormData({
-                      ...formData,
-                      stage: Array.from(keys)[0] as string,
-                    })
-                  }
-                >
-                  {STAGES.map((stage) => (
-                    <SelectItem key={stage}>{t(`stages.${stage}`)}</SelectItem>
-                  ))}
-                </Select>
-                <Textarea
-                  label={t("notes")}
-                  placeholder={t("notesPlaceholder")}
-                  value={formData.notes}
-                  onChange={(e) =>
-                    setFormData({ ...formData, notes: e.target.value })
-                  }
-                />
-              </ModalBody>
-              <ModalFooter>
-                <Button variant="flat" onPress={onClose}>
-                  {tCommon("cancel")}
-                </Button>
-                <Button
-                  color="primary"
-                  isLoading={isSaving}
-                  onPress={handleSave}
-                >
-                  {tCommon("save")}
-                </Button>
-              </ModalFooter>
-            </>
+            <ModalBody className="p-6">
+              <InterviewWizard
+                resumes={resumes}
+                initialData={wizardInitialData}
+                onSubmit={handleWizardSubmit}
+                onCancel={onClose}
+              />
+            </ModalBody>
           )}
         </ModalContent>
       </Modal>
