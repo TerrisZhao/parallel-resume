@@ -144,13 +144,8 @@ export default function AdminLayout({
         </aside>
 
         <main className="flex flex-1 flex-col overflow-hidden">
-          {/* Header */}
-          <div className="flex-shrink-0 border-b border-divider bg-background px-6 py-4">
-            <h1 className={title({ size: "sm" })}>{t("title")}</h1>
-          </div>
-
           {/* Content */}
-          <div className="flex-1 overflow-y-auto p-6">{children}</div>
+          <div className="flex-1 overflow-y-auto">{children}</div>
         </main>
       </div>
     </div>
