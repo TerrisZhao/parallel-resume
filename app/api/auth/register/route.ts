@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 
 import { db } from "@/lib/db/drizzle";
 import { users } from "@/lib/db/schema";
+import { initializeUserCredits } from "@/lib/credits/manager";
 
 /**
  * 用户注册 API
@@ -71,6 +72,14 @@ export async function POST(request: NextRequest) {
 
     if (newUser.length === 0) {
       return NextResponse.json({ error: "创建用户失败" }, { status: 500 });
+    }
+
+    // 初始化用户积分账户（赠送新用户积分）
+    try {
+      await initializeUserCredits(newUser[0].id);
+    } catch (error) {
+      console.error("初始化用户积分失败:", error);
+      // 不阻止注册流程，积分初始化失败不影响注册
     }
 
     return NextResponse.json({

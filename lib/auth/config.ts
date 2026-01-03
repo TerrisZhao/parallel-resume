@@ -7,6 +7,7 @@ import { compare } from "bcryptjs";
 import { db } from "@/lib/db/drizzle";
 import { users, loginHistory } from "@/lib/db/schema";
 import { parseUserAgent } from "@/lib/utils/device-parser";
+import { initializeUserCredits } from "@/lib/credits/manager";
 
 /**
  * 记录登录历史
@@ -143,6 +144,14 @@ const authOptions = {
               user.userAgent || "Unknown",
               user.ipAddress || null,
             );
+
+            // 初始化用户积分账户（赠送新用户积分）
+            try {
+              await initializeUserCredits(newUser[0].id);
+            } catch (error) {
+              console.error("初始化用户积分失败:", error);
+              // 不阻止登录流程，积分初始化失败不影响登录
+            }
           }
         } else {
           const existingUserData = existingUser[0];

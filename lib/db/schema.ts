@@ -564,8 +564,8 @@ export const messages = pgTable(
     id: serial("id").primaryKey(),
     userId: integer("user_id").notNull(), // 接收消息的用户ID
     type: messageTypeEnum("type").notNull().default("notification"), // 消息类型
-    title: varchar("title", { length: 255 }).notNull(), // 消息标题
-    content: text("content").notNull(), // 消息内容
+    title: json("title").notNull().$type<{ zh: string; en: string }>(), // 消息标题（多语言）
+    content: json("content").notNull().$type<{ zh: string; en: string }>(), // 消息内容（多语言）
     isRead: boolean("is_read").notNull().default(false), // 是否已读
     metadata: json("metadata"), // 额外的元数据（如链接、图标等）
     relatedId: integer("related_id"), // 关联的ID（如订单ID、简历ID等）

@@ -40,7 +40,9 @@
     "titleHighlight": "从这里开始",
     "subtitle": "轻松创建、管理和导出你的专业简历。\n现代化设计，一键导出 PDF，助你在求职中脱颖而出。",
     "getStarted": "立即开始",
-    "footer": "设计者"
+    "footer": "设计者",
+    "promoTitle": "新用户福利",
+    "promoDescription": "注册即送 100 积分，立即体验 AI 功能！"
   },
   "resume": {
     "title": "我的简历",

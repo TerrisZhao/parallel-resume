@@ -40,7 +40,9 @@
     "titleHighlight": "Start Here",
     "subtitle": "Easily create, manage, and export your professional resume.\nModern design, one-click PDF export, helping you stand out in your job search.",
     "getStarted": "Get Started",
-    "footer": "Designed by"
+    "footer": "Designed by",
+    "promoTitle": "New User Bonus",
+    "promoDescription": "Register now and get 100 free credits to experience AI features!"
   },
   "resume": {
     "title": "My Resumes",

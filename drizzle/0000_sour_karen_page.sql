@@ -4,6 +4,7 @@ CREATE TYPE "public"."credit_transaction_type" AS ENUM('purchase', 'usage', 'ref
 CREATE TYPE "public"."interview_stage" AS ENUM('applied', 'screening', 'technical', 'onsite', 'offer', 'rejected');--> statement-breakpoint
 CREATE TYPE "public"."interview_type" AS ENUM('online', 'offline', 'phone', 'other');--> statement-breakpoint
 CREATE TYPE "public"."language_preference" AS ENUM('system', 'en', 'zh');--> statement-breakpoint
+CREATE TYPE "public"."message_type" AS ENUM('system', 'notification', 'announcement', 'credits', 'subscription');--> statement-breakpoint
 CREATE TYPE "public"."payment_status" AS ENUM('pending', 'processing', 'succeeded', 'failed', 'canceled', 'refunded');--> statement-breakpoint
 CREATE TYPE "public"."plan_type" AS ENUM('free', 'credits', 'subscription');--> statement-breakpoint
 CREATE TYPE "public"."subscription_status" AS ENUM('active', 'canceled', 'past_due', 'trialing', 'incomplete', 'incomplete_expired', 'unpaid');--> statement-breakpoint
@@ -100,6 +101,20 @@ CREATE TABLE "login_history" (
 	"is_successful" boolean DEFAULT true NOT NULL,
 	"failure_reason" varchar(255),
 	"created_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "messages" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"user_id" integer NOT NULL,
+	"type" "message_type" DEFAULT 'notification' NOT NULL,
+	"title" json NOT NULL,
+	"content" json NOT NULL,
+	"is_read" boolean DEFAULT false NOT NULL,
+	"metadata" json,
+	"related_id" integer,
+	"related_type" varchar(50),
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"read_at" timestamp
 );
 --> statement-breakpoint
 CREATE TABLE "payments" (
@@ -298,6 +313,10 @@ CREATE INDEX "interviews_stage_idx" ON "interviews" USING btree ("stage");--> st
 CREATE INDEX "interviews_interview_time_idx" ON "interviews" USING btree ("interview_time");--> statement-breakpoint
 CREATE INDEX "login_history_user_id_idx" ON "login_history" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "login_history_created_at_idx" ON "login_history" USING btree ("created_at");--> statement-breakpoint
+CREATE INDEX "messages_user_id_idx" ON "messages" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "messages_is_read_idx" ON "messages" USING btree ("is_read");--> statement-breakpoint
+CREATE INDEX "messages_type_idx" ON "messages" USING btree ("type");--> statement-breakpoint
+CREATE INDEX "messages_created_at_idx" ON "messages" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "payments_user_id_idx" ON "payments" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "payments_status_idx" ON "payments" USING btree ("status");--> statement-breakpoint
 CREATE INDEX "payments_stripe_payment_intent_id_idx" ON "payments" USING btree ("stripe_payment_intent_id");--> statement-breakpoint

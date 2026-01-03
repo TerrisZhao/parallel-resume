@@ -2,8 +2,9 @@
 
 import { Link } from "@heroui/link";
 import { Button } from "@heroui/button";
+import { Card, CardBody } from "@heroui/card";
 import { motion } from "framer-motion";
-import { FileText } from "lucide-react";
+import { FileText, Gift } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { title, subtitle } from "@/components/primitives";
@@ -63,6 +64,25 @@ export default function Home() {
                 </span>
               ))}
           </p>
+        </MotionDiv>
+
+        {/* 新用户推广 */}
+        <MotionDiv variants={itemVariants} className="w-full max-w-md">
+          <Card className="bg-gradient-to-r from-primary-500 to-secondary-500 border-none shadow-lg">
+            <CardBody className="flex flex-row items-center gap-3 p-4">
+              <div className="flex-shrink-0">
+                <Gift className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <p className="text-white font-semibold text-sm">
+                  {t("promoTitle")}
+                </p>
+                <p className="text-white/90 text-xs">
+                  {t("promoDescription")}
+                </p>
+              </div>
+            </CardBody>
+          </Card>
         </MotionDiv>
 
         <MotionDiv className="flex gap-4 mt-4" variants={itemVariants}>

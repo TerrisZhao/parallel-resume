@@ -113,8 +113,14 @@ export async function POST(
     await db.insert(messages).values({
       userId: userId,
       type: "credits",
-      title: "积分到账通知",
-      content: `恭喜您！管理员向您赠送了 ${validatedData.amount} 积分，当前积分余额为 ${newBalance}。您可以使用积分购买更多服务。`,
+      title: {
+        zh: "积分到账通知",
+        en: "Credits Added Notification",
+      },
+      content: {
+        zh: `恭喜您！管理员向您赠送了 ${validatedData.amount} 积分，当前积分余额为 ${newBalance}。您可以使用积分购买更多服务。`,
+        en: `Congratulations! An administrator has granted you ${validatedData.amount} credits. Your current credit balance is ${newBalance}. You can use these credits to purchase more services.`,
+      },
       isRead: false,
       metadata: {
         amount: validatedData.amount,

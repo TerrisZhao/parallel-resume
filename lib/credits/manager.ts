@@ -7,6 +7,7 @@ import {
   userCredits,
   creditTransactions,
   aiPricingRules,
+  messages,
 } from "@/lib/db/schema";
 
 /**
@@ -228,13 +229,42 @@ export async function initializeUserCredits(userId: number): Promise<void> {
       });
 
       // 记录赠送交易
+      let transactionId: number | undefined;
       if (freeCredits > 0) {
-        await tx.insert(creditTransactions).values({
-          userId,
-          amount: freeCredits,
-          type: "bonus",
-          description: "新用户注册赠送",
-          balanceAfter: freeCredits,
+        const transaction = await tx
+          .insert(creditTransactions)
+          .values({
+            userId,
+            amount: freeCredits,
+            type: "bonus",
+            description: "新用户注册赠送",
+            balanceAfter: freeCredits,
+          })
+          .returning({ id: creditTransactions.id });
+        transactionId = transaction[0]?.id;
+      }
+
+      // 发送站内信通知用户
+      if (freeCredits > 0) {
+        await tx.insert(messages).values({
+          userId: userId,
+          type: "credits",
+          title: {
+            zh: "欢迎注册！积分已到账",
+            en: "Welcome! Credits Added",
+          },
+          content: {
+            zh: `恭喜您注册成功！我们为您赠送了 ${freeCredits} 积分作为新用户福利，当前积分余额为 ${freeCredits}。您可以使用积分体验我们的 AI 功能。`,
+            en: `Congratulations on your successful registration! We've gifted you ${freeCredits} credits as a new user bonus. Your current credit balance is ${freeCredits}. You can use these credits to experience our AI features.`,
+          },
+          isRead: false,
+          metadata: {
+            amount: freeCredits,
+            newBalance: freeCredits,
+            link: "/subscription/manage",
+          },
+          relatedId: transactionId,
+          relatedType: "credit_transaction",
         });
       }
     });
