@@ -271,6 +271,7 @@ CREATE TABLE "users" (
 	"role" "user_role" DEFAULT 'user' NOT NULL,
 	"email_verified" boolean DEFAULT false NOT NULL,
 	"first_login_completed" boolean DEFAULT false NOT NULL,
+	"password_setup_skipped_at" timestamp,
 	"is_active" boolean DEFAULT true NOT NULL,
 	"theme_mode" "theme_mode" DEFAULT 'system' NOT NULL,
 	"preferred_language" "language_preference" DEFAULT 'system' NOT NULL,

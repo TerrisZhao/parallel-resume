@@ -1,5 +1,5 @@
 {
-  "id": "c8571edc-c6cb-40ba-9247-34c060c309be",
+  "id": "7ec24b19-8ab4-4855-b919-b7a1b3d5cac2",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -2192,6 +2192,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": false
+        },
+        "password_setup_skipped_at": {
+          "name": "password_setup_skipped_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
         },
         "is_active": {
           "name": "is_active",

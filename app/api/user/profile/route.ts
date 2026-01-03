@@ -47,6 +47,7 @@ export async function GET() {
         role: users.role,
         emailVerified: users.emailVerified,
         firstLoginCompleted: users.firstLoginCompleted,
+        passwordSetupSkippedAt: users.passwordSetupSkippedAt,
         themeMode: users.themeMode,
         preferredLanguage: users.preferredLanguage,
         aiConfigMode: users.aiConfigMode,

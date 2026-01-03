@@ -154,9 +154,31 @@ export default function DashboardLayout({
           const data = await response.json();
           const user = data.user;
 
-          // 如果用户没有完成首次登录设置，且没有密码（Google登录或测试账号）
+          // 如果用户没有完成首次登录设置
           if (!user.firstLoginCompleted) {
-            setShowSetPasswordModal(true);
+            // 检查今天是否已经跳过过
+            const shouldShowModal = (() => {
+              if (!user.passwordSetupSkippedAt) {
+                // 如果从未跳过，显示模态框
+                return true;
+              }
+
+              // 检查跳过日期是否是今天
+              const skippedDate = new Date(user.passwordSetupSkippedAt);
+              const today = new Date();
+              
+              // 比较日期（忽略时间部分）
+              const skippedDateStr = skippedDate.toDateString();
+              const todayStr = today.toDateString();
+
+              // 如果今天已经跳过过，不显示模态框
+              // 如果跳过日期不是今天，显示模态框
+              return skippedDateStr !== todayStr;
+            })();
+
+            if (shouldShowModal) {
+              setShowSetPasswordModal(true);
+            }
           }
         }
       } catch (error) {

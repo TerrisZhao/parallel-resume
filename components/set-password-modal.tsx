@@ -18,6 +18,7 @@ interface SetPasswordModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  onSkip?: () => void; // 跳过时的回调
   showSkip?: boolean; // 是否显示"跳过"按钮，默认为 true（首次登录时显示）
 }
 
@@ -25,6 +26,7 @@ export function SetPasswordModal({
   isOpen,
   onClose,
   onSuccess,
+  onSkip,
   showSkip = true,
 }: SetPasswordModalProps) {
   const t = useTranslations("setPasswordModal");
@@ -171,7 +173,28 @@ export function SetPasswordModal({
         </ModalBody>
         <ModalFooter>
           {showSkip && (
-            <Button color="danger" variant="light" onPress={onClose}>
+            <Button
+              color="danger"
+              variant="light"
+              onPress={async () => {
+                // 调用 API 记录跳过操作
+                try {
+                  await fetch("/api/user/skip-password-setup", {
+                    method: "POST",
+                  });
+                } catch (error) {
+                  console.error("记录跳过操作失败:", error);
+                }
+
+                // 调用跳过回调
+                if (onSkip) {
+                  onSkip();
+                }
+
+                // 关闭模态框
+                onClose();
+              }}
+            >
               {t("skip")}
             </Button>
           )}
