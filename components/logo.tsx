@@ -1,13 +1,15 @@
 import Image from "next/image";
+import {Icon} from "@iconify/react";
 
 export const Logo = () => {
   return (
-    <Image
-      alt="Logo"
-      className="rounded-md"
-      height={32}
-      src="/favicon.ico"
-      width={32}
-    />
+    // <Image
+    //   alt="Logo"
+    //   className="rounded-md"
+    //   height={32}
+    //   src="/favicon.ico"
+    //   width={32}
+    // />
+      <Icon icon="solar:ufo-3-line-duotone" className={"text-primary"} width="32" height="32" />
   );
 };
