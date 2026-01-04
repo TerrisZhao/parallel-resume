@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { cookies } from "next/headers";
+import { eq, desc } from "drizzle-orm";
+
 import { authOptions } from "@/lib/auth/config";
 import { db } from "@/lib/db/drizzle";
 import { messages, users } from "@/lib/db/schema";
-import { eq, and, isNull, desc } from "drizzle-orm";
 
 /**
  * 获取用户语言偏好
@@ -20,6 +20,7 @@ function getUserLocale(
 
   // 从 cookie 获取
   const cookieLocale = request.cookies.get("NEXT_LOCALE")?.value;
+
   if (cookieLocale === "en" || cookieLocale === "zh") {
     return cookieLocale;
   }
@@ -27,6 +28,7 @@ function getUserLocale(
   // 处理 "system" 选项，从 Accept-Language header 检测
   if (userPreferredLanguage === "system") {
     const acceptLanguage = request.headers.get("accept-language");
+
     if (acceptLanguage?.includes("zh")) {
       return "zh";
     }
@@ -34,6 +36,7 @@ function getUserLocale(
 
   // 从 Accept-Language header 检测
   const acceptLanguage = request.headers.get("accept-language");
+
   if (acceptLanguage?.includes("zh")) {
     return "zh";
   }
@@ -82,34 +85,36 @@ export async function GET(request: NextRequest) {
       .offset(offset);
 
     // 格式化消息数据，根据用户语言偏好提取对应语言的内容
-    const formattedMessages = userMessages.map((msg: typeof userMessages[number]) => {
-      // 处理多语言 title 和 content
-      const titleObj = msg.title as { zh: string; en: string } | string;
-      const contentObj = msg.content as { zh: string; en: string } | string;
+    const formattedMessages = userMessages.map(
+      (msg: (typeof userMessages)[number]) => {
+        // 处理多语言 title 和 content
+        const titleObj = msg.title as { zh: string; en: string } | string;
+        const contentObj = msg.content as { zh: string; en: string } | string;
 
-      // 兼容旧数据：如果是字符串，直接使用；如果是对象，根据语言选择
-      const title =
-        typeof titleObj === "string"
-          ? titleObj
-          : titleObj?.[locale] || titleObj?.zh || titleObj?.en || "";
-      const content =
-        typeof contentObj === "string"
-          ? contentObj
-          : contentObj?.[locale] || contentObj?.zh || contentObj?.en || "";
+        // 兼容旧数据：如果是字符串，直接使用；如果是对象，根据语言选择
+        const title =
+          typeof titleObj === "string"
+            ? titleObj
+            : titleObj?.[locale] || titleObj?.zh || titleObj?.en || "";
+        const content =
+          typeof contentObj === "string"
+            ? contentObj
+            : contentObj?.[locale] || contentObj?.zh || contentObj?.en || "";
 
-      return {
-        id: msg.id,
-        type: msg.type,
-        title,
-        content,
-        isRead: msg.isRead,
-        metadata: msg.metadata,
-        relatedId: msg.relatedId,
-        relatedType: msg.relatedType,
-        createdAt: msg.createdAt.toISOString(),
-        readAt: msg.readAt?.toISOString() || null,
-      };
-    });
+        return {
+          id: msg.id,
+          type: msg.type,
+          title,
+          content,
+          isRead: msg.isRead,
+          metadata: msg.metadata,
+          relatedId: msg.relatedId,
+          relatedType: msg.relatedType,
+          createdAt: msg.createdAt.toISOString(),
+          readAt: msg.readAt?.toISOString() || null,
+        };
+      },
+    );
 
     return NextResponse.json({
       messages: formattedMessages,
@@ -119,9 +124,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Failed to fetch messages:", error);
-    return NextResponse.json(
-      { error: "获取消息失败" },
-      { status: 500 }
-    );
+
+    return NextResponse.json({ error: "获取消息失败" }, { status: 500 });
   }
 }

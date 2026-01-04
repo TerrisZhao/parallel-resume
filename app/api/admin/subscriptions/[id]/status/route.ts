@@ -1,17 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { eq } from "drizzle-orm";
+
 import { authOptions } from "@/lib/auth/config";
 import { db } from "@/lib/db/drizzle";
 import { users, subscriptionPlans } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // 验证用户是否为 owner
     const session = await getServerSession(authOptions);
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: "未授权访问" }, { status: 401 });
     }
@@ -47,9 +49,7 @@ export async function PATCH(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to update plan status:", error);
-    return NextResponse.json(
-      { error: "更新套餐状态失败" },
-      { status: 500 }
-    );
+
+    return NextResponse.json({ error: "更新套餐状态失败" }, { status: 500 });
   }
 }

@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { eq, and } from "drizzle-orm";
+
 import { authOptions } from "@/lib/auth/config";
 import { db } from "@/lib/db/drizzle";
 import { messages, users } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -38,10 +39,7 @@ export async function PATCH(
       .select()
       .from(messages)
       .where(
-        and(
-          eq(messages.id, messageId),
-          eq(messages.userId, currentUser[0].id)
-        )
+        and(eq(messages.id, messageId), eq(messages.userId, currentUser[0].id)),
       )
       .limit(1);
 
@@ -61,9 +59,7 @@ export async function PATCH(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to mark message as read:", error);
-    return NextResponse.json(
-      { error: "标记消息为已读失败" },
-      { status: 500 }
-    );
+
+    return NextResponse.json({ error: "标记消息为已读失败" }, { status: 500 });
   }
 }

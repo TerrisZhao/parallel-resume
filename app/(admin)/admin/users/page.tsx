@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { Card, CardBody } from "@heroui/card";
 import {
   Table,
   TableHeader,
@@ -13,7 +12,6 @@ import {
 } from "@heroui/table";
 import { Button } from "@heroui/button";
 import { Chip } from "@heroui/chip";
-import { Spinner } from "@heroui/spinner";
 import {
   Modal,
   ModalContent,
@@ -28,15 +26,12 @@ import { addToast } from "@heroui/toast";
 import { User as UserDisplay } from "@heroui/user";
 import { Pagination } from "@heroui/pagination";
 import { Divider } from "@heroui/divider";
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@heroui/popover";
+import { Popover, PopoverTrigger, PopoverContent } from "@heroui/popover";
 import { RadioGroup, Radio } from "@heroui/radio";
 import { SearchIcon } from "@heroui/shared-icons";
-import {Loading} from "@/components/loading";
-import {Status} from "@/components/status";
+
+import { Loading } from "@/components/loading";
+import { Status } from "@/components/status";
 
 interface User {
   id: number;
@@ -87,10 +82,12 @@ export default function UsersPage() {
     try {
       setLoading(true);
       const response = await fetch("/api/admin/users");
+
       if (!response.ok) {
         throw new Error("Failed to fetch users");
       }
       const data = await response.json();
+
       setUsers(data.users);
     } catch (error) {
       console.error("Failed to fetch users:", error);
@@ -116,7 +113,7 @@ export default function UsersPage() {
       filtered = filtered.filter(
         (user) =>
           user.email.toLowerCase().includes(filterValue.toLowerCase()) ||
-          user.name?.toLowerCase().includes(filterValue.toLowerCase())
+          user.name?.toLowerCase().includes(filterValue.toLowerCase()),
       );
     }
 
@@ -128,14 +125,16 @@ export default function UsersPage() {
     // 状态筛选
     if (statusFilter !== "all") {
       filtered = filtered.filter((user) =>
-        statusFilter === "active" ? user.isActive : !user.isActive
+        statusFilter === "active" ? user.isActive : !user.isActive,
       );
     }
 
     // 订阅筛选
     if (subscriptionFilter !== "all") {
       filtered = filtered.filter((user) =>
-        subscriptionFilter === "subscribed" ? user.isSubscribed : !user.isSubscribed
+        subscriptionFilter === "subscribed"
+          ? user.isSubscribed
+          : !user.isSubscribed,
       );
     }
 
@@ -183,6 +182,7 @@ export default function UsersPage() {
 
       if (!response.ok) {
         const error = await response.json();
+
         throw new Error(error.error || "Failed to update role");
       }
 
@@ -209,11 +209,13 @@ export default function UsersPage() {
     if (!selectedUser) return;
 
     const amount = parseInt(creditsAmount);
+
     if (isNaN(amount) || amount <= 0) {
       addToast({
         title: t("invalidCreditsAmount"),
         color: "danger",
       });
+
       return;
     }
 
@@ -228,11 +230,12 @@ export default function UsersPage() {
             amount,
             description: creditsDescription || undefined,
           }),
-        }
+        },
       );
 
       if (!response.ok) {
         const error = await response.json();
+
         throw new Error(error.error || "Failed to grant credits");
       }
 
@@ -268,11 +271,12 @@ export default function UsersPage() {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ isActive: !selectedUser.isActive }),
-        }
+        },
       );
 
       if (!response.ok) {
         const error = await response.json();
+
         throw new Error(error.error || "Failed to update status");
       }
 
@@ -310,6 +314,7 @@ export default function UsersPage() {
     if (user.name) {
       return user.name.charAt(0).toUpperCase();
     }
+
     return user.email.charAt(0).toUpperCase();
   };
 
@@ -373,16 +378,18 @@ export default function UsersPage() {
         case "subscription":
           return (
             <Icon
+              className={
+                user.isSubscribed ? "text-warning" : "text-default-300"
+              }
               icon="solar:crown-bold"
               width={20}
-              className={user.isSubscribed ? "text-warning" : "text-default-300"}
             />
           );
         case "status":
           return (
             <Status
-              status={user.isActive ? "active" : "inactive"}
               label={user.isActive ? t("active") : t("inactive")}
+              status={user.isActive ? "active" : "inactive"}
             />
           );
         case "createdAt":
@@ -412,9 +419,9 @@ export default function UsersPage() {
                 }}
               >
                 <Icon
+                  className="text-default-500"
                   icon="solar:user-id-bold-duotone"
                   width={20}
-                  className="text-default-500"
                 />
               </Button>
               <Button
@@ -427,9 +434,9 @@ export default function UsersPage() {
                 }}
               >
                 <Icon
+                  className="text-warning"
                   icon="solar:wallet-bold-duotone"
                   width={20}
-                  className="text-warning"
                 />
               </Button>
               <Button
@@ -442,13 +449,13 @@ export default function UsersPage() {
                 }}
               >
                 <Icon
+                  className={user.isActive ? "text-danger" : "text-success"}
                   icon={
                     user.isActive
                       ? "solar:lock-bold-duotone"
                       : "solar:lock-unlocked-bold-duotone"
                   }
                   width={20}
-                  className={user.isActive ? "text-danger" : "text-success"}
                 />
               </Button>
             </div>
@@ -457,7 +464,7 @@ export default function UsersPage() {
           return null;
       }
     },
-    [t]
+    [t],
   );
 
   const topContent = useMemo(() => {
@@ -557,10 +564,17 @@ export default function UsersPage() {
           total={pages}
           onChange={setPage}
         />
-
       </div>
     );
-  }, [page, pages, filteredItems.length, rowsPerPage, onPreviousPage, onNextPage, t]);
+  }, [
+    page,
+    pages,
+    filteredItems.length,
+    rowsPerPage,
+    onPreviousPage,
+    onNextPage,
+    t,
+  ]);
 
   const columns = [
     { key: "user", label: t("user") },
@@ -587,10 +601,10 @@ export default function UsersPage() {
           </div>
           <Button
             color="primary"
-            variant="light"
-            startContent={<Icon icon="solar:refresh-bold-duotone" width={20} />}
-            onPress={fetchUsers}
             isLoading={loading}
+            startContent={<Icon icon="solar:refresh-bold-duotone" width={20} />}
+            variant="light"
+            onPress={fetchUsers}
           >
             {t("refresh")}
           </Button>
@@ -605,174 +619,169 @@ export default function UsersPage() {
 
           {/* 表格卡片 */}
           {loading ? (
-              <Loading />
+            <Loading />
           ) : (
-              <Table
-                  isHeaderSticky
-                  aria-label="Users table"
-                  sortDescriptor={sortDescriptor}
-                  onSortChange={(descriptor) => {
-                    setSortDescriptor({
-                      column: String(descriptor.column),
-                      direction: descriptor.direction,
-                    });
-                  }}
-              >
-                <TableHeader columns={columns}>
-                  {(column) => (
-                      <TableColumn
-                          key={column.key}
-                          align={column.key === "actions" ? "end" : "start"}
-                          allowsSorting={
-                              column.key !== "actions" && column.key !== "status"
-                          }
-                      >
-                        {column.label}
-                      </TableColumn>
-                  )}
-                </TableHeader>
-                <TableBody emptyContent={t("noUsers")} items={sortedItems}>
-                  {(item) => (
-                      <TableRow key={item.id}>
-                        {(columnKey) => (
-                            <TableCell>{renderCell(item, columnKey)}</TableCell>
-                        )}
-                      </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+            <Table
+              isHeaderSticky
+              aria-label="Users table"
+              sortDescriptor={sortDescriptor}
+              onSortChange={(descriptor) => {
+                setSortDescriptor({
+                  column: String(descriptor.column),
+                  direction: descriptor.direction,
+                });
+              }}
+            >
+              <TableHeader columns={columns}>
+                {(column) => (
+                  <TableColumn
+                    key={column.key}
+                    align={column.key === "actions" ? "end" : "start"}
+                    allowsSorting={
+                      column.key !== "actions" && column.key !== "status"
+                    }
+                  >
+                    {column.label}
+                  </TableColumn>
+                )}
+              </TableHeader>
+              <TableBody emptyContent={t("noUsers")} items={sortedItems}>
+                {(item) => (
+                  <TableRow key={item.id}>
+                    {(columnKey) => (
+                      <TableCell>{renderCell(item, columnKey)}</TableCell>
+                    )}
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
           )}
 
           {/* 分页 */}
           {bottomContent}
-
-
         </div>
       </div>
 
       {/* 编辑角色模态框 */}
       <Modal isOpen={showRoleModal} onClose={() => setShowRoleModal(false)}>
-          <ModalContent>
-            <ModalHeader>{t("editRole")}</ModalHeader>
-            <ModalBody>
-              <p className="text-sm text-default-500 mb-4">
-                {t("editRoleDesc", { email: selectedUser?.email || "" })}
-              </p>
-              <Select
-                label={t("role")}
-                selectedKeys={[newRole]}
-                onChange={(e) => setNewRole(e.target.value as any)}
-              >
-                <SelectItem key="user">{t("roles.user")}</SelectItem>
-                <SelectItem key="admin">{t("roles.admin")}</SelectItem>
-                <SelectItem key="owner">{t("roles.owner")}</SelectItem>
-              </Select>
-            </ModalBody>
-            <ModalFooter>
-              <Button
-                variant="light"
-                onPress={() => setShowRoleModal(false)}
-                isDisabled={actionLoading}
-              >
-                {t("cancel")}
-              </Button>
-              <Button
-                color="primary"
-                onPress={handleUpdateRole}
-                isLoading={actionLoading}
-              >
-                {t("confirm")}
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
+        <ModalContent>
+          <ModalHeader>{t("editRole")}</ModalHeader>
+          <ModalBody>
+            <p className="text-sm text-default-500 mb-4">
+              {t("editRoleDesc", { email: selectedUser?.email || "" })}
+            </p>
+            <Select
+              label={t("role")}
+              selectedKeys={[newRole]}
+              onChange={(e) => setNewRole(e.target.value as any)}
+            >
+              <SelectItem key="user">{t("roles.user")}</SelectItem>
+              <SelectItem key="admin">{t("roles.admin")}</SelectItem>
+              <SelectItem key="owner">{t("roles.owner")}</SelectItem>
+            </Select>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              isDisabled={actionLoading}
+              variant="light"
+              onPress={() => setShowRoleModal(false)}
+            >
+              {t("cancel")}
+            </Button>
+            <Button
+              color="primary"
+              isLoading={actionLoading}
+              onPress={handleUpdateRole}
+            >
+              {t("confirm")}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
-        {/* 赠送积分模态框 */}
-        <Modal
-          isOpen={showCreditsModal}
-          onClose={() => setShowCreditsModal(false)}
-        >
-          <ModalContent>
-            <ModalHeader>{t("grantCredits")}</ModalHeader>
-            <ModalBody>
-              <p className="text-sm text-default-500 mb-4">
-                {t("grantCreditsDesc", {
-                  email: selectedUser?.email || "",
-                  currentCredits: selectedUser?.credits || 0,
-                })}
-              </p>
-              <Input
-                type="number"
-                label={t("creditsAmount")}
-                placeholder={t("creditsAmountPlaceholder")}
-                value={creditsAmount}
-                onChange={(e) => setCreditsAmount(e.target.value)}
-                min="1"
-              />
-              <Input
-                label={t("description")}
-                placeholder={t("descriptionPlaceholder")}
-                value={creditsDescription}
-                onChange={(e) => setCreditsDescription(e.target.value)}
-              />
-            </ModalBody>
-            <ModalFooter>
-              <Button
-                variant="light"
-                onPress={() => {
-                  setShowCreditsModal(false);
-                  setCreditsAmount("");
-                  setCreditsDescription("");
-                }}
-                isDisabled={actionLoading}
-              >
-                {t("cancel")}
-              </Button>
-              <Button
-                color="primary"
-                onPress={handleGrantCredits}
-                isLoading={actionLoading}
-              >
-                {t("confirm")}
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
+      {/* 赠送积分模态框 */}
+      <Modal
+        isOpen={showCreditsModal}
+        onClose={() => setShowCreditsModal(false)}
+      >
+        <ModalContent>
+          <ModalHeader>{t("grantCredits")}</ModalHeader>
+          <ModalBody>
+            <p className="text-sm text-default-500 mb-4">
+              {t("grantCreditsDesc", {
+                email: selectedUser?.email || "",
+                currentCredits: selectedUser?.credits || 0,
+              })}
+            </p>
+            <Input
+              label={t("creditsAmount")}
+              min="1"
+              placeholder={t("creditsAmountPlaceholder")}
+              type="number"
+              value={creditsAmount}
+              onChange={(e) => setCreditsAmount(e.target.value)}
+            />
+            <Input
+              label={t("description")}
+              placeholder={t("descriptionPlaceholder")}
+              value={creditsDescription}
+              onChange={(e) => setCreditsDescription(e.target.value)}
+            />
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              isDisabled={actionLoading}
+              variant="light"
+              onPress={() => {
+                setShowCreditsModal(false);
+                setCreditsAmount("");
+                setCreditsDescription("");
+              }}
+            >
+              {t("cancel")}
+            </Button>
+            <Button
+              color="primary"
+              isLoading={actionLoading}
+              onPress={handleGrantCredits}
+            >
+              {t("confirm")}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
-        {/* 禁用/启用用户确认框 */}
-        <Modal
-          isOpen={showStatusModal}
-          onClose={() => setShowStatusModal(false)}
-        >
-          <ModalContent>
-            <ModalHeader>
-              {selectedUser?.isActive ? t("disableUser") : t("enableUser")}
-            </ModalHeader>
-            <ModalBody>
-              <p className="text-sm text-default-500">
-                {selectedUser?.isActive
-                  ? t("disableUserConfirm", { email: selectedUser?.email || "" })
-                  : t("enableUserConfirm", { email: selectedUser?.email || "" })}
-              </p>
-            </ModalBody>
-            <ModalFooter>
-              <Button
-                variant="light"
-                onPress={() => setShowStatusModal(false)}
-                isDisabled={actionLoading}
-              >
-                {t("cancel")}
-              </Button>
-              <Button
-                color={selectedUser?.isActive ? "danger" : "success"}
-                onPress={handleUpdateStatus}
-                isLoading={actionLoading}
-              >
-                {t("confirm")}
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
+      {/* 禁用/启用用户确认框 */}
+      <Modal isOpen={showStatusModal} onClose={() => setShowStatusModal(false)}>
+        <ModalContent>
+          <ModalHeader>
+            {selectedUser?.isActive ? t("disableUser") : t("enableUser")}
+          </ModalHeader>
+          <ModalBody>
+            <p className="text-sm text-default-500">
+              {selectedUser?.isActive
+                ? t("disableUserConfirm", { email: selectedUser?.email || "" })
+                : t("enableUserConfirm", { email: selectedUser?.email || "" })}
+            </p>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              isDisabled={actionLoading}
+              variant="light"
+              onPress={() => setShowStatusModal(false)}
+            >
+              {t("cancel")}
+            </Button>
+            <Button
+              color={selectedUser?.isActive ? "danger" : "success"}
+              isLoading={actionLoading}
+              onPress={handleUpdateStatus}
+            >
+              {t("confirm")}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </div>
   );
 }

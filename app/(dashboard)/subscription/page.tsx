@@ -21,8 +21,6 @@ import {
 
 import { usePageHeader } from "../use-page-header";
 
-import { title } from "@/components/primitives";
-
 // 数据库套餐类型定义
 interface DBPlan {
   id: number;
@@ -242,6 +240,7 @@ export default function SubscriptionPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
+
         console.error("Checkout creation failed:", errorData);
         throw new Error(errorData.error || "Failed to create checkout session");
       }
@@ -252,7 +251,9 @@ export default function SubscriptionPage() {
       window.location.href = url;
     } catch (error) {
       console.error("Failed to process plan selection:", error);
-      const errorMessage = error instanceof Error ? error.message : t("failedToCreateCheckout");
+      const errorMessage =
+        error instanceof Error ? error.message : t("failedToCreateCheckout");
+
       addToast({
         title: errorMessage,
         color: "danger",
@@ -265,14 +266,14 @@ export default function SubscriptionPage() {
   // Render plan card
   const renderPlanCard = (plan: Plan) => {
     // 用户是否有活跃订阅
-    const hasActiveSubscription = userSubscription?.subscriptionStatus === "active";
+    const hasActiveSubscription =
+      userSubscription?.subscriptionStatus === "active";
 
     // 免费套餐是当前套餐的条件：是免费套餐且用户没有活跃订阅
     const isCurrentPlan = plan.type === "free" && !hasActiveSubscription;
 
     // 订阅套餐是否是当前订阅
-    const isSubscribed =
-      plan.type === "subscription" && hasActiveSubscription;
+    const isSubscribed = plan.type === "subscription" && hasActiveSubscription;
 
     return (
       <Card

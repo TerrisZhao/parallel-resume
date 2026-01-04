@@ -116,7 +116,9 @@ export const users = pgTable("users", {
   providerId: varchar("provider_id", { length: 255 }),
   role: userRoleEnum("role").notNull().default("user"),
   emailVerified: boolean("email_verified").notNull().default(false),
-  firstLoginCompleted: boolean("first_login_completed").notNull().default(false),
+  firstLoginCompleted: boolean("first_login_completed")
+    .notNull()
+    .default(false),
   passwordSetupSkippedAt: timestamp("password_setup_skipped_at"), // 记录用户最后一次跳过设置密码的日期
   isActive: boolean("is_active").notNull().default(true),
   themeMode: themeModeEnum("theme_mode").notNull().default("system"),

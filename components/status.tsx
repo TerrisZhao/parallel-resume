@@ -1,4 +1,4 @@
-import React, {forwardRef, memo} from "react";
+import React, { forwardRef, memo } from "react";
 import clsx from "clsx";
 
 export type StatusOptions = "active" | "inactive";
@@ -16,7 +16,7 @@ export interface StatusProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export const Status = memo(
   forwardRef<HTMLDivElement, StatusProps>((props, forwardedRef) => {
-    const {className, status, label} = props;
+    const { className, status, label } = props;
     const statusColor = statusColorMap[status];
 
     return (

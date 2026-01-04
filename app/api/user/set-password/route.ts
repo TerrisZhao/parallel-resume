@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       })
       .from(users)
       .where(
-        and(eq(users.id, parseInt(session.user.id)), isNull(users.deletedAt))
+        and(eq(users.id, parseInt(session.user.id)), isNull(users.deletedAt)),
       )
       .limit(1);
 
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
         updatedAt: new Date(),
       })
       .where(
-        and(eq(users.id, parseInt(session.user.id)), isNull(users.deletedAt))
+        and(eq(users.id, parseInt(session.user.id)), isNull(users.deletedAt)),
       )
       .returning({
         id: users.id,
@@ -67,10 +67,7 @@ export async function POST(request: NextRequest) {
       });
 
     if (result.length === 0) {
-      return NextResponse.json(
-        { error: "更新密码失败" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "更新密码失败" }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -81,7 +78,7 @@ export async function POST(request: NextRequest) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "请求数据格式错误", details: error.issues },
-        { status: 400 }
+        { status: 400 },
       );
     }
 

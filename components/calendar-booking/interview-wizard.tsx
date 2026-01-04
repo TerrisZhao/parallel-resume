@@ -30,7 +30,9 @@ type WizardStep = "info" | "time" | "confirmation";
 
 interface InterviewWizardProps {
   resumes: Resume[];
-  onSubmit: (data: InterviewFormData & { interviewTime: string }) => Promise<void>;
+  onSubmit: (
+    data: InterviewFormData & { interviewTime: string },
+  ) => Promise<void>;
   onCancel: () => void;
   initialData?: Partial<InterviewFormData>;
 }
@@ -54,7 +56,9 @@ export default function InterviewWizard({
   });
   const [selectedDate, setSelectedDate] = useState<DateValue | null>(null);
   const [selectedTime, setSelectedTime] = useState<string>("");
-  const [selectedTimeSlotRange, setSelectedTimeSlotRange] = useState<TimeSlot[]>([]);
+  const [selectedTimeSlotRange, setSelectedTimeSlotRange] = useState<
+    TimeSlot[]
+  >([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInfoNext = (data: InterviewFormData) => {
@@ -65,7 +69,7 @@ export default function InterviewWizard({
   const handleTimeNext = (
     date: DateValue,
     time: string,
-    timeSlotRange: TimeSlot[]
+    timeSlotRange: TimeSlot[],
   ) => {
     setSelectedDate(date);
     setSelectedTime(time);
@@ -104,6 +108,7 @@ export default function InterviewWizard({
 
     const dateStr = selectedDate.toString();
     const date = new Date(`${dateStr}T${selectedTime}`);
+
     return format(date, "EEEE, MMMM d, yyyy 'at' h:mm a");
   };
 
@@ -142,31 +147,31 @@ export default function InterviewWizard({
       {/* Step Content */}
       {currentStep === "info" && (
         <InterviewInfoStep
-          resumes={resumes}
           initialData={formData}
-          onNext={handleInfoNext}
+          resumes={resumes}
           onCancel={onCancel}
+          onNext={handleInfoNext}
         />
       )}
 
       {currentStep === "time" && (
         <InterviewTimeStep
-          onNext={handleTimeNext}
-          onBack={handleBack}
           initialDate={selectedDate}
           initialTime={selectedTime}
+          onBack={handleBack}
+          onNext={handleTimeNext}
         />
       )}
 
       {currentStep === "confirmation" && (
         <InterviewConfirmationStep
           formData={formData}
+          formattedDateTime={getFormattedDateTime()}
+          isSubmitting={isSubmitting}
+          resumes={resumes}
           selectedDate={selectedDate}
           selectedTime={selectedTime}
           selectedTimeSlotRange={selectedTimeSlotRange}
-          formattedDateTime={getFormattedDateTime()}
-          resumes={resumes}
-          isSubmitting={isSubmitting}
           onBack={handleBack}
           onConfirm={handleConfirm}
         />

@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { eq, desc } from "drizzle-orm";
+
 import { authOptions } from "@/lib/auth/config";
 import { db } from "@/lib/db/drizzle";
 import { users, subscriptionPlans } from "@/lib/db/schema";
-import { eq, desc, isNull } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
   try {
     // 验证用户是否为 owner
     const session = await getServerSession(authOptions);
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: "未授权访问" }, { status: 401 });
     }
@@ -27,10 +29,13 @@ export async function GET(request: NextRequest) {
     const plans = await db
       .select()
       .from(subscriptionPlans)
-      .orderBy(desc(subscriptionPlans.displayOrder), desc(subscriptionPlans.createdAt));
+      .orderBy(
+        desc(subscriptionPlans.displayOrder),
+        desc(subscriptionPlans.createdAt),
+      );
 
     // 转换数据格式以匹配前端接口
-    const formattedPlans = plans.map((plan: typeof plans[number]) => ({
+    const formattedPlans = plans.map((plan: (typeof plans)[number]) => ({
       id: plan.id,
       nameEn: plan.nameEn,
       nameZh: plan.nameZh,
@@ -48,9 +53,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ plans: formattedPlans });
   } catch (error) {
     console.error("Failed to fetch subscription plans:", error);
-    return NextResponse.json(
-      { error: "获取订阅计划失败" },
-      { status: 500 }
-    );
+
+    return NextResponse.json({ error: "获取订阅计划失败" }, { status: 500 });
   }
 }

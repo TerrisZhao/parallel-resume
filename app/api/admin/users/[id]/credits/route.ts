@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/config";
-import { db } from "@/lib/db/drizzle";
-import { users, creditTransactions, userCredits, messages } from "@/lib/db/schema";
 import { eq, and, isNull, desc, sql } from "drizzle-orm";
 import { z } from "zod";
+
+import { authOptions } from "@/lib/auth/config";
+import { db } from "@/lib/db/drizzle";
+import {
+  users,
+  creditTransactions,
+  userCredits,
+  messages,
+} from "@/lib/db/schema";
 
 const grantCreditsSchema = z.object({
   amount: z.number().int().positive("积分数量必须大于0"),
@@ -13,11 +19,12 @@ const grantCreditsSchema = z.object({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // 验证用户是否为 owner
     const session = await getServerSession(authOptions);
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: "未授权访问" }, { status: 401 });
     }
@@ -34,6 +41,7 @@ export async function POST(
 
     const { id } = await params;
     const userId = parseInt(id);
+
     if (isNaN(userId)) {
       return NextResponse.json({ error: "无效的用户ID" }, { status: 400 });
     }
@@ -72,7 +80,8 @@ export async function POST(
         amount: validatedData.amount,
         type: "bonus",
         description:
-          validatedData.description || `管理员赠送 ${validatedData.amount} 积分`,
+          validatedData.description ||
+          `管理员赠送 ${validatedData.amount} 积分`,
         balanceAfter: newBalance,
         metadata: {
           grantedBy: session.user.id,
@@ -143,10 +152,11 @@ export async function POST(
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "数据验证失败", details: error.issues },
-        { status: 400 }
+        { status: 400 },
       );
     }
     console.error("Failed to grant credits:", error);
+
     return NextResponse.json({ error: "赠送积分失败" }, { status: 500 });
   }
 }

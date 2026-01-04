@@ -40,7 +40,7 @@ export default function RowSteps({
                       {
                         "bg-success": index <= activeStep,
                         "bg-default-200": index > activeStep,
-                      }
+                      },
                     )}
                     style={{ marginRight: "0.5rem" }}
                   />
@@ -55,7 +55,7 @@ export default function RowSteps({
                       "border-success bg-success text-white": isCompleted,
                       "border-default-300 bg-default-100 text-default-400":
                         !isActive && !isCompleted,
-                    }
+                    },
                   )}
                 >
                   {isCompleted ? (
@@ -96,7 +96,7 @@ export default function RowSteps({
                       {
                         "bg-success": index < activeStep,
                         "bg-default-200": index >= activeStep,
-                      }
+                      },
                     )}
                     style={{ marginLeft: "0.5rem" }}
                   />

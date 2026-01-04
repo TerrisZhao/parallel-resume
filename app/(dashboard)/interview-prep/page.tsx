@@ -17,12 +17,11 @@ import { Input, Textarea } from "@heroui/input";
 import { Select, SelectItem } from "@heroui/select";
 import { addToast } from "@heroui/toast";
 import { Plus, Edit, Trash2 } from "lucide-react";
+import { Icon } from "@iconify/react";
 
 import { usePageHeader } from "../use-page-header";
 
-import { title } from "@/components/primitives";
-import {Icon} from "@iconify/react";
-import {Loading} from "@/components/loading";
+import { Loading } from "@/components/loading";
 
 interface PreparationMaterial {
   id: number;
@@ -226,9 +225,9 @@ export default function InterviewPrepPage() {
   return (
     <div className="flex flex-col h-full">
       <Tabs
+        className={"justify-center"}
         selectedKey={selectedCategory}
         onSelectionChange={(key) => setSelectedCategory(key as string)}
-        className={"justify-center"}
       >
         {CATEGORIES.map((category) => (
           <Tab key={category} title={t(`categories.${category}`)}>
@@ -236,9 +235,17 @@ export default function InterviewPrepPage() {
               {getMaterialsByCategory(category).length === 0 ? (
                 <Card className="border-none shadow-none">
                   <CardBody className="text-center py-12">
-                    <Icon className="mx-auto mb-4 text-default-400" icon={"solar:clipboard-list-bold-duotone"} width={128} />
-                    <h3 className="text-xl font-semibold mb-2">{t("noMaterials")}</h3>
-                    <p className="text-default-500 mb-4">{t("noMaterialsDescription")}</p>
+                    <Icon
+                      className="mx-auto mb-4 text-default-400"
+                      icon={"solar:clipboard-list-bold-duotone"}
+                      width={128}
+                    />
+                    <h3 className="text-xl font-semibold mb-2">
+                      {t("noMaterials")}
+                    </h3>
+                    <p className="text-default-500 mb-4">
+                      {t("noMaterialsDescription")}
+                    </p>
                   </CardBody>
                 </Card>
               ) : (

@@ -1025,16 +1025,45 @@ export default function ResumeEditPage({
     preferredLanguage: "en",
   });
 
-  const [currentSkill, setCurrentSkill] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null);
-  const [useSkillGroups, setUseSkillGroups] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [activeSkillId, setActiveSkillId] = useState<string | null>(null);
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
   const [isAiOptimizationEnabled, setIsAiOptimizationEnabled] = useState(false);
+
+  // Summary enhancement states
+  const [isSummaryEnhancing, setIsSummaryEnhancing] = useState(false);
+  const {
+    isOpen: isSummaryModalOpen,
+    onOpen: onSummaryModalOpen,
+    onClose: onSummaryModalClose,
+  } = useDisclosure();
+  const [enhancedSummaries, setEnhancedSummaries] = useState<{
+    professional: string;
+    innovative: string;
+    technical: string;
+  } | null>(null);
+  const [selectedSummary, setSelectedSummary] = useState<string>("");
+
+  // Skill suggestions states
+  const [isSkillSuggesting, setIsSkillSuggesting] = useState(false);
+  const {
+    isOpen: isSkillModalOpen,
+    onOpen: onSkillModalOpen,
+    onClose: onSkillModalClose,
+  } = useDisclosure();
+  const [skillOptimization, setSkillOptimization] = useState<{
+    optimizedGroups: SkillGroup[];
+    reasoning: string;
+    changesCount: {
+      added: number;
+      removed: number;
+      reorganized: number;
+    };
+  } | null>(null);
 
   // Configure drag sensors
   const sensors = useSensors(
@@ -1043,6 +1072,88 @@ export default function ResumeEditPage({
       coordinateGetter: sortableKeyboardCoordinates,
     }),
   );
+
+  // Handle summary enhancement
+  const handleEnhanceSummary = async () => {
+    setIsSummaryEnhancing(true);
+    try {
+      const response = await fetch("/api/ai/enhance-summary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          workExperiences: resumeData.workExperience,
+          projects: resumeData.projects,
+          education: resumeData.education,
+          jobDescription: resumeData.jobDescription || undefined,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || t("enhancementFailed"));
+      }
+
+      setEnhancedSummaries(data.summaries);
+      setSelectedSummary(data.summaries.professional);
+      onSummaryModalOpen();
+    } catch (error) {
+      console.error("Summary enhancement failed:", error);
+      addToast({
+        title: error instanceof Error ? error.message : t("enhancementFailed"),
+        color: "danger",
+      });
+    } finally {
+      setIsSummaryEnhancing(false);
+    }
+  };
+
+  // Handle skill optimization
+  const handleGetSkillSuggestions = async () => {
+    setIsSkillSuggesting(true);
+    try {
+      const response = await fetch("/api/ai/skill-suggestions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          currentSkillGroups: resumeData.keySkills as SkillGroup[],
+          workExperiences: resumeData.workExperience,
+          projects: resumeData.projects,
+          jobDescription: resumeData.jobDescription || undefined,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || t("optimizationFailed"));
+      }
+
+      // Add IDs to optimized groups
+      const optimizedGroupsWithIds = data.optimizedGroups.map(
+        (group: { groupName: string; skills: string[] }) => ({
+          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          groupName: group.groupName,
+          skills: group.skills,
+        }),
+      );
+
+      setSkillOptimization({
+        optimizedGroups: optimizedGroupsWithIds,
+        reasoning: data.reasoning,
+        changesCount: data.changesCount,
+      });
+      onSkillModalOpen();
+    } catch (error) {
+      console.error("Skill optimization failed:", error);
+      addToast({
+        title: error instanceof Error ? error.message : t("optimizationFailed"),
+        color: "danger",
+      });
+    } finally {
+      setIsSkillSuggesting(false);
+    }
+  };
 
   // Load resume data
   useEffect(() => {
@@ -1055,13 +1166,29 @@ export default function ResumeEditPage({
           const resume = data.resume;
 
           const skills = resume.keySkills || [];
-          // Check if keySkills is in grouped format
-          const isGrouped =
+          // Always convert to grouped format
+          let groupedSkills: SkillGroup[];
+
+          if (
             skills.length > 0 &&
             typeof skills[0] === "object" &&
-            "groupName" in skills[0];
-
-          setUseSkillGroups(isGrouped);
+            "groupName" in skills[0]
+          ) {
+            // Already in grouped format
+            groupedSkills = skills;
+          } else if (skills.length > 0) {
+            // Convert simple list to grouped format
+            groupedSkills = [
+              {
+                id: Date.now().toString(),
+                groupName: "Skills",
+                skills: skills as string[],
+              },
+            ];
+          } else {
+            // Empty skills
+            groupedSkills = [];
+          }
 
           setResumeData({
             name: resume.name,
@@ -1075,7 +1202,7 @@ export default function ResumeEditPage({
             website: resume.website || "",
             jobDescription: resume.jobDescription || "",
             summary: resume.summary || "",
-            keySkills: skills,
+            keySkills: groupedSkills,
             workExperience: resume.workExperience || [],
             education: resume.education || [],
             projects: resume.projects || [],
@@ -1317,126 +1444,40 @@ export default function ResumeEditPage({
     onOpen,
   ]);
 
-  // Toggle between simple list and grouped format
-  const handleToggleSkillFormat = () => {
-    if (useSkillGroups) {
-      // Convert from grouped to simple list
-      const flatSkills: string[] = [];
-
-      (resumeData.keySkills as SkillGroup[]).forEach((group) => {
-        flatSkills.push(...group.skills);
-      });
-      setResumeData({ ...resumeData, keySkills: flatSkills });
-      setUseSkillGroups(false);
-    } else {
-      // Convert from simple list to grouped (create one default group)
-      const defaultGroup: SkillGroup = {
-        id: Date.now().toString(),
-        groupName: "Skills",
-        skills: [...(resumeData.keySkills as string[])],
-      };
-
-      setResumeData({ ...resumeData, keySkills: [defaultGroup] });
-      setUseSkillGroups(true);
-    }
-  };
-
-  // Simple list functions
-  const handleAddSkill = () => {
-    if (!useSkillGroups) {
-      const newSkill = currentSkill.trim();
-
-      if (newSkill) {
-        if (
-          !(resumeData.keySkills as string[]).some(
-            (skill) => skill.trim().toLowerCase() === newSkill.toLowerCase(),
-          )
-        ) {
-          setResumeData({
-            ...resumeData,
-            keySkills: [...(resumeData.keySkills as string[]), newSkill],
-          });
-        }
-        setCurrentSkill("");
-      }
-    }
-  };
-
-  const handleRemoveSkill = (index: number) => {
-    if (!useSkillGroups) {
-      setResumeData({
-        ...resumeData,
-        keySkills: (resumeData.keySkills as string[]).filter(
-          (_, i) => i !== index,
-        ),
-      });
-    }
-  };
-
-  // Handle skill drag start
-  const handleSkillDragStart = (event: DragStartEvent) => {
-    setActiveSkillId(event.active.id as string);
-  };
-
-  // Handle skill drag and drop for simple list
-  const handleSkillDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (over && active.id !== over.id) {
-      const skills = resumeData.keySkills as string[];
-      const oldIndex = skills.indexOf(active.id as string);
-      const newIndex = skills.indexOf(over.id as string);
-
-      setResumeData({
-        ...resumeData,
-        keySkills: arrayMove(skills, oldIndex, newIndex),
-      });
-    }
-
-    setActiveSkillId(null);
-  };
-
-  // Grouped functions
+  // Skill group functions
   const handleAddSkillGroup = () => {
-    if (useSkillGroups) {
-      const skillGroups = resumeData.keySkills as SkillGroup[];
-      const newGroup: SkillGroup = {
-        id: Date.now().toString(),
-        groupName: `Group ${skillGroups.length + 1}`,
-        skills: [],
-      };
+    const skillGroups = resumeData.keySkills as SkillGroup[];
+    const newGroup: SkillGroup = {
+      id: Date.now().toString(),
+      groupName: `Group ${skillGroups.length + 1}`,
+      skills: [],
+    };
 
-      setResumeData({
-        ...resumeData,
-        keySkills: [...skillGroups, newGroup],
-      });
-    }
+    setResumeData({
+      ...resumeData,
+      keySkills: [...skillGroups, newGroup],
+    });
   };
 
   const handleRemoveSkillGroup = (groupId: string) => {
-    if (useSkillGroups) {
-      setResumeData({
-        ...resumeData,
-        keySkills: (resumeData.keySkills as SkillGroup[]).filter(
-          (g) => g.id !== groupId,
-        ),
-      });
-    }
+    setResumeData({
+      ...resumeData,
+      keySkills: (resumeData.keySkills as SkillGroup[]).filter(
+        (g) => g.id !== groupId,
+      ),
+    });
   };
 
   const handleUpdateGroupName = (groupId: string, newName: string) => {
-    if (useSkillGroups) {
-      setResumeData({
-        ...resumeData,
-        keySkills: (resumeData.keySkills as SkillGroup[]).map((g) =>
-          g.id === groupId ? { ...g, groupName: newName } : g,
-        ),
-      });
-    }
+    setResumeData({
+      ...resumeData,
+      keySkills: (resumeData.keySkills as SkillGroup[]).map((g) =>
+        g.id === groupId ? { ...g, groupName: newName } : g,
+      ),
+    });
   };
 
   const handleAddSkillToGroup = (groupId: string, skill: string) => {
-    if (!useSkillGroups) return false;
 
     const newSkill = skill.trim();
 
@@ -1466,16 +1507,14 @@ export default function ResumeEditPage({
   };
 
   const handleRemoveSkillFromGroup = (groupId: string, skillIndex: number) => {
-    if (useSkillGroups) {
-      setResumeData({
-        ...resumeData,
-        keySkills: (resumeData.keySkills as SkillGroup[]).map((g) =>
-          g.id === groupId
-            ? { ...g, skills: g.skills.filter((_, i) => i !== skillIndex) }
-            : g,
-        ),
-      });
-    }
+    setResumeData({
+      ...resumeData,
+      keySkills: (resumeData.keySkills as SkillGroup[]).map((g) =>
+        g.id === groupId
+          ? { ...g, skills: g.skills.filter((_, i) => i !== skillIndex) }
+          : g,
+      ),
+    });
   };
 
   // Handle skill drag and drop within a group
@@ -1859,7 +1898,27 @@ export default function ResumeEditPage({
         {/* Summary */}
         <Card>
           <CardBody className="space-y-4">
-            <h3 className="text-lg font-semibold">{t("summary")}</h3>
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold">{t("summary")}</h3>
+              {isAiOptimizationEnabled && (
+                <Tooltip content={t("enhanceSummaryTooltip")}>
+                  <Button
+                    className={
+                      !isSummaryEnhancing
+                        ? "text-blue-600 dark:text-blue-400 hover:text-purple-600 dark:hover:text-purple-400"
+                        : ""
+                    }
+                    isLoading={isSummaryEnhancing}
+                    size="sm"
+                    startContent={!isSummaryEnhancing && <Sparkles size={16} />}
+                    variant="light"
+                    onPress={handleEnhanceSummary}
+                  >
+                    {t("enhanceSummary")}
+                  </Button>
+                </Tooltip>
+              )}
+            </div>
             <Textarea
               // label={t("summary")}
               minRows={4}
@@ -1877,136 +1936,87 @@ export default function ResumeEditPage({
           <CardBody className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold">{t("keySkills")}</h3>
-              <Button
-                size="sm"
-                variant="flat"
-                onPress={handleToggleSkillFormat}
-              >
-                {useSkillGroups ? t("switchToSimpleList") : t("switchToGroups")}
-              </Button>
+              <div className="flex items-center gap-2">
+                {isAiOptimizationEnabled && (
+                  <Tooltip content={t("optimizeSkillGroupsTooltip")}>
+                    <Button
+                      className={
+                        !isSkillSuggesting
+                          ? "text-blue-600 dark:text-blue-400 hover:text-purple-600 dark:hover:text-purple-400"
+                          : ""
+                      }
+                      isLoading={isSkillSuggesting}
+                      size="sm"
+                      startContent={
+                        !isSkillSuggesting && <Sparkles size={16} />
+                      }
+                      variant="light"
+                      onPress={handleGetSkillSuggestions}
+                    >
+                      {t("optimizeSkillGroups")}
+                    </Button>
+                  </Tooltip>
+                )}
+                <Button
+                  color="primary"
+                  size="sm"
+                  startContent={<Plus size={18} />}
+                  onPress={handleAddSkillGroup}
+                >
+                  {t("addGroup")}
+                </Button>
+              </div>
             </div>
 
-            {!useSkillGroups ? (
-              // Simple list mode
-              <>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder={t("addSkillPlaceholder")}
-                    value={currentSkill}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setCurrentSkill(e.target.value)
-                    }
-                    onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleAddSkill();
+            <DndContext
+              collisionDetection={closestCenter}
+              sensors={sensors}
+              onDragEnd={handleGroupDragEnd}
+              onDragStart={handleGroupDragStart}
+            >
+              <SortableContext
+                items={(resumeData.keySkills as SkillGroup[]).map((g) => g.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="space-y-3">
+                  {(resumeData.keySkills as SkillGroup[]).map((group) => (
+                    <SortableGroup
+                      key={group.id}
+                      group={group}
+                      onAddSkill={(skill) =>
+                        handleAddSkillToGroup(group.id, skill)
                       }
-                    }}
-                  />
-                  <Button
-                    color="primary"
-                    startContent={<Plus size={18} />}
-                    onPress={handleAddSkill}
-                  >
-                    {t("add")}
-                  </Button>
+                      onRemove={() => handleRemoveSkillGroup(group.id)}
+                      onRemoveSkill={(skillIndex) =>
+                        handleRemoveSkillFromGroup(group.id, skillIndex)
+                      }
+                      onSkillDragEnd={(event) =>
+                        handleSkillInGroupDragEnd(group.id, event)
+                      }
+                      onSkillDragStart={handleSkillInGroupDragStart}
+                      onUpdateName={(name) =>
+                        handleUpdateGroupName(group.id, name)
+                      }
+                    />
+                  ))}
                 </div>
-                <DndContext
-                  collisionDetection={closestCenter}
-                  sensors={sensors}
-                  onDragEnd={handleSkillDragEnd}
-                  onDragStart={handleSkillDragStart}
-                >
-                  <SortableContext
-                    items={resumeData.keySkills as string[]}
-                    strategy={rectSortingStrategy}
-                  >
-                    <div className="flex flex-wrap gap-2">
-                      {(resumeData.keySkills as string[]).map(
-                        (skill, index) => (
-                          <SortableSkillItem
-                            key={skill}
-                            skill={skill}
-                            onRemove={() => handleRemoveSkill(index)}
-                          />
-                        ),
-                      )}
-                    </div>
-                  </SortableContext>
-                  <DragOverlay>
-                    {activeSkillId ? (
-                      <div className="flex items-center">
-                        <Chip>{activeSkillId}</Chip>
+              </SortableContext>
+              <DragOverlay>
+                {activeGroupId ? (
+                  <Card className="bg-default-50 shadow-none border-2 border-dashed border-default-300 opacity-90">
+                    <CardBody className="p-4">
+                      <div className="font-medium">
+                        {
+                          (resumeData.keySkills as SkillGroup[]).find(
+                            (g) => g.id === activeGroupId,
+                          )?.groupName
+                        }
                       </div>
-                    ) : null}
-                  </DragOverlay>
-                </DndContext>
-              </>
-            ) : (
-              // Grouped mode
-              <>
-                <div className="flex justify-end">
-                  <Button
-                    color="primary"
-                    startContent={<Plus size={18} />}
-                    onPress={handleAddSkillGroup}
-                  >
-                    {t("addGroup")}
-                  </Button>
-                </div>
-                <DndContext
-                  collisionDetection={closestCenter}
-                  sensors={sensors}
-                  onDragEnd={handleGroupDragEnd}
-                  onDragStart={handleGroupDragStart}
-                >
-                  <SortableContext
-                    items={(resumeData.keySkills as SkillGroup[]).map(
-                      (g) => g.id,
-                    )}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    <div className="space-y-3">
-                      {(resumeData.keySkills as SkillGroup[]).map((group) => (
-                        <SortableGroup
-                          key={group.id}
-                          group={group}
-                          onAddSkill={(skill) =>
-                            handleAddSkillToGroup(group.id, skill)
-                          }
-                          onRemove={() => handleRemoveSkillGroup(group.id)}
-                          onRemoveSkill={(skillIndex) =>
-                            handleRemoveSkillFromGroup(group.id, skillIndex)
-                          }
-                          onSkillDragEnd={(event) =>
-                            handleSkillInGroupDragEnd(group.id, event)
-                          }
-                          onSkillDragStart={handleSkillInGroupDragStart}
-                          onUpdateName={(name) =>
-                            handleUpdateGroupName(group.id, name)
-                          }
-                        />
-                      ))}
-                    </div>
-                  </SortableContext>
-                  <DragOverlay>
-                    {activeGroupId ? (
-                      <Card className="bg-default-50 shadow-none border-2 border-dashed border-default-300 opacity-90">
-                        <CardBody className="p-4">
-                          <div className="font-medium">
-                            {
-                              (resumeData.keySkills as SkillGroup[]).find(
-                                (g) => g.id === activeGroupId,
-                              )?.groupName
-                            }
-                          </div>
-                        </CardBody>
-                      </Card>
-                    ) : null}
-                  </DragOverlay>
-                </DndContext>
-              </>
-            )}
+                    </CardBody>
+                  </Card>
+                ) : null}
+              </DragOverlay>
+            </DndContext>
           </CardBody>
         </Card>
 
@@ -2518,6 +2528,287 @@ export default function ResumeEditPage({
           </CardBody>
         </Card>
       </div>
+
+      {/* Summary Enhancement Modal */}
+      <Modal
+        isOpen={isSummaryModalOpen}
+        scrollBehavior="inside"
+        size="3xl"
+        onClose={onSummaryModalClose}
+      >
+        <ModalContent>
+          <ModalHeader>
+            <span>{t("enhancedSummaries")}</span>
+          </ModalHeader>
+          <ModalBody>
+            <div className="space-y-4">
+              <p className="text-sm text-default-600">
+                {t("selectSummaryStyle")}
+              </p>
+              {enhancedSummaries && (
+                <div className="space-y-4">
+                  {/* Professional */}
+                  <div
+                    className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                      selectedSummary === enhancedSummaries.professional
+                        ? "border-primary bg-primary-50 dark:bg-primary-900/20"
+                        : "border-default-200 hover:border-default-300"
+                    }`}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() =>
+                      setSelectedSummary(enhancedSummaries.professional)
+                    }
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setSelectedSummary(enhancedSummaries.professional);
+                      }
+                    }}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <h4 className="font-semibold">
+                        {t("professionalStyle")}
+                      </h4>
+                      {selectedSummary === enhancedSummaries.professional && (
+                        <CheckCircle className="text-primary" size={18} />
+                      )}
+                    </div>
+                    <Textarea
+                      minRows={3}
+                      value={
+                        selectedSummary === enhancedSummaries.professional
+                          ? selectedSummary
+                          : enhancedSummaries.professional
+                      }
+                      onChange={(e) =>
+                        selectedSummary === enhancedSummaries.professional &&
+                        setSelectedSummary(e.target.value)
+                      }
+                    />
+                  </div>
+
+                  {/* Innovative */}
+                  <div
+                    className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                      selectedSummary === enhancedSummaries.innovative
+                        ? "border-primary bg-primary-50 dark:bg-primary-900/20"
+                        : "border-default-200 hover:border-default-300"
+                    }`}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() =>
+                      setSelectedSummary(enhancedSummaries.innovative)
+                    }
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setSelectedSummary(enhancedSummaries.innovative);
+                      }
+                    }}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <h4 className="font-semibold">{t("innovativeStyle")}</h4>
+                      {selectedSummary === enhancedSummaries.innovative && (
+                        <CheckCircle className="text-primary" size={18} />
+                      )}
+                    </div>
+                    <Textarea
+                      minRows={3}
+                      value={
+                        selectedSummary === enhancedSummaries.innovative
+                          ? selectedSummary
+                          : enhancedSummaries.innovative
+                      }
+                      onChange={(e) =>
+                        selectedSummary === enhancedSummaries.innovative &&
+                        setSelectedSummary(e.target.value)
+                      }
+                    />
+                  </div>
+
+                  {/* Technical */}
+                  <div
+                    className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                      selectedSummary === enhancedSummaries.technical
+                        ? "border-primary bg-primary-50 dark:bg-primary-900/20"
+                        : "border-default-200 hover:border-default-300"
+                    }`}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() =>
+                      setSelectedSummary(enhancedSummaries.technical)
+                    }
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setSelectedSummary(enhancedSummaries.technical);
+                      }
+                    }}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <h4 className="font-semibold">{t("technicalStyle")}</h4>
+                      {selectedSummary === enhancedSummaries.technical && (
+                        <CheckCircle className="text-primary" size={18} />
+                      )}
+                    </div>
+                    <Textarea
+                      minRows={3}
+                      value={
+                        selectedSummary === enhancedSummaries.technical
+                          ? selectedSummary
+                          : enhancedSummaries.technical
+                      }
+                      onChange={(e) =>
+                        selectedSummary === enhancedSummaries.technical &&
+                        setSelectedSummary(e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="light" onPress={onSummaryModalClose}>
+              {t("cancel")}
+            </Button>
+            <Button
+              color="primary"
+              onPress={() => {
+                setResumeData({ ...resumeData, summary: selectedSummary });
+                onSummaryModalClose();
+                addToast({
+                  title: t("summaryUpdated"),
+                  color: "success",
+                });
+              }}
+            >
+              {t("apply")}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Skill Optimization Modal */}
+      <Modal
+        isOpen={isSkillModalOpen}
+        scrollBehavior="inside"
+        size="4xl"
+        onClose={onSkillModalClose}
+      >
+        <ModalContent>
+          <ModalHeader>
+            <span>{t("optimizedSkillGroups")}</span>
+          </ModalHeader>
+          <ModalBody>
+            {skillOptimization && (
+              <div className="space-y-6">
+                {/* Stats */}
+                <div className="flex gap-4 p-4 bg-default-100 rounded-lg">
+                  <div className="flex-1 text-center">
+                    <div className="text-2xl font-bold text-success">
+                      +{skillOptimization.changesCount.added}
+                    </div>
+                    <div className="text-xs text-default-600">
+                      {t("skillsAdded")}
+                    </div>
+                  </div>
+                  <div className="flex-1 text-center">
+                    <div className="text-2xl font-bold text-danger">
+                      -{skillOptimization.changesCount.removed}
+                    </div>
+                    <div className="text-xs text-default-600">
+                      {t("skillsRemoved")}
+                    </div>
+                  </div>
+                  <div className="flex-1 text-center">
+                    <div className="text-2xl font-bold text-primary">
+                      {skillOptimization.changesCount.reorganized}
+                    </div>
+                    <div className="text-xs text-default-600">
+                      {t("skillsReorganized")}
+                    </div>
+                  </div>
+                </div>
+
+                {/* AI Reasoning */}
+                {skillOptimization.reasoning && (
+                  <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <h4 className="font-semibold mb-2 text-sm flex items-center gap-2">
+                      <Sparkles size={16} className="text-blue-600" />
+                      {t("aiReasoning")}
+                    </h4>
+                    <p className="text-sm text-default-700">
+                      {skillOptimization.reasoning}
+                    </p>
+                  </div>
+                )}
+
+                {/* Optimized Groups Preview */}
+                <div>
+                  <h4 className="font-semibold mb-3">
+                    {t("optimizedGroupsPreview")}
+                  </h4>
+                  <div className="space-y-3">
+                    {skillOptimization.optimizedGroups.map((group, index) => (
+                      <Card key={index} className="border border-default-200">
+                        <CardBody className="p-4">
+                          <div className="font-semibold text-sm mb-2 text-primary">
+                            {group.groupName}
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {group.skills.map((skill, skillIndex) => (
+                              <Chip
+                                key={skillIndex}
+                                color="primary"
+                                size="sm"
+                                variant="flat"
+                              >
+                                {skill}
+                              </Chip>
+                            ))}
+                          </div>
+                        </CardBody>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Warning */}
+                <div className="p-4 bg-warning-50 dark:bg-warning-900/20 rounded-lg border border-warning-200 dark:border-warning-800">
+                  <p className="text-sm text-warning-700 dark:text-warning-300">
+                    ⚠️ {t("applyOptimizationWarning")}
+                  </p>
+                </div>
+              </div>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="light" onPress={onSkillModalClose}>
+              {t("cancel")}
+            </Button>
+            <Button
+              color="primary"
+              onPress={() => {
+                if (skillOptimization) {
+                  setResumeData({
+                    ...resumeData,
+                    keySkills: skillOptimization.optimizedGroups,
+                  });
+                  onSkillModalClose();
+                  addToast({
+                    title: t("skillGroupsUpdated"),
+                    color: "success",
+                  });
+                }
+              }}
+            >
+              {t("applyToResume")}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
       {/* Preview Modal */}
       <ResumePreviewModal

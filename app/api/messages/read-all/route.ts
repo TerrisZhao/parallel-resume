@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { eq, and } from "drizzle-orm";
+
 import { authOptions } from "@/lib/auth/config";
 import { db } from "@/lib/db/drizzle";
 import { messages, users } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
 
 export async function PATCH(request: NextRequest) {
   try {
@@ -31,18 +32,16 @@ export async function PATCH(request: NextRequest) {
         readAt: new Date(),
       })
       .where(
-        and(
-          eq(messages.userId, currentUser[0].id),
-          eq(messages.isRead, false)
-        )
+        and(eq(messages.userId, currentUser[0].id), eq(messages.isRead, false)),
       );
 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to mark all messages as read:", error);
+
     return NextResponse.json(
       { error: "标记所有消息为已读失败" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

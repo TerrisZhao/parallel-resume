@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
-import { cookies } from "next/headers";
 
 import { db } from "@/lib/db/drizzle";
 import { subscriptionPlans } from "@/lib/db/schema";
@@ -13,12 +12,14 @@ export const dynamic = "force-dynamic";
 function getUserLocale(request: NextRequest): "en" | "zh" {
   // 优先从 cookie 获取
   const cookieLocale = request.cookies.get("NEXT_LOCALE")?.value;
+
   if (cookieLocale === "en" || cookieLocale === "zh") {
     return cookieLocale;
   }
 
   // 从 Accept-Language header 检测
   const acceptLanguage = request.headers.get("accept-language");
+
   if (acceptLanguage?.includes("zh")) {
     return "zh";
   }

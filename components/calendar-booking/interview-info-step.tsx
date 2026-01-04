@@ -117,7 +117,9 @@ export default function InterviewInfoStep({
           <Select
             label={t("relatedResume")}
             placeholder={t("selectResume")}
-            selectedKeys={formData.resumeId ? [formData.resumeId.toString()] : []}
+            selectedKeys={
+              formData.resumeId ? [formData.resumeId.toString()] : []
+            }
             onSelectionChange={(keys) => {
               const value = Array.from(keys)[0] as string;
 

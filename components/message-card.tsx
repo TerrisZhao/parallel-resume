@@ -13,7 +13,12 @@ export type MessageCardProps = React.HTMLAttributes<HTMLDivElement> & {
   showFeedback?: boolean;
   message?: React.ReactNode;
   title?: string;
-  type?: "system" | "notification" | "announcement" | "credits" | "subscription";
+  type?:
+    | "system"
+    | "notification"
+    | "announcement"
+    | "credits"
+    | "subscription";
   status?: "success" | "failed" | "unread" | "read";
   messageClassName?: string;
   onMessageCopy?: (content: string | string[]) => void;
@@ -46,7 +51,9 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
     const { copied, copy } = useClipboard();
 
     const failedMessageClassName =
-      status === "failed" ? "bg-danger-100/50 border border-danger-100 text-foreground" : "";
+      status === "failed"
+        ? "bg-danger-100/50 border border-danger-100 text-foreground"
+        : "";
 
     const hasFailed = status === "failed";
     const isUnread = status === "unread";
@@ -73,7 +80,9 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
       } else if (Array.isArray(message)) {
         message.forEach((child) => {
           const childString =
-            typeof child === "string" ? child : (child as any)?.props?.children?.toString();
+            typeof child === "string"
+              ? child
+              : (child as any)?.props?.children?.toString();
 
           if (childString) {
             stringValue += childString + "\n";
@@ -105,9 +114,16 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
             color={isUnread ? "primary" : "default"}
             content={
               isUnread ? (
-                <Icon className="text-background" icon="solar:bell-bold" width={12} />
+                <Icon
+                  className="text-background"
+                  icon="solar:bell-bold"
+                  width={12}
+                />
               ) : hasFailed ? (
-                <Icon className="text-background" icon="gravity-ui:circle-exclamation-fill" />
+                <Icon
+                  className="text-background"
+                  icon="gravity-ui:circle-exclamation-fill"
+                />
               ) : null
             }
             isInvisible={!isUnread && !hasFailed}
@@ -121,7 +137,12 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
           {/* 消息标题 */}
           {title && (
             <div className="flex items-center justify-between">
-              <h4 className={clsx("text-small font-semibold", isUnread && "text-foreground")}>
+              <h4
+                className={clsx(
+                  "text-small font-semibold",
+                  isUnread && "text-foreground",
+                )}
+              >
                 {title}
               </h4>
               {createdAt && (
@@ -145,11 +166,23 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
             </div>
             {showFeedback && !hasFailed && (
               <div className="bg-content2 shadow-small absolute top-2 right-2 flex rounded-full">
-                <Button isIconOnly radius="full" size="sm" variant="light" onPress={handleCopy}>
+                <Button
+                  isIconOnly
+                  radius="full"
+                  size="sm"
+                  variant="light"
+                  onPress={handleCopy}
+                >
                   {copied ? (
-                    <Icon className="text-default-600 text-lg" icon="gravity-ui:check" />
+                    <Icon
+                      className="text-default-600 text-lg"
+                      icon="gravity-ui:check"
+                    />
                   ) : (
-                    <Icon className="text-default-600 text-lg" icon="gravity-ui:copy" />
+                    <Icon
+                      className="text-default-600 text-lg"
+                      icon="gravity-ui:copy"
+                    />
                   )}
                 </Button>
                 <Button
@@ -160,9 +193,15 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
                   onPress={() => handleFeedback(true)}
                 >
                   {feedback === "like" ? (
-                    <Icon className="text-default-600 text-lg" icon="gravity-ui:thumbs-up-fill" />
+                    <Icon
+                      className="text-default-600 text-lg"
+                      icon="gravity-ui:thumbs-up-fill"
+                    />
                   ) : (
-                    <Icon className="text-default-600 text-lg" icon="gravity-ui:thumbs-up" />
+                    <Icon
+                      className="text-default-600 text-lg"
+                      icon="gravity-ui:thumbs-up"
+                    />
                   )}
                 </Button>
                 <Button
@@ -173,9 +212,15 @@ const MessageCard = React.forwardRef<HTMLDivElement, MessageCardProps>(
                   onPress={() => handleFeedback(false)}
                 >
                   {feedback === "dislike" ? (
-                    <Icon className="text-default-600 text-lg" icon="gravity-ui:thumbs-down-fill" />
+                    <Icon
+                      className="text-default-600 text-lg"
+                      icon="gravity-ui:thumbs-down-fill"
+                    />
                   ) : (
-                    <Icon className="text-default-600 text-lg" icon="gravity-ui:thumbs-down" />
+                    <Icon
+                      className="text-default-600 text-lg"
+                      icon="gravity-ui:thumbs-down"
+                    />
                   )}
                 </Button>
               </div>

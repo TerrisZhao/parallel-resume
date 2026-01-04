@@ -23,6 +23,7 @@ import {
 } from "@heroui/modal";
 import { Input } from "@heroui/input";
 import { Switch } from "@heroui/switch";
+
 import { Loading } from "@/components/loading";
 
 interface SubscriptionPlan {
@@ -44,7 +45,9 @@ export default function SubscriptionsPage() {
   const t = useTranslations("admin");
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(
+    null,
+  );
   const [showEditModal, setShowEditModal] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
@@ -60,10 +63,12 @@ export default function SubscriptionsPage() {
     try {
       setLoading(true);
       const response = await fetch("/api/admin/subscriptions");
+
       if (!response.ok) {
         throw new Error("Failed to fetch subscription plans");
       }
       const data = await response.json();
+
       setPlans(data.plans);
     } catch (error) {
       console.error("Failed to fetch plans:", error);
@@ -96,30 +101,36 @@ export default function SubscriptionsPage() {
     if (!selectedPlan) return;
 
     const price = parseFloat(editPrice);
+
     if (isNaN(price) || price < 0) {
       addToast({
         title: t("invalidPrice"),
         color: "danger",
       });
+
       return;
     }
 
     try {
       setActionLoading(true);
-      const response = await fetch(`/api/admin/subscriptions/${selectedPlan.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nameEn: editNameEn,
-          nameZh: editNameZh,
-          priceId: editPriceId,
-          price,
-          interval: editInterval,
-        }),
-      });
+      const response = await fetch(
+        `/api/admin/subscriptions/${selectedPlan.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            nameEn: editNameEn,
+            nameZh: editNameZh,
+            priceId: editPriceId,
+            price,
+            interval: editInterval,
+          }),
+        },
+      );
 
       if (!response.ok) {
         const error = await response.json();
+
         throw new Error(error.error || "Failed to update plan");
       }
 
@@ -144,14 +155,18 @@ export default function SubscriptionsPage() {
   // 切换激活状态
   const handleToggleActive = async (plan: SubscriptionPlan) => {
     try {
-      const response = await fetch(`/api/admin/subscriptions/${plan.id}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isActive: !plan.isActive }),
-      });
+      const response = await fetch(
+        `/api/admin/subscriptions/${plan.id}/status`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ isActive: !plan.isActive }),
+        },
+      );
 
       if (!response.ok) {
         const error = await response.json();
+
         throw new Error(error.error || "Failed to update status");
       }
 
@@ -173,14 +188,18 @@ export default function SubscriptionsPage() {
   // 切换 Most Popular
   const handleToggleMostPopular = async (plan: SubscriptionPlan) => {
     try {
-      const response = await fetch(`/api/admin/subscriptions/${plan.id}/popular`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isMostPopular: !plan.isMostPopular }),
-      });
+      const response = await fetch(
+        `/api/admin/subscriptions/${plan.id}/popular`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ isMostPopular: !plan.isMostPopular }),
+        },
+      );
 
       if (!response.ok) {
         const error = await response.json();
+
         throw new Error(error.error || "Failed to update most popular");
       }
 
@@ -243,17 +262,17 @@ export default function SubscriptionsPage() {
           return (
             <Switch
               isSelected={plan.isActive}
-              onValueChange={() => handleToggleActive(plan)}
               size="sm"
+              onValueChange={() => handleToggleActive(plan)}
             />
           );
         case "mostPopular":
           return (
             <Switch
-              isSelected={plan.isMostPopular}
-              onValueChange={() => handleToggleMostPopular(plan)}
-              size="sm"
               color="warning"
+              isSelected={plan.isMostPopular}
+              size="sm"
+              onValueChange={() => handleToggleMostPopular(plan)}
             />
           );
         case "actions":
@@ -265,9 +284,9 @@ export default function SubscriptionsPage() {
               onPress={() => handleEdit(plan)}
             >
               <Icon
+                className="text-default-500"
                 icon="solar:pen-bold-duotone"
                 width={20}
-                className="text-default-500"
               />
             </Button>
           );
@@ -275,7 +294,7 @@ export default function SubscriptionsPage() {
           return null;
       }
     },
-    [t]
+    [t],
   );
 
   const columns = [
@@ -302,10 +321,10 @@ export default function SubscriptionsPage() {
           </div>
           <Button
             color="primary"
-            variant="light"
-            startContent={<Icon icon="solar:refresh-bold-duotone" width={20} />}
-            onPress={fetchPlans}
             isLoading={loading}
+            startContent={<Icon icon="solar:refresh-bold-duotone" width={20} />}
+            variant="light"
+            onPress={fetchPlans}
           >
             {t("refresh")}
           </Button>
@@ -346,39 +365,43 @@ export default function SubscriptionsPage() {
             <div className="flex flex-col gap-4">
               <Input
                 label={t("planNameEn")}
+                placeholder="Pro Plan"
                 value={editNameEn}
                 onChange={(e) => setEditNameEn(e.target.value)}
-                placeholder="Pro Plan"
               />
               <Input
                 label={t("planNameZh")}
+                placeholder="专业版"
                 value={editNameZh}
                 onChange={(e) => setEditNameZh(e.target.value)}
-                placeholder="专业版"
               />
               <Input
+                description={t("priceIdDescription")}
                 label={t("priceId")}
                 value={editPriceId}
                 onChange={(e) => setEditPriceId(e.target.value)}
-                description={t("priceIdDescription")}
               />
               <Input
-                type="number"
                 label={t("price")}
+                startContent={<span className="text-default-400">$</span>}
+                type="number"
                 value={editPrice}
                 onChange={(e) => setEditPrice(e.target.value)}
-                startContent={<span className="text-default-400">$</span>}
               />
               <div className="flex gap-2">
                 <Button
-                  className={editInterval === "month" ? "bg-primary text-white" : ""}
+                  className={
+                    editInterval === "month" ? "bg-primary text-white" : ""
+                  }
                   variant={editInterval === "month" ? "solid" : "bordered"}
                   onPress={() => setEditInterval("month")}
                 >
                   {t("monthly")}
                 </Button>
                 <Button
-                  className={editInterval === "year" ? "bg-primary text-white" : ""}
+                  className={
+                    editInterval === "year" ? "bg-primary text-white" : ""
+                  }
                   variant={editInterval === "year" ? "solid" : "bordered"}
                   onPress={() => setEditInterval("year")}
                 >
@@ -389,16 +412,16 @@ export default function SubscriptionsPage() {
           </ModalBody>
           <ModalFooter>
             <Button
+              isDisabled={actionLoading}
               variant="light"
               onPress={() => setShowEditModal(false)}
-              isDisabled={actionLoading}
             >
               {t("cancel")}
             </Button>
             <Button
               color="primary"
-              onPress={handleSaveEdit}
               isLoading={actionLoading}
+              onPress={handleSaveEdit}
             >
               {t("confirm")}
             </Button>

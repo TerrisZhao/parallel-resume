@@ -5,8 +5,6 @@ import { useTranslations } from "next-intl";
 
 import { usePageHeader } from "../use-page-header";
 
-import { title } from "@/components/primitives";
-
 export default function HelpPage() {
   const t = useTranslations("help");
   const { setHeader } = usePageHeader();

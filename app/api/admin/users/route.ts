@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { isNull, eq, desc } from "drizzle-orm";
+
 import { authOptions } from "@/lib/auth/config";
 import { db } from "@/lib/db/drizzle";
 import { users, creditTransactions } from "@/lib/db/schema";
-import { isNull, eq, desc } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
   try {
     // 验证用户是否为 owner
     const session = await getServerSession(authOptions);
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: "未授权访问" }, { status: 401 });
     }
@@ -42,7 +44,7 @@ export async function GET(request: NextRequest) {
 
     // 为每个用户获取积分余额
     const usersWithCredits = await Promise.all(
-      allUsers.map(async (user: typeof allUsers[number]) => {
+      allUsers.map(async (user: (typeof allUsers)[number]) => {
         // 获取该用户最新的积分交易记录
         const latestTransaction = await db
           .select({ balanceAfter: creditTransactions.balanceAfter })
@@ -57,15 +59,13 @@ export async function GET(request: NextRequest) {
           ...user,
           credits,
         };
-      })
+      }),
     );
 
     return NextResponse.json({ users: usersWithCredits });
   } catch (error) {
     console.error("Failed to fetch users:", error);
-    return NextResponse.json(
-      { error: "获取用户列表失败" },
-      { status: 500 }
-    );
+
+    return NextResponse.json({ error: "获取用户列表失败" }, { status: 500 });
   }
 }

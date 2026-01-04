@@ -6,8 +6,9 @@ import { Button } from "@heroui/button";
 import { Spinner } from "@heroui/spinner";
 import { Icon } from "@iconify/react";
 
-import MessageCard from "@/components/message-card";
 import { PageHeaderContext } from "../page-header-context";
+
+import MessageCard from "@/components/message-card";
 
 interface Message {
   id: number;
@@ -41,14 +42,14 @@ export default function MessagesPage() {
         </div>
         <Button
           color="primary"
+          isLoading={markingAllRead}
           startContent={<Icon icon="solar:check-read-bold" width={20} />}
           variant="flat"
-          isLoading={markingAllRead}
           onPress={handleMarkAllRead}
         >
           {t("markAllRead")}
         </Button>
-      </div>
+      </div>,
     );
   }, [setHeader, t, markingAllRead]);
 
@@ -87,8 +88,8 @@ export default function MessagesPage() {
           prev.map((msg) =>
             msg.id === messageId
               ? { ...msg, isRead: true, readAt: new Date().toISOString() }
-              : msg
-          )
+              : msg,
+          ),
         );
         // 刷新未读消息数量
         if (refreshUnreadCount) {
@@ -128,7 +129,7 @@ export default function MessagesPage() {
             ...msg,
             isRead: true,
             readAt: msg.readAt || new Date().toISOString(),
-          }))
+          })),
         );
         // 刷新未读消息数量
         if (refreshUnreadCount) {
@@ -168,16 +169,16 @@ export default function MessagesPage() {
       {messages.map((msg) => (
         <div
           key={msg.id}
-          onClick={() => handleMessageClick(msg)}
           className={`relative ${msg.metadata?.link ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}`}
+          onClick={() => handleMessageClick(msg)}
         >
           <MessageCard
-            title={msg.title}
-            message={msg.content}
-            type={msg.type}
-            status={msg.isRead ? "read" : "unread"}
             createdAt={msg.createdAt}
+            message={msg.content}
             showFeedback={false}
+            status={msg.isRead ? "read" : "unread"}
+            title={msg.title}
+            type={msg.type}
           />
           {msg.metadata?.link && (
             <div className="absolute bottom-3 right-3">

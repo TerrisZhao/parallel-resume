@@ -230,6 +230,7 @@ export async function initializeUserCredits(userId: number): Promise<void> {
 
       // 记录赠送交易
       let transactionId: number | undefined;
+
       if (freeCredits > 0) {
         const transaction = await tx
           .insert(creditTransactions)
@@ -241,6 +242,7 @@ export async function initializeUserCredits(userId: number): Promise<void> {
             balanceAfter: freeCredits,
           })
           .returning({ id: creditTransactions.id });
+
         transactionId = transaction[0]?.id;
       }
 

@@ -2,8 +2,7 @@ import { ScrollShadow } from "@heroui/scroll-shadow";
 import { useMemo } from "react";
 
 import CalendarTime from "./calendar-time";
-
-import {DurationEnum, type TimeSlot, TimeFormatEnum} from "./calendar";
+import { DurationEnum, type TimeSlot, TimeFormatEnum } from "./calendar";
 
 interface CalendarTimeSelectProps {
   duration: DurationEnum;
@@ -20,13 +19,16 @@ export default function CalendarTimeSelect({
   onTimeChange,
   onConfirm,
 }: CalendarTimeSelectProps) {
-
   const timeSlots = useMemo(() => {
     const slots: TimeSlot[] = [];
     const totalMinutesInDay = 24 * 60;
     const intervalMinutes = duration === DurationEnum.FifteenMinutes ? 15 : 30;
 
-    for (let minutes = 0; minutes < totalMinutesInDay; minutes += intervalMinutes) {
+    for (
+      let minutes = 0;
+      minutes < totalMinutesInDay;
+      minutes += intervalMinutes
+    ) {
       const hours = Math.floor(minutes / 60);
       const mins = minutes % 60;
 

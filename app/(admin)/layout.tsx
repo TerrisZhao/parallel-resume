@@ -2,7 +2,7 @@
 
 import type { SidebarItem } from "@/components/sidebar";
 
-import { useEffect, useState, ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
@@ -13,7 +13,6 @@ import { Spacer } from "@heroui/spacer";
 import { Icon } from "@iconify/react";
 
 import { Logo } from "@/components/logo";
-import { title } from "@/components/primitives";
 
 const Sidebar = dynamic(() => import("@/components/sidebar"), {
   ssr: false,
@@ -34,7 +33,10 @@ export default function AdminLayout({
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/sign-in");
-    } else if (status === "authenticated" && (session?.user as any)?.role !== "owner") {
+    } else if (
+      status === "authenticated" &&
+      (session?.user as any)?.role !== "owner"
+    ) {
       // 非 owner 用户重定向到首页
       router.push("/resume");
     }
@@ -76,14 +78,17 @@ export default function AdminLayout({
   }
 
   // 如果未认证或非 owner，不渲染内容
-  if (status === "unauthenticated" || (session?.user as any)?.role !== "owner") {
+  if (
+    status === "unauthenticated" ||
+    (session?.user as any)?.role !== "owner"
+  ) {
     return null;
   }
 
   return (
-      <div className=" h-screen bg-gradient-to-br from-rose-400 via-fuchsia-500/50 to-indigo-500 dark:from-rose-400 dark:via-fuchsia-500/50 dark:to-indigo-500 p-3">
-        <div className="flex h-full rounded-3xl overflow-hidden">
-          <aside className="relative flex h-full w-72 flex-shrink-0 flex-col border-r border-divider p-6 bg-background/95 dark:bg-background/80 backdrop-blur-lg backdrop-saturate-150">
+    <div className=" h-screen bg-gradient-to-br from-rose-400 via-fuchsia-500/50 to-indigo-500 dark:from-rose-400 dark:via-fuchsia-500/50 dark:to-indigo-500 p-3">
+      <div className="flex h-full rounded-3xl overflow-hidden">
+        <aside className="relative flex h-full w-72 flex-shrink-0 flex-col border-r border-divider p-6 bg-background/95 dark:bg-background/80 backdrop-blur-lg backdrop-saturate-150">
           {/* Logo and Title */}
           <div
             className="flex cursor-pointer items-center gap-2 px-2 transition-opacity hover:opacity-80"

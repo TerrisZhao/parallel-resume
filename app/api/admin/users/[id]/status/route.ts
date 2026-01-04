@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { eq, and, isNull } from "drizzle-orm";
+import { z } from "zod";
+
 import { authOptions } from "@/lib/auth/config";
 import { db } from "@/lib/db/drizzle";
 import { users } from "@/lib/db/schema";
-import { eq, and, isNull } from "drizzle-orm";
-import { z } from "zod";
 
 const updateStatusSchema = z.object({
   isActive: z.boolean(),
@@ -12,11 +13,12 @@ const updateStatusSchema = z.object({
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // 验证用户是否为 owner
     const session = await getServerSession(authOptions);
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: "未授权访问" }, { status: 401 });
     }
@@ -33,6 +35,7 @@ export async function PATCH(
 
     const { id } = await params;
     const userId = parseInt(id);
+
     if (isNaN(userId)) {
       return NextResponse.json({ error: "无效的用户ID" }, { status: 400 });
     }
@@ -56,7 +59,7 @@ export async function PATCH(
     if (userId === parseInt(session.user.id)) {
       return NextResponse.json(
         { error: "不能修改自己的状态" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -88,10 +91,11 @@ export async function PATCH(
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "数据验证失败", details: error.issues },
-        { status: 400 }
+        { status: 400 },
       );
     }
     console.error("Failed to update user status:", error);
+
     return NextResponse.json({ error: "更新状态失败" }, { status: 500 });
   }
 }

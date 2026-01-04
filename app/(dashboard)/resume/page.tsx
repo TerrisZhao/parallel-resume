@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@heroui/button";
-import { Card, CardBody, CardFooter } from "@heroui/card";
+import { Card, CardFooter } from "@heroui/card";
 import { Image } from "@heroui/image";
 import { Input } from "@heroui/input";
 import {
@@ -15,16 +15,15 @@ import {
   useDisclosure,
 } from "@heroui/modal";
 import { Checkbox } from "@heroui/checkbox";
-import { Plus, Edit, Copy, Trash2, FileText, Calendar } from "lucide-react";
+import { Plus, Edit, Copy, Trash2, Calendar } from "lucide-react";
 import { addToast } from "@heroui/toast";
 import { useTranslations, useLocale } from "next-intl";
+import { Icon } from "@iconify/react";
 
 import { usePageHeader } from "../use-page-header";
 
-import { title } from "@/components/primitives";
 import { ResumePreviewModal } from "@/components/resume-preview-modal";
-import {Icon} from "@iconify/react";
-import {Loading} from "@/components/loading";
+import { Loading } from "@/components/loading";
 
 interface Resume {
   id: number;
@@ -479,7 +478,11 @@ export default function ResumeListPage() {
     <div className="max-w-7xl mx-auto h-full">
       {resumes.length === 0 ? (
         <div className="flex h-full flex-col items-center justify-center gap-4">
-          <Icon className="text-default-300" icon={"solar:documents-bold-duotone"} width={120} />
+          <Icon
+            className="text-default-300"
+            icon={"solar:documents-bold-duotone"}
+            width={120}
+          />
           <div className="text-center">
             <h3 className="text-xl font-semibold mb-2">{t("noResumes")}</h3>
             <p className="text-default-500">{t("noResumesDescription")}</p>
@@ -505,8 +508,8 @@ export default function ResumeListPage() {
                 key={resume.id}
                 isFooterBlurred
                 className="border-none relative"
-                shadow={"sm"}
                 radius="lg"
+                shadow={"sm"}
               >
                 <div className="absolute top-2 left-2 z-20">
                   <Checkbox

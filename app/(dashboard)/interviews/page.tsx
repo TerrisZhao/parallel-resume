@@ -13,8 +13,6 @@ import {
   ModalFooter,
   useDisclosure,
 } from "@heroui/modal";
-import { Input, Textarea } from "@heroui/input";
-import { Select, SelectItem } from "@heroui/select";
 import { addToast } from "@heroui/toast";
 import {
   Plus,
@@ -24,14 +22,13 @@ import {
   Calendar,
   FileText,
   Edit,
-  Trash2, FileVideoCamera,
+  Trash2,
 } from "lucide-react";
+import { Icon } from "@iconify/react";
 
 import { usePageHeader } from "../use-page-header";
 
-import { title } from "@/components/primitives";
-import {Icon} from "@iconify/react";
-import {Loading} from "@/components/loading";
+import { Loading } from "@/components/loading";
 import InterviewWizard from "@/components/calendar-booking/interview-wizard";
 
 interface Interview {
@@ -103,15 +100,18 @@ export default function InterviewsPage() {
   );
 
   // Wizard initial data for editing
-  const [wizardInitialData, setWizardInitialData] = useState<Partial<{
-    company: string;
-    type: "online" | "offline" | "phone" | "other";
-    location: string;
-    videoLink: string;
-    resumeId: number;
-    stage: string;
-    notes: string;
-  }> | undefined>(undefined);
+  const [wizardInitialData, setWizardInitialData] = useState<
+    | Partial<{
+        company: string;
+        type: "online" | "offline" | "phone" | "other";
+        location: string;
+        videoLink: string;
+        resumeId: number;
+        stage: string;
+        notes: string;
+      }>
+    | undefined
+  >(undefined);
 
   // Set page header
   useEffect(() => {
@@ -378,7 +378,11 @@ export default function InterviewsPage() {
     <div className="flex flex-col h-full">
       {interviews.length === 0 ? (
         <div className="flex h-full flex-col items-center justify-center gap-4">
-          <Icon className="text-default-300" icon={"solar:case-round-bold-duotone"} width={120} />
+          <Icon
+            className="text-default-300"
+            icon={"solar:case-round-bold-duotone"}
+            width={120}
+          />
           <div className="text-center">
             <h3 className="text-xl font-semibold mb-2">{t("noInterviews")}</h3>
             <p className="text-default-500">{t("noInterviewsDescription")}</p>
@@ -480,18 +484,18 @@ export default function InterviewsPage() {
       {/* Add/Edit Interview Modal with Wizard */}
       <Modal
         isOpen={isOpen}
+        scrollBehavior="inside"
         size="3xl"
         onOpenChange={onClose}
-        scrollBehavior="inside"
       >
         <ModalContent>
           {(onClose) => (
             <ModalBody className="p-6">
               <InterviewWizard
-                resumes={resumes}
                 initialData={wizardInitialData}
-                onSubmit={handleWizardSubmit}
+                resumes={resumes}
                 onCancel={onClose}
+                onSubmit={handleWizardSubmit}
               />
             </ModalBody>
           )}

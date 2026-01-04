@@ -67,7 +67,7 @@ export default function Home() {
         </MotionDiv>
 
         {/* 新用户推广 */}
-        <MotionDiv variants={itemVariants} className="w-full max-w-md">
+        <MotionDiv className="w-full max-w-md" variants={itemVariants}>
           <Card className="bg-gradient-to-r from-primary-500 to-secondary-500 border-none shadow-lg">
             <CardBody className="flex flex-row items-center gap-3 p-4">
               <div className="flex-shrink-0">
@@ -77,9 +77,7 @@ export default function Home() {
                 <p className="text-white font-semibold text-sm">
                   {t("promoTitle")}
                 </p>
-                <p className="text-white/90 text-xs">
-                  {t("promoDescription")}
-                </p>
+                <p className="text-white/90 text-xs">{t("promoDescription")}</p>
               </div>
             </CardBody>
           </Card>

@@ -5,15 +5,17 @@ export enum DurationEnum {
 }
 
 export const durations = [
-  {key: DurationEnum.FifteenMinutes, label: "15m"},
-  {key: DurationEnum.ThirtyMinutes, label: "30m"},
+  { key: DurationEnum.FifteenMinutes, label: "15m" },
+  { key: DurationEnum.ThirtyMinutes, label: "30m" },
 ];
 
 // sample time zone options
-export const timeZoneOptions = Intl.supportedValuesOf("timeZone").map((timeZone) => ({
-  label: timeZone,
-  value: timeZone,
-}));
+export const timeZoneOptions = Intl.supportedValuesOf("timeZone").map(
+  (timeZone) => ({
+    label: timeZone,
+    value: timeZone,
+  }),
+);
 
 export enum TimeFormatEnum {
   TwelveHour = "12h",
@@ -21,8 +23,8 @@ export enum TimeFormatEnum {
 }
 
 export const timeFormats = [
-  {key: TimeFormatEnum.TwelveHour, label: "12h"},
-  {key: TimeFormatEnum.TwentyFourHour, label: "24h"},
+  { key: TimeFormatEnum.TwelveHour, label: "12h" },
+  { key: TimeFormatEnum.TwentyFourHour, label: "24h" },
 ];
 
 export interface TimeSlot {

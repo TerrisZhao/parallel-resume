@@ -1,17 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { eq, ne } from "drizzle-orm";
+
 import { authOptions } from "@/lib/auth/config";
 import { db } from "@/lib/db/drizzle";
 import { users, subscriptionPlans } from "@/lib/db/schema";
-import { eq, ne } from "drizzle-orm";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // 验证用户是否为 owner
     const session = await getServerSession(authOptions);
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: "未授权访问" }, { status: 401 });
     }
@@ -58,9 +60,10 @@ export async function PATCH(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to update most popular status:", error);
+
     return NextResponse.json(
       { error: "更新最受欢迎状态失败" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

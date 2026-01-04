@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { eq, and, count } from "drizzle-orm";
+
 import { authOptions } from "@/lib/auth/config";
 import { db } from "@/lib/db/drizzle";
 import { messages, users } from "@/lib/db/schema";
-import { eq, and, count } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
@@ -30,10 +31,7 @@ export async function GET(request: NextRequest) {
       .select({ count: count() })
       .from(messages)
       .where(
-        and(
-          eq(messages.userId, currentUser[0].id),
-          eq(messages.isRead, false)
-        )
+        and(eq(messages.userId, currentUser[0].id), eq(messages.isRead, false)),
       );
 
     const unreadCount = result[0]?.count || 0;
@@ -41,9 +39,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ unreadCount });
   } catch (error) {
     console.error("Failed to fetch unread count:", error);
+
     return NextResponse.json(
       { error: "获取未读消息数量失败" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

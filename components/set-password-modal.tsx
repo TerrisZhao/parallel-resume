@@ -43,6 +43,7 @@ export function SetPasswordModal({
         title: t("passwordTooShort"),
         color: "danger",
       });
+
       return;
     }
 
@@ -51,6 +52,7 @@ export function SetPasswordModal({
         title: t("passwordMismatch"),
         color: "danger",
       });
+
       return;
     }
 
@@ -104,11 +106,11 @@ export function SetPasswordModal({
   return (
     <Modal
       backdrop="blur"
+      hideCloseButton={false}
+      isDismissable={false}
       isOpen={isOpen}
       size="md"
       onClose={onClose}
-      isDismissable={false}
-      hideCloseButton={false}
     >
       <ModalContent>
         <ModalHeader className="flex flex-col gap-1">

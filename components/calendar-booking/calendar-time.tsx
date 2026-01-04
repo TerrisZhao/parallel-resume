@@ -1,4 +1,4 @@
-import type {TimeSlot} from "./calendar";
+import type { TimeSlot } from "./calendar";
 
 import { Button } from "@heroui/button";
 import { motion } from "framer-motion";
@@ -24,7 +24,7 @@ export default function CalendarTime({
   return (
     <div className="relative flex w-full justify-end gap-2">
       <motion.div
-        animate={{width: isSelected ? "calc(100% - 6.5rem)" : "100%"}}
+        animate={{ width: isSelected ? "calc(100% - 6.5rem)" : "100%" }}
         className="absolute left-0"
         initial={false}
       >
@@ -35,7 +35,10 @@ export default function CalendarTime({
             const index = timeSlots.findIndex((s) => s.value === slot.value);
 
             if (index !== timeSlots.length - 1) {
-              selectedTimeSlotRange.push(timeSlots[index], timeSlots[index + 1]);
+              selectedTimeSlotRange.push(
+                timeSlots[index],
+                timeSlots[index + 1],
+              );
             } else {
               selectedTimeSlotRange.push(timeSlots[index], timeSlots[index]);
             }
@@ -48,7 +51,10 @@ export default function CalendarTime({
         </Button>
       </motion.div>
       <motion.div
-        animate={{width: isSelected ? "6rem" : "0", opacity: isSelected ? 1 : 0}}
+        animate={{
+          width: isSelected ? "6rem" : "0",
+          opacity: isSelected ? 1 : 0,
+        }}
         className="overflow-hidden opacity-0"
         initial={false}
       >
