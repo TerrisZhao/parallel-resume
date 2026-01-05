@@ -1075,6 +1075,23 @@ export default function ResumeEditPage({
 
   // Handle summary enhancement
   const handleEnhanceSummary = async () => {
+    // Check if there's enough content to generate meaningful summaries
+    const hasWorkExp =
+      resumeData.workExperience && resumeData.workExperience.length > 0;
+    const hasProjects = resumeData.projects && resumeData.projects.length > 0;
+    const hasEducation =
+      resumeData.education && resumeData.education.length > 0;
+
+    if (!hasWorkExp && !hasProjects && !hasEducation) {
+      addToast({
+        title: t("needMoreContent"),
+        description: t("fillWorkOrProjectsFirst"),
+        color: "warning",
+      });
+
+      return;
+    }
+
     setIsSummaryEnhancing(true);
     try {
       const response = await fetch("/api/ai/enhance-summary", {
@@ -1110,6 +1127,26 @@ export default function ResumeEditPage({
 
   // Handle skill optimization
   const handleGetSkillSuggestions = async () => {
+    // Check if there are skills to optimize
+    const skillGroups = resumeData.keySkills as SkillGroup[];
+    const hasSkills =
+      skillGroups && skillGroups.length > 0 && skillGroups.some((g) => g.skills.length > 0);
+
+    if (!hasSkills) {
+      addToast({
+        title: t("needSkillsFirst"),
+        description: t("addSomeSkillsFirst"),
+        color: "warning",
+      });
+
+      return;
+    }
+
+    // Check if there's context to optimize (work experience or projects)
+    const hasContext =
+      (resumeData.workExperience && resumeData.workExperience.length > 0) ||
+      (resumeData.projects && resumeData.projects.length > 0);
+
     setIsSkillSuggesting(true);
     try {
       const response = await fetch("/api/ai/skill-suggestions", {
@@ -1120,6 +1157,7 @@ export default function ResumeEditPage({
           workExperiences: resumeData.workExperience,
           projects: resumeData.projects,
           jobDescription: resumeData.jobDescription || undefined,
+          hasContext, // Tell API if we have context
         }),
       });
 

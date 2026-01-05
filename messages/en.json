@@ -380,7 +380,11 @@
     "applyOptimizationWarning": "Applying will replace ALL your current skill groups with the optimized version.",
     "applyToResume": "Apply to Resume",
     "skillGroupsUpdated": "Skill groups updated successfully",
-    "done": "Done"
+    "done": "Done",
+    "needMoreContent": "Need More Content",
+    "fillWorkOrProjectsFirst": "Please fill in work experience, projects, or education before using AI enhancement",
+    "needSkillsFirst": "No Skills to Optimize",
+    "addSomeSkillsFirst": "Please add some skills before using optimization"
   },
   "subscriptionPage": {
     "title": "Pricing & Plans",

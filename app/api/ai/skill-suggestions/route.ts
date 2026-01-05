@@ -21,9 +21,12 @@ const skillSuggestionsSchema = z.object({
   workExperiences: z.array(z.any()).optional(),
   projects: z.array(z.any()).optional(),
   jobDescription: z.string().optional(),
+  hasContext: z.boolean().optional(),
 });
 
-const SKILL_SUGGESTIONS_SYSTEM_PROMPT = `你是一位专业的技术招聘顾问和简历优化专家，擅长技能分类和简历优化。请提供准确、实用且结构良好的技能分组建议。`;
+const SKILL_SUGGESTIONS_SYSTEM_PROMPT = `You are a professional technical recruitment consultant and resume optimization expert, specializing in skill categorization and resume optimization. Provide accurate, practical, and well-structured skill grouping suggestions.
+
+CRITICAL: Detect the language of the user's input content (skill groups, work experience, projects, job description) and generate your response in THE SAME LANGUAGE. If the input is in Chinese, respond in Chinese. If the input is in English, respond in English.`;
 
 function getSkillSuggestionsPrompt(
   currentSkillGroups: Array<{
@@ -33,65 +36,88 @@ function getSkillSuggestionsPrompt(
   workExperiences: any[],
   projects: any[],
   jobDescription?: string,
+  hasContext?: boolean,
 ): string {
-  return `你是一位专业的技术招聘顾问和简历优化专家。请分析以下简历信息，优化技能分组。
+  const hasWorkExp = workExperiences && workExperiences.length > 0;
+  const hasProjects = projects && projects.length > 0;
+  const hasJobDesc = !!jobDescription;
 
-当前技能分组：
+  let optimizationGuidance = "";
+
+  if (hasContext) {
+    if (hasWorkExp && hasProjects) {
+      optimizationGuidance =
+        "Based on technologies mentioned in work experience and project experience, supplement potentially missing skills and optimize grouping structure.";
+    } else if (hasWorkExp) {
+      optimizationGuidance = "Based on responsibilities and requirements in work experience, supplement relevant skills.";
+    } else if (hasProjects) {
+      optimizationGuidance =
+        "Based on technology stack in project experience, supplement relevant skills and tools.";
+    }
+  } else {
+    optimizationGuidance =
+      "Since work experience and project context are missing, primarily optimize existing skill grouping structure and naming to be more professional and clear. Do not add too many new skills.";
+  }
+
+  return `You are a professional technical recruitment consultant and resume optimization expert. Analyze the following resume information and optimize skill grouping.
+
+**Current Skill Groups:**
+${currentSkillGroups
+  .map((group) => `【${group.groupName}】${group.skills.join(", ")}`)
+  .join("\n")}
+
+${jobDescription ? `**Target Job Description:**\n${jobDescription}\n\n` : ""}
+
 ${
-  currentSkillGroups.length > 0
-    ? currentSkillGroups
-        .map((group) => `【${group.groupName}】${group.skills.join(", ")}`)
-        .join("\n")
-    : "无"
+  hasWorkExp
+    ? `**Work Experience:**\n${workExperiences
+        .map(
+          (exp: any) => `- ${exp.company} | ${exp.position}
+  Responsibilities: ${exp.responsibilities?.join("; ")}`,
+        )
+        .join("\n")}\n`
+    : ""
 }
 
-${jobDescription ? `目标职位描述：\n${jobDescription}\n\n` : ""}
-
-工作经历：
 ${
-  workExperiences
-    ?.map(
-      (exp: any) => `- ${exp.company} | ${exp.position}
-  职责：${exp.responsibilities?.join("; ")}`,
-    )
-    .join("\n") || "无"
+  hasProjects
+    ? `**Project Experience:**\n${projects
+        .map(
+          (proj: any) => `- ${proj.name}
+  Tech Stack: ${proj.technologies?.join(", ")}
+  Description: ${proj.description}`,
+        )
+        .join("\n")}\n`
+    : ""
 }
 
-项目经验：
-${
-  projects
-    ?.map(
-      (proj: any) => `- ${proj.name}
-  技术栈：${proj.technologies?.join(", ")}
-  描述：${proj.description}`,
-    )
-    .join("\n") || "无"
-}
+**Optimization Guidance:**
+${optimizationGuidance}
 
-请提供优化后的技能分组建议：
+**IMPORTANT: Detect the language of the input content above (skill groups, work experience, projects) and generate your response in THE SAME LANGUAGE. If the content is in Chinese, write group names, reasoning, and all text in Chinese. If in English, write in English.**
 
-**优化原则：**
-1. **合理分组数量**：建议3-5个分组，最多不超过6个
-2. **清晰的分类**：每个分组应该有明确的主题（如：编程语言、框架与库、工具与平台、软技能等）
-3. **技能相关性**：同一分组内的技能应该相关
-4. **补充缺失技能**：基于工作经历和项目经验，添加可能遗漏的重要技能
-5. **职位匹配**：${jobDescription ? "优先突出与目标职位相关的技能" : "突出核心竞争力"}
-6. **去除冗余**：合并相似技能，删除过时或不重要的技能
-7. **优先级排序**：每个分组内的技能按重要性排序，最重要的放在前面
+**Optimization Principles:**
+1. **Reasonable Number of Groups**: Recommend 3-5 groups, maximum 6
+2. **Clear Categorization**: Each group should have a clear theme (e.g., Programming Languages, Frameworks & Libraries, Tools & Platforms, Databases & Storage, Cloud Services & DevOps, Soft Skills)
+3. **Skill Relevance**: Skills within the same group should be related
+${hasContext ? "4. **Supplement Missing Skills**: Based on work experience and projects, add potentially missing skills that were actually used" : "4. **Careful Addition**: Due to lack of context, primarily optimize existing skill organization structure"}
+5. **Job Matching**: ${jobDescription ? "Prioritize skills relevant to target position" : "Highlight core competencies"}
+6. **Remove Redundancy**: Merge similar skills (e.g., merge React and React.js into React), remove outdated skills
+7. **Priority Ordering**: Within each group, order skills by importance and proficiency, core skills first
 
-返回JSON格式（严格按照此格式）：
+**Return JSON Format (strict):**
 {
   "optimizedGroups": [
     {
-      "groupName": "分组名称（简洁明了，3-8个字）",
-      "skills": ["技能1", "技能2", "技能3", ...]
+      "groupName": "Group name (concise, 3-8 characters/words, e.g., Programming Languages, Frontend Frameworks)",
+      "skills": ["Skill 1", "Skill 2", "Skill 3"]
     }
   ],
-  "reasoning": "简要说明优化理由（为什么这样分组、添加了哪些技能、删除或合并了什么）",
+  "reasoning": "Brief explanation: 1. Why grouped this way 2. What skills were added and why 3. What was deleted or merged",
   "changesCount": {
-    "added": 0,
-    "removed": 0,
-    "reorganized": 0
+    "added": number of skills added,
+    "removed": number of skills removed,
+    "reorganized": number of skills reorganized
   }
 }`;
 }
@@ -119,8 +145,13 @@ export async function POST(request: NextRequest) {
     const { config: aiConfig, mode } = aiConfigData;
 
     const body = await request.json();
-    const { currentSkillGroups, workExperiences, projects, jobDescription } =
-      skillSuggestionsSchema.parse(body);
+    const {
+      currentSkillGroups,
+      workExperiences,
+      projects,
+      jobDescription,
+      hasContext,
+    } = skillSuggestionsSchema.parse(body);
 
     const maxTokens = 2000;
     const prompt = getSkillSuggestionsPrompt(
@@ -128,6 +159,7 @@ export async function POST(request: NextRequest) {
       workExperiences || [],
       projects || [],
       jobDescription,
+      hasContext,
     );
 
     // 如果是积分模式，检查积分余额

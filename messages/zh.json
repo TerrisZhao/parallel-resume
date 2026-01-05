@@ -380,6 +380,10 @@
     "applyOptimizationWarning": "应用后将完全替换您当前的所有技能分组。",
     "applyToResume": "应用到简历",
     "skillGroupsUpdated": "技能分组更新成功",
+    "needMoreContent": "需要更多内容",
+    "fillWorkOrProjectsFirst": "请先填写工作经历、项目或教育背景再使用AI增强功能",
+    "needSkillsFirst": "没有技能可优化",
+    "addSomeSkillsFirst": "请先添加一些技能再使用优化功能",
     "done": "完成"
   },
   "subscriptionPage": {

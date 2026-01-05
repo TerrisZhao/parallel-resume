@@ -17,7 +17,9 @@ const enhanceSummarySchema = z.object({
   jobDescription: z.string().optional(),
 });
 
-const ENHANCE_SUMMARY_SYSTEM_PROMPT = `你是一位专业的简历顾问，擅长撰写吸引人的个人简介。请提供简洁有力、突出核心竞争力的专业简介。`;
+const ENHANCE_SUMMARY_SYSTEM_PROMPT = `You are a professional resume consultant specializing in writing compelling personal summaries. Provide concise, powerful professional summaries that highlight core competencies.
+
+CRITICAL: Detect the language of the user's input content (work experience, projects, education, job description) and generate your response in THE SAME LANGUAGE. If the input is in Chinese, respond in Chinese. If the input is in English, respond in English.`;
 
 function getEnhanceSummaryPrompt(
   workExperiences: any[],
@@ -25,42 +27,70 @@ function getEnhanceSummaryPrompt(
   education: any[],
   jobDescription?: string,
 ): string {
-  return `你是一位专业的简历顾问。请基于以下信息，生成3个不同风格的专业个人简介（Summary）。每个简介应该：
-1. 突出核心竞争力和专业技能
-2. 体现工作经验的价值
-3. 简洁有力，3-5句话
-4. 使用第一人称或第三人称（根据简历规范）
+  const hasWorkExp = workExperiences && workExperiences.length > 0;
+  const hasProjects = projects && projects.length > 0;
+  const hasEducation = education && education.length > 0;
+  const hasJobDesc = !!jobDescription;
 
-${jobDescription ? `目标职位描述：\n${jobDescription}\n\n` : ""}
+  let contextGuidance = "";
 
-工作经历：
+  if (hasWorkExp && hasProjects) {
+    contextGuidance = "Highlight achievements from work experience and technical capabilities from project experience.";
+  } else if (hasWorkExp) {
+    contextGuidance = "Emphasize responsibilities and achievements from work experience.";
+  } else if (hasProjects) {
+    contextGuidance = "Focus on technical capabilities and contributions from project experience.";
+  } else if (hasEducation) {
+    contextGuidance =
+      "Since work experience and projects are missing, emphasize educational background and academic abilities, suitable for fresh graduates or career changers.";
+  }
+
+  return `You are a professional resume consultant. Based on the following information, generate 3 different styles of professional personal summaries.
+
+**Summary Requirements:**
+1. Highlight core competencies and professional skills
+2. Concise and powerful, 3-5 sentences
+3. Write from the resume owner's perspective with direct description, without phrases like "I am" - directly state capabilities and experience
+4. ${contextGuidance}
+${hasJobDesc ? "5. Match the target job requirements" : ""}
+
+**IMPORTANT: Detect the language of the input content below and generate summaries in THE SAME LANGUAGE. If the content is in Chinese, write summaries in Chinese. If in English, write in English.**
+
+${jobDescription ? `**Target Job Description:**\n${jobDescription}\n\n` : ""}
+
 ${
-  workExperiences
-    ?.map(
-      (
-        exp: any,
-      ) => `- ${exp.company} | ${exp.position} (${exp.startDate} - ${exp.endDate})
-  ${exp.responsibilities?.join("; ")}`,
-    )
-    .join("\n") || "无"
+  hasWorkExp
+    ? `**Work Experience:**\n${workExperiences
+        .map(
+          (exp: any) =>
+            `- ${exp.company} | ${exp.position} (${exp.startDate} - ${exp.endDate})\n  ${exp.responsibilities?.join("; ")}`,
+        )
+        .join("\n")}\n`
+    : ""
 }
 
-项目经验：
-${projects?.map((proj: any) => `- ${proj.name}: ${proj.description}`).join("\n") || "无"}
+${
+  hasProjects
+    ? `**Project Experience:**\n${projects.map((proj: any) => `- ${proj.name}: ${proj.description}`).join("\n")}\n`
+    : ""
+}
 
-教育背景：
-${education?.map((edu: any) => `- ${edu.degree} in ${edu.major} from ${edu.school}`).join("\n") || "无"}
+${
+  hasEducation
+    ? `**Education:**\n${education.map((edu: any) => `- ${edu.degree} in ${edu.major} from ${edu.school}`).join("\n")}\n`
+    : ""
+}
 
-请生成以下三种风格的个人简介：
-1. **专业型（Professional）**：强调经验和可靠性
-2. **创新型（Innovative）**：强调创新能力和技术前沿
-3. **技术型（Technical）**：强调技术深度和专业技能
+Generate the following three styles of personal summaries:
+1. **Professional**: Emphasize experience and reliability, suitable for traditional industries
+2. **Innovative**: Emphasize innovation and cutting-edge technology, suitable for innovative companies
+3. **Technical**: Emphasize technical depth and professional skills, suitable for technical positions
 
-请以JSON格式返回：
+**Return Format (strict JSON):**
 {
-  "professional": "专业型简介内容",
-  "innovative": "创新型简介内容",
-  "technical": "技术型简介内容"
+  "professional": "Professional style summary content",
+  "innovative": "Innovative style summary content",
+  "technical": "Technical style summary content"
 }`;
 }
 
