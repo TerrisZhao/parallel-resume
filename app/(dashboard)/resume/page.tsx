@@ -6,6 +6,7 @@ import { Button } from "@heroui/button";
 import { Card, CardFooter } from "@heroui/card";
 import { Image } from "@heroui/image";
 import { Input } from "@heroui/input";
+import { Textarea } from "@heroui/input";
 import {
   Modal,
   ModalContent,
@@ -66,7 +67,9 @@ export default function ResumeListPage() {
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [newResumeName, setNewResumeName] = useState("");
+  const [newResumeContent, setNewResumeContent] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const [isParsing, setIsParsing] = useState(false);
   const [selectedResumes, setSelectedResumes] = useState<Set<number>>(
     new Set(),
   );
@@ -161,7 +164,53 @@ export default function ResumeListPage() {
     }
 
     setIsCreating(true);
+
     try {
+      let parsedData = {};
+
+      // If user provided resume content, parse it first
+      if (newResumeContent.trim()) {
+        setIsParsing(true);
+        try {
+          const parseResponse = await fetch("/api/ai/parse-resume", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              content: newResumeContent.trim(),
+            }),
+          });
+
+          const parseResult = await parseResponse.json();
+
+          if (parseResponse.ok && parseResult.success) {
+            parsedData = parseResult.data;
+            addToast({
+              title: t("resumeParsedSuccessfully"),
+              color: "success",
+            });
+          } else {
+            // Parsing failed, but continue with empty data
+            addToast({
+              title: parseResult.error || t("resumeParsingFailed"),
+              description: t("resumeCreatedWithoutParsing"),
+              color: "warning",
+            });
+          }
+        } catch (parseError) {
+          console.error("Error parsing resume:", parseError);
+          addToast({
+            title: t("resumeParsingFailed"),
+            description: t("resumeCreatedWithoutParsing"),
+            color: "warning",
+          });
+        } finally {
+          setIsParsing(false);
+        }
+      }
+
+      // Create resume with parsed data (or empty data if no content provided)
       const response = await fetch("/api/resumes", {
         method: "POST",
         headers: {
@@ -169,7 +218,7 @@ export default function ResumeListPage() {
         },
         body: JSON.stringify({
           name: newResumeName.trim(),
-          data: {},
+          data: parsedData,
         }),
       });
 
@@ -177,23 +226,24 @@ export default function ResumeListPage() {
 
       if (response.ok) {
         addToast({
-          title: "Resume created successfully",
+          title: t("resumeCreatedSuccessfully"),
           color: "success",
         });
         setNewResumeName("");
+        setNewResumeContent("");
         onNewClose();
         // Navigate to edit page
         router.push(`/resume/${data.resume.id}`);
       } else {
         addToast({
-          title: data.error || "Failed to create resume",
+          title: data.error || t("failedToCreateResume"),
           color: "danger",
         });
       }
     } catch (error) {
       console.error("Error creating resume:", error);
       addToast({
-        title: "Failed to create resume",
+        title: t("failedToCreateResume"),
         color: "danger",
       });
     } finally {
@@ -604,21 +654,33 @@ export default function ResumeListPage() {
       )}
 
       {/* New Resume Modal */}
-      <Modal isOpen={isNewOpen} onClose={onNewClose}>
+      <Modal isOpen={isNewOpen} size="2xl" onClose={onNewClose}>
         <ModalContent>
           <ModalHeader>{t("createNewResume")}</ModalHeader>
           <ModalBody>
-            <Input
-              label={t("resumeName")}
-              placeholder={t("resumeNamePlaceholder")}
-              value={newResumeName}
-              onChange={(e) => setNewResumeName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  void handleGetStarted();
-                }
-              }}
-            />
+            <div className="space-y-4">
+              <Input
+                isRequired
+                label={t("resumeName")}
+                placeholder={t("resumeNamePlaceholder")}
+                value={newResumeName}
+                onChange={(e) => setNewResumeName(e.target.value)}
+              />
+              <Textarea
+                description={t("resumeContentDescription")}
+                label={t("resumeContent")}
+                minRows={8}
+                placeholder={t("resumeContentPlaceholder")}
+                value={newResumeContent}
+                onChange={(e) => setNewResumeContent(e.target.value)}
+              />
+              {isParsing && (
+                <div className="text-sm text-primary flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
+                  {t("parsingResumeContent")}
+                </div>
+              )}
+            </div>
           </ModalBody>
           <ModalFooter>
             <Button variant="flat" onPress={onNewClose}>
@@ -626,7 +688,7 @@ export default function ResumeListPage() {
             </Button>
             <Button
               color="primary"
-              isLoading={isCreating}
+              isLoading={isCreating || isParsing}
               onPress={handleGetStarted}
             >
               {tCommon("create")}
