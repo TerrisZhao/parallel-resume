@@ -8,6 +8,13 @@
       "when": 1767434970442,
       "tag": "0000_brown_quentin_quire",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1767611476391,
+      "tag": "0001_abandoned_silhouette",
+      "breakpoints": true
     }
   ]
 }

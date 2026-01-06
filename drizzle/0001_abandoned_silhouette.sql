@@ -1,0 +1,2 @@
+ALTER TABLE "interview_preparation_materials" ADD COLUMN "resume_id" integer;--> statement-breakpoint
+CREATE INDEX "interview_prep_materials_resume_id_idx" ON "interview_preparation_materials" USING btree ("resume_id");

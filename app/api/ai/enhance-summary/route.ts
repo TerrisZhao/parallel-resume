@@ -35,11 +35,14 @@ function getEnhanceSummaryPrompt(
   let contextGuidance = "";
 
   if (hasWorkExp && hasProjects) {
-    contextGuidance = "Highlight achievements from work experience and technical capabilities from project experience.";
+    contextGuidance =
+      "Highlight achievements from work experience and technical capabilities from project experience.";
   } else if (hasWorkExp) {
-    contextGuidance = "Emphasize responsibilities and achievements from work experience.";
+    contextGuidance =
+      "Emphasize responsibilities and achievements from work experience.";
   } else if (hasProjects) {
-    contextGuidance = "Focus on technical capabilities and contributions from project experience.";
+    contextGuidance =
+      "Focus on technical capabilities and contributions from project experience.";
   } else if (hasEducation) {
     contextGuidance =
       "Since work experience and projects are missing, emphasize educational background and academic abilities, suitable for fresh graduates or career changers.";

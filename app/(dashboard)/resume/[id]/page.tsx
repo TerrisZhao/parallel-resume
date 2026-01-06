@@ -1130,7 +1130,9 @@ export default function ResumeEditPage({
     // Check if there are skills to optimize
     const skillGroups = resumeData.keySkills as SkillGroup[];
     const hasSkills =
-      skillGroups && skillGroups.length > 0 && skillGroups.some((g) => g.skills.length > 0);
+      skillGroups &&
+      skillGroups.length > 0 &&
+      skillGroups.some((g) => g.skills.length > 0);
 
     if (!hasSkills) {
       addToast({
@@ -1516,7 +1518,6 @@ export default function ResumeEditPage({
   };
 
   const handleAddSkillToGroup = (groupId: string, skill: string) => {
-
     const newSkill = skill.trim();
 
     if (!newSkill) return false;
@@ -2774,7 +2775,7 @@ export default function ResumeEditPage({
                 {skillOptimization.reasoning && (
                   <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                     <h4 className="font-semibold mb-2 text-sm flex items-center gap-2">
-                      <Sparkles size={16} className="text-blue-600" />
+                      <Sparkles className="text-blue-600" size={16} />
                       {t("aiReasoning")}
                     </h4>
                     <p className="text-sm text-default-700">

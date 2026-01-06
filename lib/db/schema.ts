@@ -369,6 +369,7 @@ export const interviewPreparationMaterials = pgTable(
   {
     id: serial("id").primaryKey(),
     userId: integer("user_id").notNull(),
+    resumeId: integer("resume_id"), // 关联的简历ID
     title: varchar("title", { length: 255 }).notNull(), // 资料标题
     category: varchar("category", { length: 50 }).notNull(), // 分类：self_intro, project, work, qa
     content: text("content").notNull(), // 准备内容
@@ -378,6 +379,9 @@ export const interviewPreparationMaterials = pgTable(
   },
   (table) => ({
     userIdIdx: index("interview_prep_materials_user_id_idx").on(table.userId),
+    resumeIdIdx: index("interview_prep_materials_resume_id_idx").on(
+      table.resumeId,
+    ),
     categoryIdx: index("interview_prep_materials_category_idx").on(
       table.category,
     ),

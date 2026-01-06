@@ -11,10 +11,11 @@ import {
   ModalHeader,
 } from "@heroui/modal";
 import { Popover, PopoverContent, PopoverTrigger } from "@heroui/popover";
-import { Download, Edit, Palette } from "lucide-react";
+import { Download, Edit, Palette, FileText } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { CloseIcon } from "@heroui/shared-icons";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 
 import { ResumeData } from "@/types/resume";
 import { ResumePreview } from "@/components/resume-preview";
@@ -50,6 +51,7 @@ export function ResumePreviewModal({
   const [previewLanguage, setPreviewLanguage] = useState<"en" | "zh">("en");
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isGeneratingMaterials, setIsGeneratingMaterials] = useState(false);
   const [languageInitialized, setLanguageInitialized] = useState(false);
   const [internalResumeData, setInternalResumeData] =
     useState<ResumeData | null>(null);
@@ -223,6 +225,85 @@ export function ResumePreviewModal({
     }
   };
 
+  const handleGenerateInterviewMaterials = async () => {
+    if (!resumeId) return;
+
+    setIsGeneratingMaterials(true);
+
+    const isZh = previewLanguage === "zh";
+
+    try {
+      const response = await fetch(
+        `/api/resumes/${resumeId}/generate-interview-materials`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 402) {
+          // Insufficient credits
+          toast.error(
+            isZh
+              ? `积分余额不足，需要 ${data.requiredCredits} 积分`
+              : `Insufficient credits, ${data.requiredCredits} credits required`,
+          );
+        } else if (response.status === 400) {
+          // Missing AI config or no work/project experience
+          toast.error(data.error);
+        } else {
+          throw new Error(data.error || "Failed to generate materials");
+        }
+
+        return;
+      }
+
+      // Show success message with info about job description
+      const materialsCount = data.materials?.length || 0;
+      const hasJobDesc = data.hasJobDescription;
+
+      if (hasJobDesc) {
+        toast.success(
+          isZh
+            ? `成功生成 ${materialsCount} 条面试资料！`
+            : `Successfully generated ${materialsCount} interview materials!`,
+        );
+      } else {
+        toast.success(
+          isZh
+            ? `成功生成 ${materialsCount} 条面试资料！提示：在简历中添加职位要求可以生成更精准的面试资料。`
+            : `Successfully generated ${materialsCount} interview materials! Tip: Add job description to your resume for more targeted materials.`,
+          {
+            duration: 6000,
+          },
+        );
+      }
+
+      // Show credits info if in credits mode
+      if (data.mode === "credits" && data.creditsConsumed) {
+        toast.info(
+          isZh
+            ? `本次消耗 ${data.creditsConsumed} 积分，剩余 ${data.creditsBalance} 积分`
+            : `Consumed ${data.creditsConsumed} credits, ${data.creditsBalance} credits remaining`,
+        );
+      }
+    } catch (error) {
+      console.error("Error generating interview materials:", error);
+      toast.error(
+        isZh
+          ? "生成面试资料失败，请稍后重试"
+          : "Failed to generate interview materials, please try again later",
+      );
+    } finally {
+      setIsGeneratingMaterials(false);
+    }
+  };
+
   return (
     <Modal
       hideCloseButton={true}
@@ -347,6 +428,16 @@ export function ResumePreviewModal({
             </Popover>
           )}
           <div className="flex gap-2 ml-auto">
+            <Button
+              color="secondary"
+              isLoading={isGeneratingMaterials}
+              startContent={!isGeneratingMaterials && <FileText size={18} />}
+              onPress={handleGenerateInterviewMaterials}
+            >
+              {previewLanguage === "zh"
+                ? "生成面试资料"
+                : "Generate Interview Materials"}
+            </Button>
             <Button color="default" onPress={handleEdit}>
               <Edit size={18} />
               {t("edit")}
