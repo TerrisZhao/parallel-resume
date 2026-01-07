@@ -6,6 +6,7 @@
     "delete": "删除",
     "edit": "编辑",
     "create": "创建",
+    "add": "添加",
     "update": "更新",
     "confirm": "确认",
     "search": "搜索",
@@ -19,7 +20,8 @@
     "success": "成功",
     "error": "错误",
     "warning": "警告",
-    "info": "信息"
+    "info": "信息",
+    "fillRequired": "请填写所有必填项"
   },
   "navbar": {
     "resumes": "简历",
@@ -558,6 +560,14 @@
     "content": "内容",
     "contentPlaceholder": "在这里写下你的准备内容...",
     "category": "分类",
+    "tags": "标签",
+    "tagsPlaceholder": "搜索或创建标签...",
+    "addTag": "新增标签",
+    "addTagPlaceholder": "输入新标签后回车",
+    "tagFilter": "按标签过滤",
+    "tagFilterPlaceholder": "选择一个标签进行过滤",
+    "noTagsFound": "未找到标签",
+    "createTag": "创建标签",
     "createdSuccess": "准备资料创建成功",
     "updatedSuccess": "准备资料更新成功",
     "deletedSuccess": "准备资料删除成功",

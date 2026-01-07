@@ -15,8 +15,9 @@ import {
 } from "@heroui/modal";
 import { Input, Textarea } from "@heroui/input";
 import { Select, SelectItem } from "@heroui/select";
+import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
 import { addToast } from "@heroui/toast";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, X } from "lucide-react";
 import { Icon } from "@iconify/react";
 
 import { usePageHeader } from "../use-page-header";
@@ -28,6 +29,7 @@ interface PreparationMaterial {
   title: string;
   category: string;
   content: string;
+  tags?: string[];
   order: number;
   createdAt: string;
   updatedAt: string;
@@ -59,7 +61,19 @@ export default function InterviewPrepPage() {
     title: "",
     content: "",
     category: "self_intro",
+    tags: [] as string[],
   });
+
+  const [tagInputValue, setTagInputValue] = useState("");
+  const [selectedTagFilter, setSelectedTagFilter] = useState<string | null>(
+    null,
+  );
+
+  const allTags = Array.from(
+    new Set(
+      materials.flatMap((m) => (m.tags && Array.isArray(m.tags) ? m.tags : [])),
+    ),
+  );
 
   // Set page header
   useEffect(() => {
@@ -110,7 +124,9 @@ export default function InterviewPrepPage() {
       title: "",
       content: "",
       category: selectedCategory,
+      tags: [],
     });
+    setTagInputValue("");
     onOpen();
   };
 
@@ -120,7 +136,9 @@ export default function InterviewPrepPage() {
       title: material.title,
       content: material.content,
       category: material.category,
+      tags: material.tags ?? [],
     });
+    setTagInputValue("");
     onOpen();
   };
 
@@ -175,6 +193,7 @@ export default function InterviewPrepPage() {
         title: formData.title,
         content: formData.content,
         category: formData.category,
+        tags: formData.tags,
       };
 
       const response = editingMaterial
@@ -211,7 +230,15 @@ export default function InterviewPrepPage() {
   };
 
   const getMaterialsByCategory = (category: string) => {
-    return materials.filter((m) => m.category === category);
+    return materials.filter((m) => {
+      if (m.category !== category) return false;
+
+      if (!selectedTagFilter) return true;
+
+      const tags = m.tags && Array.isArray(m.tags) ? m.tags : [];
+
+      return tags.includes(selectedTagFilter);
+    });
   };
 
   if (isLoading) {
@@ -224,67 +251,99 @@ export default function InterviewPrepPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <Tabs
-        className={"justify-center"}
-        selectedKey={selectedCategory}
-        onSelectionChange={(key) => setSelectedCategory(key as string)}
-      >
-        {CATEGORIES.map((category) => (
-          <Tab key={category} title={t(`categories.${category}`)}>
-            <div className="mt-4 space-y-4">
-              {getMaterialsByCategory(category).length === 0 ? (
-                <Card className="border-none shadow-none">
-                  <CardBody className="text-center py-12">
-                    <Icon
-                      className="mx-auto mb-4 text-default-400"
-                      icon={"solar:clipboard-list-bold-duotone"}
-                      width={128}
-                    />
-                    <h3 className="text-xl font-semibold mb-2">
-                      {t("noMaterials")}
-                    </h3>
-                    <p className="text-default-500 mb-4">
-                      {t("noMaterialsDescription")}
-                    </p>
-                  </CardBody>
-                </Card>
-              ) : (
-                getMaterialsByCategory(category).map((material) => (
-                  <Card key={material.id}>
-                    <CardHeader className="flex justify-between items-center">
-                      <h3 className="text-lg font-semibold">
-                        {material.title}
-                      </h3>
-                      <div className="flex gap-2">
-                        <Button
-                          isIconOnly
-                          size="sm"
-                          variant="light"
-                          onPress={() => handleEdit(material)}
+      <div className="relative flex items-center justify-center mb-4">
+        <Tabs
+          selectedKey={selectedCategory}
+          onSelectionChange={(key) => setSelectedCategory(key as string)}
+        >
+          {CATEGORIES.map((category) => (
+            <Tab key={category} title={t(`categories.${category}`)} />
+          ))}
+        </Tabs>
+        {allTags.length > 0 && (
+          <Select
+            className="absolute right-0 w-80"
+            size="sm"
+            selectedKeys={selectedTagFilter ? [selectedTagFilter] : []}
+            selectionMode="single"
+            onSelectionChange={(keys) => {
+              const keyArr = Array.from(keys);
+              const value = (keyArr[0] as string | undefined) ?? null;
+
+              setSelectedTagFilter(value);
+            }}
+            placeholder={t("tagFilterPlaceholder")}
+            aria-label={t("tagFilter")}
+          >
+            {allTags.map((tag) => (
+              <SelectItem key={tag}>{tag}</SelectItem>
+            ))}
+          </Select>
+        )}
+      </div>
+      <div className="space-y-4">
+        {getMaterialsByCategory(selectedCategory).length === 0 ? (
+          <Card className="border-none shadow-none">
+            <CardBody className="text-center py-12">
+              <Icon
+                className="mx-auto mb-4 text-default-400"
+                icon={"solar:clipboard-list-bold-duotone"}
+                width={128}
+              />
+              <h3 className="text-xl font-semibold mb-2">
+                {t("noMaterials")}
+              </h3>
+              <p className="text-default-500 mb-4">
+                {t("noMaterialsDescription")}
+              </p>
+            </CardBody>
+          </Card>
+        ) : (
+          getMaterialsByCategory(selectedCategory).map((material) => (
+            <Card key={material.id}>
+              <CardHeader className="flex justify-between items-center">
+                <div className="flex flex-col gap-1">
+                  <h3 className="text-lg font-semibold">{material.title}</h3>
+                  {material.tags && material.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {material.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="rounded-full bg-default-100 px-2 py-0.5 text-xs text-default-600"
                         >
-                          <Edit size={16} />
-                        </Button>
-                        <Button
-                          isIconOnly
-                          color="danger"
-                          size="sm"
-                          variant="light"
-                          onPress={() => handleDelete(material)}
-                        >
-                          <Trash2 size={16} />
-                        </Button>
-                      </div>
-                    </CardHeader>
-                    <CardBody>
-                      <p className="whitespace-pre-wrap">{material.content}</p>
-                    </CardBody>
-                  </Card>
-                ))
-              )}
-            </div>
-          </Tab>
-        ))}
-      </Tabs>
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    isIconOnly
+                    size="sm"
+                    variant="light"
+                    onPress={() => handleEdit(material)}
+                  >
+                    <Edit size={16} />
+                  </Button>
+                  <Button
+                    isIconOnly
+                    color="danger"
+                    size="sm"
+                    variant="light"
+                    onPress={() => handleDelete(material)}
+                  >
+                    <Trash2 size={16} />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardBody>
+                <p className="whitespace-pre-wrap">{material.content}</p>
+              </CardBody>
+            </Card>
+          ))
+        )}
+      </div>
 
       {/* Add/Edit Modal */}
       <Modal isOpen={isOpen} size="2xl" onOpenChange={onClose}>
@@ -321,6 +380,107 @@ export default function InterviewPrepPage() {
                     </SelectItem>
                   ))}
                 </Select>
+                {/* 标签选择与新增 */}
+                <div className="flex flex-col gap-2">
+                  <Autocomplete
+                    label={t("tags")}
+                    placeholder={t("tagsPlaceholder")}
+                    inputValue={tagInputValue}
+                    onInputChange={setTagInputValue}
+                    allowsCustomValue
+                    items={(() => {
+                      const searchLower = tagInputValue.toLowerCase().trim();
+                      // 过滤未选择的标签
+                      const availableTags = allTags.filter(
+                        (tag) => !formData.tags.includes(tag),
+                      );
+                      // 根据搜索过滤
+                      const filteredTags = searchLower
+                        ? availableTags.filter((tag) =>
+                            tag.toLowerCase().includes(searchLower),
+                          )
+                        : availableTags;
+                      // 检查是否需要显示创建选项
+                      const trimmedInput = tagInputValue.trim();
+                      const shouldShowCreate =
+                        trimmedInput &&
+                        !allTags.includes(trimmedInput) &&
+                        !formData.tags.includes(trimmedInput);
+
+                      const items: { key: string; label: string; isCreate?: boolean }[] = 
+                        filteredTags.map((tag) => ({
+                          key: tag,
+                          label: tag,
+                        }));
+
+                      if (shouldShowCreate) {
+                        items.push({
+                          key: `__create__:${trimmedInput}`,
+                          label: `${t("createTag")}: ${trimmedInput}`,
+                          isCreate: true,
+                        });
+                      }
+
+                      return items;
+                    })()}
+                    onSelectionChange={(key) => {
+                      if (key === null) return;
+                      const tag = String(key);
+
+                      // 处理创建新标签
+                      if (tag.startsWith("__create__:")) {
+                        const newTag = tag.replace("__create__:", "");
+
+                        if (newTag && !formData.tags.includes(newTag)) {
+                          setFormData({
+                            ...formData,
+                            tags: [...formData.tags, newTag],
+                          });
+                        }
+                      } else if (!formData.tags.includes(tag)) {
+                        setFormData({
+                          ...formData,
+                          tags: [...formData.tags, tag],
+                        });
+                      }
+                      setTagInputValue("");
+                    }}
+                  >
+                    {(item) => (
+                      <AutocompleteItem
+                        key={item.key}
+                        className={item.isCreate ? "text-primary font-medium" : ""}
+                      >
+                        {item.label}
+                      </AutocompleteItem>
+                    )}
+                  </Autocomplete>
+                  {/* 已选标签预览 */}
+                  {formData.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {formData.tags.map((tag) => (
+                        <div
+                          key={tag}
+                          className="flex items-center gap-1 rounded-full bg-default-100 px-3 py-1 text-sm text-default-700"
+                        >
+                          <span>{tag}</span>
+                          <button
+                            type="button"
+                            className="ml-1 hover:bg-default-200 rounded-full p-0.5 transition-colors"
+                            onClick={() => {
+                              setFormData({
+                                ...formData,
+                                tags: formData.tags.filter((t) => t !== tag),
+                              });
+                            }}
+                          >
+                            <X size={14} className="text-default-500" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <Textarea
                   isRequired
                   label={t("content")}

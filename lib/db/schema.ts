@@ -372,6 +372,8 @@ export const interviewPreparationMaterials = pgTable(
     title: varchar("title", { length: 255 }).notNull(), // 资料标题
     category: varchar("category", { length: 50 }).notNull(), // 分类：self_intro, project, work, qa
     content: text("content").notNull(), // 准备内容
+    // 用户自定义标签（用于分类和过滤）
+    tags: json("tags").$type<string[]>().default([]),
     order: integer("order").notNull().default(0), // 显示顺序
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),

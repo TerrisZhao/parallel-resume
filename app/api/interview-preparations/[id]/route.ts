@@ -20,7 +20,19 @@ export async function PUT(
     const { id } = await params;
     const materialId = parseInt(id);
     const body = await request.json();
-    const { title, category, content, order } = body;
+    const {
+      title,
+      category,
+      content,
+      order,
+      tags,
+    } = body as {
+      title?: string;
+      category?: string;
+      content?: string;
+      order?: number;
+      tags?: unknown;
+    };
 
     // Verify ownership
     const existing = await db
@@ -46,6 +58,12 @@ export async function PUT(
     if (category !== undefined) updateData.category = category;
     if (content !== undefined) updateData.content = content;
     if (order !== undefined) updateData.order = order;
+
+    if (tags !== undefined) {
+      updateData.tags = Array.isArray(tags)
+        ? (tags.filter((tag) => typeof tag === "string") as string[])
+        : [];
+    }
 
     const [updated] = await db
       .update(interviewPreparationMaterials)

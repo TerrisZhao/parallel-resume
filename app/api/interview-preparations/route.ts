@@ -52,7 +52,19 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, category, content, order = 0 } = body;
+    const {
+      title,
+      category,
+      content,
+      order = 0,
+      tags,
+    } = body as {
+      title?: string;
+      category?: string;
+      content?: string;
+      order?: number;
+      tags?: unknown;
+    };
 
     if (!title || !category || !content) {
       return NextResponse.json(
@@ -61,6 +73,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const safeTags = Array.isArray(tags)
+      ? (tags.filter((tag) => typeof tag === "string") as string[])
+      : [];
+
     const [material] = await db
       .insert(interviewPreparationMaterials)
       .values({
@@ -68,6 +84,7 @@ export async function POST(request: NextRequest) {
         title,
         category,
         content,
+        tags: safeTags,
         order,
       })
       .returning();

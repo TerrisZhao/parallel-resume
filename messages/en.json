@@ -6,6 +6,7 @@
     "delete": "Delete",
     "edit": "Edit",
     "create": "Create",
+    "add": "Add",
     "update": "Update",
     "confirm": "Confirm",
     "search": "Search",
@@ -19,7 +20,8 @@
     "success": "Success",
     "error": "Error",
     "warning": "Warning",
-    "info": "Information"
+    "info": "Information",
+    "fillRequired": "Please fill in all required fields"
   },
   "navbar": {
     "resumes": "Resumes",
@@ -558,6 +560,14 @@
     "content": "Content",
     "contentPlaceholder": "Write your preparation content here...",
     "category": "Category",
+    "tags": "Tags",
+    "tagsPlaceholder": "Search or create tags...",
+    "addTag": "Add Tag",
+    "addTagPlaceholder": "Enter a new tag and press Enter",
+    "tagFilter": "Filter by Tag",
+    "tagFilterPlaceholder": "Select a tag to filter",
+    "noTagsFound": "No tags found",
+    "createTag": "Create tag",
     "createdSuccess": "Preparation material created successfully",
     "updatedSuccess": "Preparation material updated successfully",
     "deletedSuccess": "Preparation material deleted successfully",
