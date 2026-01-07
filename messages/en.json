@@ -575,6 +575,7 @@
     "failedToUpdate": "Failed to update preparation material",
     "failedToDelete": "Failed to delete preparation material",
     "categories": {
+      "all": "All",
       "self_intro": "Self Introduction",
       "project": "Project Experience",
       "work": "Work Experience",

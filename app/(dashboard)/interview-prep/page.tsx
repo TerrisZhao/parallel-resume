@@ -35,7 +35,7 @@ interface PreparationMaterial {
   updatedAt: string;
 }
 
-const CATEGORIES = ["self_intro", "project", "work", "qa"];
+const CATEGORIES = ["all", "self_intro", "project", "work", "qa"];
 
 export default function InterviewPrepPage() {
   const t = useTranslations("interviewPrep");
@@ -44,7 +44,7 @@ export default function InterviewPrepPage() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [materials, setMaterials] = useState<PreparationMaterial[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState("self_intro");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [editingMaterial, setEditingMaterial] =
     useState<PreparationMaterial | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -231,7 +231,8 @@ export default function InterviewPrepPage() {
 
   const getMaterialsByCategory = (category: string) => {
     return materials.filter((m) => {
-      if (m.category !== category) return false;
+      // "all" 显示所有分类
+      if (category !== "all" && m.category !== category) return false;
 
       if (!selectedTagFilter) return true;
 

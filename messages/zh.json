@@ -575,6 +575,7 @@
     "failedToUpdate": "更新准备资料失败",
     "failedToDelete": "删除准备资料失败",
     "categories": {
+      "all": "全部",
       "self_intro": "自我介绍",
       "project": "项目介绍",
       "work": "工作经历",
