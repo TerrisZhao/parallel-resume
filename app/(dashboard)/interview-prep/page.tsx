@@ -254,6 +254,8 @@ export default function InterviewPrepPage() {
     <div className="flex flex-col h-full">
       <div className="relative flex items-center justify-center mb-4">
         <Tabs
+          color="primary"
+          radius="full"
           selectedKey={selectedCategory}
           onSelectionChange={(key) => setSelectedCategory(key as string)}
         >
@@ -263,18 +265,18 @@ export default function InterviewPrepPage() {
         </Tabs>
         {allTags.length > 0 && (
           <Select
+            aria-label={t("tagFilter")}
             className="absolute right-0 w-80"
-            size="sm"
+            placeholder={t("tagFilterPlaceholder")}
             selectedKeys={selectedTagFilter ? [selectedTagFilter] : []}
             selectionMode="single"
+            size="sm"
             onSelectionChange={(keys) => {
               const keyArr = Array.from(keys);
               const value = (keyArr[0] as string | undefined) ?? null;
 
               setSelectedTagFilter(value);
             }}
-            placeholder={t("tagFilterPlaceholder")}
-            aria-label={t("tagFilter")}
           >
             {allTags.map((tag) => (
               <SelectItem key={tag}>{tag}</SelectItem>
@@ -291,9 +293,7 @@ export default function InterviewPrepPage() {
                 icon={"solar:clipboard-list-bold-duotone"}
                 width={128}
               />
-              <h3 className="text-xl font-semibold mb-2">
-                {t("noMaterials")}
-              </h3>
+              <h3 className="text-xl font-semibold mb-2">{t("noMaterials")}</h3>
               <p className="text-default-500 mb-4">
                 {t("noMaterialsDescription")}
               </p>
@@ -301,7 +301,10 @@ export default function InterviewPrepPage() {
           </Card>
         ) : (
           getMaterialsByCategory(selectedCategory).map((material) => (
-            <Card className="border-none shadow-none bg-default-100" key={material.id}>
+            <Card
+              key={material.id}
+              className="border-none shadow-none bg-default-100"
+            >
               <CardHeader className="flex justify-between items-center">
                 <div className="flex flex-col gap-1">
                   <h3 className="text-lg font-semibold">{material.title}</h3>
@@ -384,11 +387,8 @@ export default function InterviewPrepPage() {
                 {/* 标签选择与新增 */}
                 <div className="flex flex-col gap-2">
                   <Autocomplete
-                    label={t("tags")}
-                    placeholder={t("tagsPlaceholder")}
-                    inputValue={tagInputValue}
-                    onInputChange={setTagInputValue}
                     allowsCustomValue
+                    inputValue={tagInputValue}
                     items={(() => {
                       const searchLower = tagInputValue.toLowerCase().trim();
                       // 过滤未选择的标签
@@ -408,11 +408,14 @@ export default function InterviewPrepPage() {
                         !allTags.includes(trimmedInput) &&
                         !formData.tags.includes(trimmedInput);
 
-                      const items: { key: string; label: string; isCreate?: boolean }[] = 
-                        filteredTags.map((tag) => ({
-                          key: tag,
-                          label: tag,
-                        }));
+                      const items: {
+                        key: string;
+                        label: string;
+                        isCreate?: boolean;
+                      }[] = filteredTags.map((tag) => ({
+                        key: tag,
+                        label: tag,
+                      }));
 
                       if (shouldShowCreate) {
                         items.push({
@@ -424,6 +427,9 @@ export default function InterviewPrepPage() {
 
                       return items;
                     })()}
+                    label={t("tags")}
+                    placeholder={t("tagsPlaceholder")}
+                    onInputChange={setTagInputValue}
                     onSelectionChange={(key) => {
                       if (key === null) return;
                       const tag = String(key);
@@ -450,7 +456,9 @@ export default function InterviewPrepPage() {
                     {(item) => (
                       <AutocompleteItem
                         key={item.key}
-                        className={item.isCreate ? "text-primary font-medium" : ""}
+                        className={
+                          item.isCreate ? "text-primary font-medium" : ""
+                        }
                       >
                         {item.label}
                       </AutocompleteItem>
@@ -466,8 +474,8 @@ export default function InterviewPrepPage() {
                         >
                           <span>{tag}</span>
                           <button
-                            type="button"
                             className="ml-1 hover:bg-default-200 rounded-full p-0.5 transition-colors"
+                            type="button"
                             onClick={() => {
                               setFormData({
                                 ...formData,
@@ -475,7 +483,7 @@ export default function InterviewPrepPage() {
                               });
                             }}
                           >
-                            <X size={14} className="text-default-500" />
+                            <X className="text-default-500" size={14} />
                           </button>
                         </div>
                       ))}

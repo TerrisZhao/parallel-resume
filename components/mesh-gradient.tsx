@@ -188,37 +188,43 @@ export function MeshGradient({ className = "" }: MeshGradientProps) {
     const timeLocation = gl.getUniformLocation(program, "u_time");
     const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
 
-    // 调整 canvas 大小
-    function resizeCanvas() {
-      if (!canvas) return;
-      const displayWidth = canvas.clientWidth;
-      const displayHeight = canvas.clientHeight;
-      if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
-        canvas.width = displayWidth;
-        canvas.height = displayHeight;
-        gl.viewport(0, 0, displayWidth, displayHeight);
-      }
-    }
+    // 启用透明度混合
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
     // 渲染循环
     startTimeRef.current = performance.now();
 
+    // 捕获非空的 gl 和 canvas 引用（已在上方验证非空）
+    const glContext = gl;
+    const canvasElement = canvas;
+
     function render() {
-      resizeCanvas();
+      resizeCanvasIfNeeded();
 
-      gl.useProgram(program);
+      glContext.useProgram(program);
 
-      gl.enableVertexAttribArray(positionLocation);
-      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-      gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+      glContext.enableVertexAttribArray(positionLocation);
+      glContext.bindBuffer(glContext.ARRAY_BUFFER, positionBuffer);
+      glContext.vertexAttribPointer(positionLocation, 2, glContext.FLOAT, false, 0, 0);
 
       const elapsed = (performance.now() - startTimeRef.current) / 1000;
-      gl.uniform1f(timeLocation, elapsed);
-      gl.uniform2f(resolutionLocation, canvas!.width, canvas!.height);
+      glContext.uniform1f(timeLocation, elapsed);
+      glContext.uniform2f(resolutionLocation, canvasElement.width, canvasElement.height);
 
-      gl.drawArrays(gl.TRIANGLES, 0, 6);
+      glContext.drawArrays(glContext.TRIANGLES, 0, 6);
 
       animationRef.current = requestAnimationFrame(render);
+    }
+
+    function resizeCanvasIfNeeded() {
+      const displayWidth = canvasElement.clientWidth;
+      const displayHeight = canvasElement.clientHeight;
+      if (canvasElement.width !== displayWidth || canvasElement.height !== displayHeight) {
+        canvasElement.width = displayWidth;
+        canvasElement.height = displayHeight;
+        glContext.viewport(0, 0, displayWidth, displayHeight);
+      }
     }
 
     render();

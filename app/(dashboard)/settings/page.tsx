@@ -940,6 +940,8 @@ export default function SettingsPage() {
     <div className="flex flex-col h-full max-w-2xl mx-auto">
       <Tabs
         className={"justify-center"}
+        color="primary"
+        radius="full"
         selectedKey={selectedTab}
         onSelectionChange={(key) => setSelectedTab(key as string)}
       >
