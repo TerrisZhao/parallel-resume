@@ -282,7 +282,7 @@ export default function InterviewPrepPage() {
           </Select>
         )}
       </div>
-      <div className="space-y-4">
+      <div className="space-y-4 pb-6">
         {getMaterialsByCategory(selectedCategory).length === 0 ? (
           <Card className="border-none shadow-none">
             <CardBody className="text-center py-12">
@@ -301,7 +301,7 @@ export default function InterviewPrepPage() {
           </Card>
         ) : (
           getMaterialsByCategory(selectedCategory).map((material) => (
-            <Card key={material.id}>
+            <Card className="border-none shadow-none bg-default-100" key={material.id}>
               <CardHeader className="flex justify-between items-center">
                 <div className="flex flex-col gap-1">
                   <h3 className="text-lg font-semibold">{material.title}</h3>
@@ -310,7 +310,7 @@ export default function InterviewPrepPage() {
                       {material.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="rounded-full bg-default-100 px-2 py-0.5 text-xs text-default-600"
+                          className="rounded-full bg-white px-2 py-0.5 text-xs text-default-600"
                         >
                           {tag}
                         </span>

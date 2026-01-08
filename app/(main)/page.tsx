@@ -8,6 +8,7 @@ import { FileText, Gift } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
+import { MeshGradient } from "@/components/mesh-gradient";
 import { title, subtitle } from "@/components/primitives";
 
 const MotionDiv = motion.div;
@@ -51,12 +52,14 @@ export default function Home() {
   };
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center bg-gradient-to-br from-rose-400 via-fuchsia-500/50 to-indigo-500 dark:from-rose-400 dark:via-fuchsia-500/50 dark:to-indigo-500 p-8 sm:p-10 lg:p-16">
-      <div className="h-12" />
+    <div className="relative flex min-h-screen w-full flex-col items-center p-8 sm:p-10 lg:p-16 overflow-hidden bg-white dark:bg-zinc-950">
+      {/* Stripe 风格渐变动画背景 - 对角线切割，只显示左上角 */}
+      <MeshGradient />
+      <div className="relative z-10 h-12" />
       {/* Hero Section */}
       <MotionDiv
         animate="visible"
-        className="flex flex-col items-center min-h-[calc(100vh-12rem)] justify-center gap-8 text-center w-full p-8 bg-background/70 backdrop-blur-lg backdrop-saturate-150 rounded-3xl"
+        className="relative z-10 flex flex-col items-center min-h-[calc(100vh-12rem)] justify-center gap-8 text-center w-full p-8 bg-background/70 backdrop-blur-lg backdrop-saturate-150 rounded-3xl"
         initial="hidden"
         variants={containerVariants}
       >
