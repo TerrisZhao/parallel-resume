@@ -119,14 +119,14 @@ export default function Home() {
       </MotionDiv>
 
       {/* Footer */}
-      <footer className="fixed bottom-0 left-0 right-0 w-full flex items-center justify-center py-3 z-40">
+      <footer className="fixed bottom-0 left-0 right-0 w-full flex items-center justify-center py-3 z-40 text-white">
         <Link
           isExternal
           className="flex items-center gap-1 text-current"
           href="#"
           title="Resume Builder"
         >
-          <span className="text-default-600">2025 ｜ {t("footer")} Terris</span>
+          <span>2025 ｜ Designed By Terris Zhao</span>
         </Link>
       </footer>
     </div>
