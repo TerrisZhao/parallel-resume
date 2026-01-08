@@ -24,7 +24,9 @@ export default function CalendarTimeSelect({
   const timeSlots = useMemo(() => {
     const slots: TimeSlot[] = [];
     const totalMinutesInDay = 24 * 60;
-    const intervalMinutes = duration === DurationEnum.FifteenMinutes ? 15 : 30;
+    const intervalMinutes =
+      duration === DurationEnum.FifteenMinutes ? 15 :
+      duration === DurationEnum.OneHour ? 60 : 30;
 
     for (
       let minutes = 0;
@@ -56,22 +58,18 @@ export default function CalendarTimeSelect({
   }, [timeFormat, duration]);
 
   return (
-    <div className="flex w-full flex-col gap-2">
-      <div className="flex h-[350px] w-full">
-        <ScrollShadow hideScrollBar className="flex w-full flex-col gap-2">
-          {timeSlots.map((slot) => (
-            <CalendarTime
-              key={slot.value}
-              confirmLabel={confirmLabel}
-              isSelected={slot.value === selectedTime}
-              slot={slot}
-              timeSlots={timeSlots}
-              onConfirm={onConfirm}
-              onTimeChange={onTimeChange}
-            />
-          ))}
-        </ScrollShadow>
-      </div>
-    </div>
+    <ScrollShadow hideScrollBar className="flex w-full h-full max-h-full flex-col gap-2 overflow-y-auto">
+      {timeSlots.map((slot) => (
+        <CalendarTime
+          key={slot.value}
+          confirmLabel={confirmLabel}
+          isSelected={slot.value === selectedTime}
+          slot={slot}
+          timeSlots={timeSlots}
+          onConfirm={onConfirm}
+          onTimeChange={onTimeChange}
+        />
+      ))}
+    </ScrollShadow>
   );
 }

@@ -29,7 +29,7 @@ import { Icon } from "@iconify/react";
 import { usePageHeader } from "../use-page-header";
 
 import { Loading } from "@/components/loading";
-import InterviewWizard from "@/components/calendar-booking/interview-wizard";
+import InterviewWizard from "@/components/interview-add/interview-wizard";
 
 interface Interview {
   id: number;
@@ -485,7 +485,7 @@ export default function InterviewsPage() {
       <Modal
         isOpen={isOpen}
         scrollBehavior="inside"
-        size="3xl"
+        size="4xl"
         onOpenChange={onClose}
       >
         <ModalContent>

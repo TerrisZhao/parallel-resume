@@ -9,9 +9,9 @@ import { useTranslations, useLocale } from "next-intl";
 import InterviewInfoStep from "./interview-info-step";
 import InterviewTimeStep from "./interview-time-step";
 import InterviewConfirmationStep from "./interview-confirmation-step";
-import { type TimeSlot } from "./calendar";
+import { type TimeSlot } from "../calendar-booking/calendar";
 
-import RowSteps from "@/components/calendar-booking/row-steps";
+import RowSteps from "@/components/row-steps";
 
 export interface InterviewFormData {
   company: string;
@@ -164,6 +164,7 @@ export default function InterviewWizard({
 
       {currentStep === "time" && (
         <InterviewTimeStep
+          formData={formData}
           initialDate={selectedDate}
           initialTime={selectedTime}
           onBack={handleBack}

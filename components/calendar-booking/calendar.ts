@@ -2,11 +2,13 @@
 export enum DurationEnum {
   FifteenMinutes = "15m",
   ThirtyMinutes = "30m",
+  OneHour = "1h",
 }
 
 export const durations = [
   { key: DurationEnum.FifteenMinutes, label: "15m" },
   { key: DurationEnum.ThirtyMinutes, label: "30m" },
+  { key: DurationEnum.OneHour, label: "1h" },
 ];
 
 // sample time zone options

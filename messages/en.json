@@ -556,7 +556,8 @@
       "createInterview": "Create Interview",
       "creating": "Creating..."
     },
-    "duration": "Duration"
+    "duration": "Duration",
+    "interviewDetails": "Interview Details"
   },
   "interviewPrep": {
     "title": "Interview Preparation",

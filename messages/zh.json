@@ -556,7 +556,8 @@
       "createInterview": "创建面试",
       "creating": "创建中..."
     },
-    "duration": "时长"
+    "duration": "时长",
+    "interviewDetails": "面试详情"
   },
   "interviewPrep": {
     "title": "面试准备",

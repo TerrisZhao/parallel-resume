@@ -8,7 +8,7 @@ import { Video, MapPin, Phone, Calendar, FileText } from "lucide-react";
 import { type DateValue } from "@heroui/calendar";
 
 import { type InterviewFormData, type Resume } from "./interview-wizard";
-import { type TimeSlot } from "./calendar";
+import { type TimeSlot } from "../calendar-booking/calendar";
 
 interface InterviewConfirmationStepProps {
   formData: InterviewFormData;
