@@ -6,6 +6,7 @@ import { Card, CardBody } from "@heroui/card";
 import { motion } from "framer-motion";
 import { FileText, Gift } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
 
 import { title, subtitle } from "@/components/primitives";
 
@@ -13,6 +14,21 @@ const MotionDiv = motion.div;
 
 export default function Home() {
   const t = useTranslations("home");
+  const [freeCredits, setFreeCredits] = useState(100);
+
+  useEffect(() => {
+    fetch("/api/config/public")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.freeSignupCredits) {
+          setFreeCredits(data.freeSignupCredits);
+        }
+      })
+      .catch(() => {
+        // 使用默认值
+      });
+  }, []);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -77,7 +93,7 @@ export default function Home() {
                 <p className="text-white font-semibold text-sm">
                   {t("promoTitle")}
                 </p>
-                <p className="text-white/90 text-xs">{t("promoDescription")}</p>
+                <p className="text-white/90 text-xs">{t("promoDescription", { credits: freeCredits })}</p>
               </div>
             </CardBody>
           </Card>

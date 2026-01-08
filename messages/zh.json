@@ -44,7 +44,7 @@
     "getStarted": "立即开始",
     "footer": "设计者",
     "promoTitle": "新用户福利",
-    "promoDescription": "注册即送 100 积分，立即体验 AI 功能！"
+    "promoDescription": "注册即送 {credits} 积分，立即体验 AI 功能！"
   },
   "resume": {
     "title": "我的简历",

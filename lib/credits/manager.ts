@@ -88,6 +88,14 @@ export async function getAIPricingRule(
 
 /**
  * 计算 AI 调用消耗的积分
+ *
+ * 计算规则：
+ * 1. 按实际使用的 token 数量计算，不足 1000 token 时按 1000 算（向上取整到千位）
+ * 2. 使用数据库中的 creditsPerKTokens 作为倍率
+ *    - 例如：gpt-5-mini 倍率为 1，gpt-5.2 倍率为 7
+ * 3. 公式：Math.ceil(totalTokens / 1000) * creditsPerKTokens
+ *    - 例如：2300 tokens，倍率 1 → Math.ceil(2300/1000) * 1 = 3 积分
+ *    - 例如：2300 tokens，倍率 7 → Math.ceil(2300/1000) * 7 = 21 积分
  */
 export async function calculateCreditsForUsage(
   provider: string,
@@ -108,8 +116,12 @@ export async function calculateCreditsForUsage(
     if (!usage || !usage.totalTokens) {
       return 0;
     }
-    const kTokens = usage.totalTokens / 1000;
-    const credits = Math.ceil(kTokens * (pricingRule.creditsPerKTokens || 0));
+
+    // 向上取整到千位（不足 1000 token 按 1000 算）
+    const kTokensRoundedUp = Math.ceil(usage.totalTokens / 1000);
+    // 乘以倍率（creditsPerKTokens）
+    const multiplier = pricingRule.creditsPerKTokens || 1;
+    const credits = kTokensRoundedUp * multiplier;
 
     return credits;
   }

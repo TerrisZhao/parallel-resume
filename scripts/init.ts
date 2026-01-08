@@ -399,19 +399,19 @@ async function seedAIPricingRules() {
     const rules = [
       {
         provider: "openai" as const,
-        model: "gpt-5.2",
-        creditsPerKTokens: 3,
+        model: "gpt-5-mini",
+        creditsPerKTokens: 1,
         pricingType: "token" as const,
         isActive: true,
-        description: "GPT-5.2 - 3积分/1K tokens（推荐）",
+        description: "GPT-5-mini - 1积分/1K tokens（基准模型）",
       },
       {
         provider: "openai" as const,
-        model: "gpt-4o",
-        creditsPerKTokens: 5,
+        model: "gpt-5.2",
+        creditsPerKTokens: 7,
         pricingType: "token" as const,
         isActive: true,
-        description: "GPT-4o - 5积分/1K tokens",
+        description: "GPT-5.2 - 7积分/1K tokens（高级模型）",
       },
     ];
 

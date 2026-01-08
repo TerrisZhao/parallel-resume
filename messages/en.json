@@ -44,7 +44,7 @@
     "getStarted": "Get Started",
     "footer": "Designed by",
     "promoTitle": "New User Bonus",
-    "promoDescription": "Register now and get 100 free credits to experience AI features!"
+    "promoDescription": "Register now and get {credits} free credits to experience AI features!"
   },
   "resume": {
     "title": "My Resumes",
