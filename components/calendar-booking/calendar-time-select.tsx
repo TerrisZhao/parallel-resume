@@ -8,6 +8,7 @@ interface CalendarTimeSelectProps {
   duration: DurationEnum;
   selectedTime: string;
   timeFormat: TimeFormatEnum;
+  confirmLabel?: string;
   onTimeChange: (time: string, selectedTimeSlotRange?: TimeSlot[]) => void;
   onConfirm: () => void;
 }
@@ -16,6 +17,7 @@ export default function CalendarTimeSelect({
   duration,
   selectedTime,
   timeFormat,
+  confirmLabel,
   onTimeChange,
   onConfirm,
 }: CalendarTimeSelectProps) {
@@ -60,6 +62,7 @@ export default function CalendarTimeSelect({
           {timeSlots.map((slot) => (
             <CalendarTime
               key={slot.value}
+              confirmLabel={confirmLabel}
               isSelected={slot.value === selectedTime}
               slot={slot}
               timeSlots={timeSlots}

@@ -2,14 +2,16 @@
 
 import { useState } from "react";
 import { format } from "date-fns";
+import { zhCN } from "date-fns/locale";
 import { type DateValue } from "@heroui/calendar";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 import InterviewInfoStep from "./interview-info-step";
 import InterviewTimeStep from "./interview-time-step";
 import InterviewConfirmationStep from "./interview-confirmation-step";
-import RowSteps from "./row-steps";
 import { type TimeSlot } from "./calendar";
+
+import RowSteps from "@/components/calendar-booking/row-steps";
 
 export interface InterviewFormData {
   company: string;
@@ -44,6 +46,7 @@ export default function InterviewWizard({
   initialData,
 }: InterviewWizardProps) {
   const t = useTranslations("interviews");
+  const locale = useLocale();
   const [currentStep, setCurrentStep] = useState<WizardStep>("info");
   const [formData, setFormData] = useState<InterviewFormData>({
     company: initialData?.company || "",
@@ -109,6 +112,11 @@ export default function InterviewWizard({
     const dateStr = selectedDate.toString();
     const date = new Date(`${dateStr}T${selectedTime}`);
 
+    if (locale === "zh") {
+      // 中文格式：2026年1月9日 星期五 下午2:30
+      return format(date, "yyyy年M月d日 EEEE a h:mm", { locale: zhCN });
+    }
+    // 英文格式：Friday, January 9, 2026 at 2:30 PM
     return format(date, "EEEE, MMMM d, yyyy 'at' h:mm a");
   };
 
@@ -133,13 +141,13 @@ export default function InterviewWizard({
       </div>
 
       {/* Steps Indicator */}
-      <div className="mb-8">
+      <div className="mb-8 flex justify-center">
         <RowSteps
           currentStep={getCurrentStepIndex()}
           steps={[
-            { title: "Information" },
-            { title: "Schedule" },
-            { title: "Confirm" },
+            { title: t("steps.information") },
+            { title: t("steps.schedule") },
+            { title: t("steps.confirm") },
           ]}
         />
       </div>

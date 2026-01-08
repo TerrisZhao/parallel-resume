@@ -164,7 +164,7 @@ export default function InterviewInfoStep({
             {tCommon("cancel")}
           </Button>
           <Button color="primary" type="submit">
-            Next: Select Time
+            {t("buttons.nextSelectTime")}
           </Button>
         </div>
       </form>

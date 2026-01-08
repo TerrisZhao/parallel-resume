@@ -6,6 +6,8 @@ import { getLocalTimeZone, isWeekend, today } from "@internationalized/date";
 import { Button } from "@heroui/button";
 import { Tab, Tabs } from "@heroui/tabs";
 import { format } from "date-fns";
+import { zhCN } from "date-fns/locale";
+import { useTranslations, useLocale } from "next-intl";
 
 import CalendarTimeSelect from "./calendar-time-select";
 import {
@@ -28,6 +30,8 @@ export default function InterviewTimeStep({
   initialDate,
   initialTime = "",
 }: InterviewTimeStepProps) {
+  const tCommon = useTranslations("common");
+  const locale = useLocale();
   const [selectedDate, setSelectedDate] = useState<DateValue>(
     initialDate || today(getLocalTimeZone()),
   );
@@ -103,10 +107,10 @@ export default function InterviewTimeStep({
           <div className="flex items-center justify-between mb-2">
             <p className="text-small flex items-center">
               <span className="text-default-700">
-                {format(selectedDate.toString(), "EEE")}
+                {locale === "zh"
+                  ? format(selectedDate.toString(), "M月d日 EEE", { locale: zhCN })
+                  : format(selectedDate.toString(), "EEE d")}
               </span>
-              &nbsp;
-              <span className="text-default-500">{selectedDate.day}</span>
             </p>
             <Tabs
               classNames={{
@@ -124,6 +128,7 @@ export default function InterviewTimeStep({
             </Tabs>
           </div>
           <CalendarTimeSelect
+            confirmLabel={tCommon("confirm")}
             duration={duration}
             selectedTime={selectedTime}
             timeFormat={timeFormat}
@@ -135,7 +140,7 @@ export default function InterviewTimeStep({
 
       <div className="flex justify-start mt-6">
         <Button variant="flat" onPress={onBack}>
-          Back
+          {tCommon("back")}
         </Button>
       </div>
     </div>

@@ -545,7 +545,18 @@
     "failedToUpdate": "更新面试失败",
     "failedToDelete": "删除面试失败",
     "notes": "备注",
-    "notesPlaceholder": "添加关于这次面试的备注..."
+    "notesPlaceholder": "添加关于这次面试的备注...",
+    "steps": {
+      "information": "填写信息",
+      "schedule": "选择时间",
+      "confirm": "确认预约"
+    },
+    "buttons": {
+      "nextSelectTime": "下一步：选择时间",
+      "createInterview": "创建面试",
+      "creating": "创建中..."
+    },
+    "duration": "时长"
   },
   "interviewPrep": {
     "title": "面试准备",

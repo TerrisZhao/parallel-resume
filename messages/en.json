@@ -545,7 +545,18 @@
     "failedToUpdate": "Failed to update interview",
     "failedToDelete": "Failed to delete interview",
     "notes": "Notes",
-    "notesPlaceholder": "Add any notes about this interview..."
+    "notesPlaceholder": "Add any notes about this interview...",
+    "steps": {
+      "information": "Information",
+      "schedule": "Schedule",
+      "confirm": "Confirm"
+    },
+    "buttons": {
+      "nextSelectTime": "Next: Select Time",
+      "createInterview": "Create Interview",
+      "creating": "Creating..."
+    },
+    "duration": "Duration"
   },
   "interviewPrep": {
     "title": "Interview Preparation",

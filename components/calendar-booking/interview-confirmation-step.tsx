@@ -136,7 +136,7 @@ export default function InterviewConfirmationStep({
           </div>
           {selectedTimeSlotRange.length > 1 && (
             <p className="text-xs text-default-400 mt-1">
-              Duration: {selectedTimeSlotRange[0].label} -{" "}
+              {t("duration")}: {selectedTimeSlotRange[0].label} -{" "}
               {selectedTimeSlotRange[1].label}
             </p>
           )}
@@ -174,10 +174,10 @@ export default function InterviewConfirmationStep({
         {/* Action Buttons */}
         <div className="flex justify-between pt-4">
           <Button isDisabled={isSubmitting} variant="flat" onPress={onBack}>
-            Back
+            {tCommon("back")}
           </Button>
           <Button color="primary" isLoading={isSubmitting} onPress={onConfirm}>
-            {isSubmitting ? "Creating..." : "Create Interview"}
+            {isSubmitting ? t("buttons.creating") : t("buttons.createInterview")}
           </Button>
         </div>
       </div>

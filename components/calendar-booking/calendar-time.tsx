@@ -8,6 +8,7 @@ interface CalendarTimeProps {
   slot: TimeSlot;
   timeSlots: TimeSlot[];
   isSelected: boolean;
+  confirmLabel?: string;
   onTimeChange: (time: string, selectedTimeSlotRange?: TimeSlot[]) => void;
   onConfirm: () => void;
 }
@@ -15,6 +16,7 @@ interface CalendarTimeProps {
 export default function CalendarTime({
   slot,
   isSelected,
+  confirmLabel = "Confirm",
   onTimeChange,
   onConfirm,
   timeSlots,
@@ -65,7 +67,7 @@ export default function CalendarTime({
           tabIndex={isSelected ? undefined : -1}
           onPress={onConfirm}
         >
-          Confirm
+          {confirmLabel}
         </Button>
       </motion.div>
     </div>
