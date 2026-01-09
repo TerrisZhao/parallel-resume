@@ -952,6 +952,7 @@ function SortableGroup({
   const [localActiveSkillId, setLocalActiveSkillId] = useState<string | null>(
     null,
   );
+  const [skillInputValue, setSkillInputValue] = useState("");
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -995,14 +996,16 @@ function SortableGroup({
             <Input
               placeholder="Add skill and press Enter"
               size="sm"
+              value={skillInputValue}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setSkillInputValue(e.target.value)
+              }
               onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
-                  const input = e.target as HTMLInputElement;
-
-                  if (input.value.trim()) {
-                    onAddSkill(input.value);
-                    input.value = "";
+                  if (skillInputValue.trim()) {
+                    onAddSkill(skillInputValue);
+                    setSkillInputValue("");
                   }
                 }
               }}
@@ -1093,6 +1096,9 @@ export default function ResumeEditPage({
   const [activeSkillId, setActiveSkillId] = useState<string | null>(null);
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
   const [isAiOptimizationEnabled, setIsAiOptimizationEnabled] = useState(false);
+  const [techInputValues, setTechInputValues] = useState<Record<string, string>>(
+    {},
+  );
 
   // Summary enhancement states
   const [isSummaryEnhancing, setIsSummaryEnhancing] = useState(false);
@@ -2542,15 +2548,27 @@ export default function ResumeEditPage({
                     <div className="flex gap-2">
                       <Input
                         placeholder={t("addTechnologyPlaceholder")}
+                        value={techInputValues[proj.id] || ""}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          setTechInputValues({
+                            ...techInputValues,
+                            [proj.id]: e.target.value,
+                          })
+                        }
                         onKeyDown={(
                           e: React.KeyboardEvent<HTMLInputElement>,
                         ) => {
                           if (e.key === "Enter") {
                             e.preventDefault();
-                            const input = e.target as HTMLInputElement;
+                            const value = techInputValues[proj.id] || "";
 
-                            handleAddTechnology(proj.id, input.value);
-                            input.value = "";
+                            if (value.trim()) {
+                              handleAddTechnology(proj.id, value);
+                              setTechInputValues({
+                                ...techInputValues,
+                                [proj.id]: "",
+                              });
+                            }
                           }
                         }}
                       />
