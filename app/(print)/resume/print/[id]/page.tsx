@@ -37,13 +37,13 @@ const Icon = ({
   <svg
     className={className}
     fill="none"
-    height="14"
+    height="16"
     stroke="currentColor"
     strokeLinecap="round"
     strokeLinejoin="round"
     strokeWidth="2"
     viewBox="0 0 24 24"
-    width="14"
+    width="16"
     xmlns="http://www.w3.org/2000/svg"
   >
     {children}
@@ -322,7 +322,7 @@ export default async function PrintResumePage({
           }
 
           .name {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: 700;
             color: ${themeColor};
             margin-bottom: 8px;
@@ -330,7 +330,7 @@ export default async function PrintResumePage({
           }
 
           .preferred-name {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 400;
             color: #4b5563;
             margin-left: 8px;
@@ -340,7 +340,7 @@ export default async function PrintResumePage({
             display: flex;
             flex-wrap: wrap;
             gap: 8px 16px;
-            font-size: 12px;
+            font-size: 14px;
             color: #374151;
           }
 
@@ -361,7 +361,7 @@ export default async function PrintResumePage({
           }
 
           .section-title {
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 700;
             color: ${themeColor};
             margin-bottom: 8px;
@@ -372,7 +372,7 @@ export default async function PrintResumePage({
           }
 
           .section-content {
-            font-size: 11px;
+            font-size: 14px;
             color: #1f2937;
             line-height: 1.6;
           }
@@ -412,28 +412,28 @@ export default async function PrintResumePage({
           }
 
           .entry-title {
-            font-size: 12px;
+            font-size: 15px;
             font-weight: 700;
             color: ${themeColor};
             line-height: 1.3;
           }
 
           .entry-subtitle {
-            font-size: 11px;
+            font-size: 14px;
             font-weight: 600;
             color: #374151;
             margin-bottom: 4px;
           }
 
           .entry-date {
-            font-size: 11px;
+            font-size: 13px;
             color: #6b7280;
             white-space: nowrap;
             flex-shrink: 0;
           }
 
           .entry-description {
-            font-size: 11px;
+            font-size: 14px;
             color: #4b5563;
             margin-bottom: 4px;
           }
@@ -447,7 +447,7 @@ export default async function PrintResumePage({
           }
 
           .responsibilities li {
-            font-size: 11px;
+            font-size: 14px;
             color: #1f2937;
             margin-bottom: 4px;
             line-height: 1.5;
@@ -455,7 +455,7 @@ export default async function PrintResumePage({
 
           /* Technologies */
           .technologies {
-            font-size: 11px;
+            font-size: 14px;
             color: #4b5563;
             margin-top: 6px;
           }
@@ -558,7 +558,7 @@ export default async function PrintResumePage({
                   >
                     {(resumeData.keySkills as any[]).map(
                       (group, groupIndex) => (
-                        <div key={groupIndex} style={{ fontSize: "11px" }}>
+                        <div key={groupIndex} style={{ fontSize: "14px" }}>
                           <span style={{ fontWeight: 600, color: themeColor }}>
                             {group.groupName}:
                           </span>{" "}
