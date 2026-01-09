@@ -730,6 +730,67 @@ function StarIndicator({
   );
 }
 
+// Editable Name Component
+function EditableName({
+  name,
+  onNameChange,
+}: {
+  name: string;
+  onNameChange: (name: string) => void;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState("");
+
+  const handleStartEdit = () => {
+    setEditValue(name);
+    setIsEditing(true);
+  };
+
+  const handleEndEdit = () => {
+    onNameChange(editValue);
+    setIsEditing(false);
+  };
+
+  if (isEditing) {
+    return (
+      <Input
+        autoFocus
+        aria-label="Resume Name"
+        classNames={{ inputWrapper: "min-h-10", input: "text-base" }}
+        size="sm"
+        value={editValue}
+        onBlur={handleEndEdit}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          setEditValue(e.target.value)
+        }
+        onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            handleEndEdit();
+          }
+          if (e.key === "Escape") {
+            e.preventDefault();
+            setIsEditing(false);
+          }
+        }}
+      />
+    );
+  }
+
+  return (
+    <button
+      className="text-left focus:outline-none min-h-10 flex items-center"
+      type="button"
+      onClick={handleStartEdit}
+    >
+      <span className="text-3xl leading-6 font-semibold">{name || "Resume"}</span>
+      <span className="ml-2 text-xs text-default-500 hidden sm:inline-flex items-center gap-1">
+        <Edit3 size={14} />
+      </span>
+    </button>
+  );
+}
+
 // Sortable Skill Item Component
 function SortableSkillItem({
   skill,
@@ -1029,7 +1090,6 @@ export default function ResumeEditPage({
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null);
-  const [isEditingName, setIsEditingName] = useState(false);
   const [activeSkillId, setActiveSkillId] = useState<string | null>(null);
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
   const [isAiOptimizationEnabled, setIsAiOptimizationEnabled] = useState(false);
@@ -1354,41 +1414,12 @@ export default function ResumeEditPage({
             <ArrowLeft size={18} />
           </Button>
           <div className="min-h-10 flex items-center">
-            {isEditingName ? (
-              <Input
-                aria-label="Resume Name"
-                classNames={{ inputWrapper: "min-h-10", input: "text-base" }}
-                size="sm"
-                value={resumeData.name}
-                onBlur={() => setIsEditingName(false)}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setResumeData({ ...resumeData, name: e.target.value })
-                }
-                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    setIsEditingName(false);
-                  }
-                  if (e.key === "Escape") {
-                    e.preventDefault();
-                    setIsEditingName(false);
-                  }
-                }}
-              />
-            ) : (
-              <button
-                className="text-left focus:outline-none min-h-10 flex items-center"
-                type="button"
-                onClick={() => setIsEditingName(true)}
-              >
-                <span className="text-3xl leading-6 font-semibold">
-                  {resumeData.name || "Resume"}
-                </span>
-                <span className="ml-2 text-xs text-default-500 hidden sm:inline-flex items-center gap-1">
-                  <Edit3 size={14} />
-                </span>
-              </button>
-            )}
+            <EditableName
+              name={resumeData.name || ""}
+              onNameChange={(newName) =>
+                setResumeData((prev) => ({ ...prev, name: newName }))
+              }
+            />
           </div>
         </div>
         <div className="flex items-center gap-4 min-h-10">
@@ -1473,7 +1504,6 @@ export default function ResumeEditPage({
     setHeader,
     router,
     resumeData.name,
-    isEditingName,
     isSaving,
     lastSaved,
     isAiOptimizationEnabled,
@@ -1516,7 +1546,6 @@ export default function ResumeEditPage({
   };
 
   const handleAddSkillToGroup = (groupId: string, skill: string) => {
-
     const newSkill = skill.trim();
 
     if (!newSkill) return false;
