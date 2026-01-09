@@ -186,7 +186,7 @@ export default function InterviewTimeStep({
 
         {/* 右侧：时间选择 */}
         <div className="flex-1 min-w-[220px] flex flex-col self-start">
-          <div className="flex items-center justify-between mb-2 flex-shrink-0">
+          <div className="flex items-center justify-between mb-4 flex-shrink-0">
             <p className="text-small flex items-center">
               <span className="text-default-700">
                 {locale === "zh"
@@ -209,7 +209,7 @@ export default function InterviewTimeStep({
               ))}
             </Tabs>
           </div>
-          <div className="h-[320px] overflow-hidden">
+          <div className="h-[315px] overflow-hidden">
             <CalendarTimeSelect
               confirmLabel={tCommon("confirm")}
               duration={duration}
