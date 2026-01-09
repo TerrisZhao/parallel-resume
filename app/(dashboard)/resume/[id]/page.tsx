@@ -1649,6 +1649,7 @@ export default function ResumeEditPage({
       current: false,
       description: "",
       responsibilities: [""],
+      technologies: [],
     };
 
     setResumeData({
@@ -1757,6 +1758,58 @@ export default function ResumeEditPage({
     }
   };
 
+  // Add technology to work experience
+  const handleAddWorkExpTechnology = (expId: string, tech: string) => {
+    if (tech.trim()) {
+      setResumeData({
+        ...resumeData,
+        workExperience: resumeData.workExperience.map((exp) =>
+          exp.id === expId
+            ? { ...exp, technologies: [...(exp.technologies || []), tech.trim()] }
+            : exp,
+        ),
+      });
+    }
+  };
+
+  // Remove technology from work experience
+  const handleRemoveWorkExpTechnology = (expId: string, index: number) => {
+    setResumeData({
+      ...resumeData,
+      workExperience: resumeData.workExperience.map((exp) =>
+        exp.id === expId
+          ? {
+              ...exp,
+              technologies: (exp.technologies || []).filter((_, i) => i !== index),
+            }
+          : exp,
+      ),
+    });
+  };
+
+  // Handle work experience technology drag and drop
+  const handleWorkExpTechDragEnd = (expId: string, event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setResumeData({
+        ...resumeData,
+        workExperience: resumeData.workExperience.map((exp) => {
+          if (exp.id !== expId) return exp;
+
+          const technologies = exp.technologies || [];
+          const oldIndex = technologies.indexOf(active.id as string);
+          const newIndex = technologies.indexOf(over.id as string);
+
+          return {
+            ...exp,
+            technologies: arrayMove(technologies, oldIndex, newIndex),
+          };
+        }),
+      });
+    }
+  };
+
   // Add education
   const handleAddEducation = () => {
     const newEdu: Education = {
@@ -1858,6 +1911,28 @@ export default function ResumeEditPage({
           : proj,
       ),
     });
+  };
+
+  // Handle project technology drag and drop
+  const handleProjectTechDragEnd = (projId: string, event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setResumeData({
+        ...resumeData,
+        projects: resumeData.projects.map((proj) => {
+          if (proj.id !== projId) return proj;
+
+          const oldIndex = proj.technologies.indexOf(active.id as string);
+          const newIndex = proj.technologies.indexOf(over.id as string);
+
+          return {
+            ...proj,
+            technologies: arrayMove(proj.technologies, oldIndex, newIndex),
+          };
+        }),
+      });
+    }
   };
 
   if (isLoading) {
@@ -2319,6 +2394,65 @@ export default function ResumeEditPage({
                       </SortableContext>
                     </DndContext>
                   </div>
+                  <Divider />
+                  <div className="space-y-2">
+                    <div className="text-sm font-medium">
+                      {t("technologies")}
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder={t("addTechnologyPlaceholder")}
+                        value={techInputValues[`work-${exp.id}`] || ""}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          setTechInputValues({
+                            ...techInputValues,
+                            [`work-${exp.id}`]: e.target.value,
+                          })
+                        }
+                        onKeyDown={(
+                          e: React.KeyboardEvent<HTMLInputElement>,
+                        ) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            const value =
+                              techInputValues[`work-${exp.id}`] || "";
+
+                            if (value.trim()) {
+                              handleAddWorkExpTechnology(exp.id, value);
+                              setTechInputValues({
+                                ...techInputValues,
+                                [`work-${exp.id}`]: "",
+                              });
+                            }
+                          }
+                        }}
+                      />
+                    </div>
+                    <DndContext
+                      collisionDetection={closestCenter}
+                      sensors={sensors}
+                      onDragEnd={(event: DragEndEvent) =>
+                        handleWorkExpTechDragEnd(exp.id, event)
+                      }
+                    >
+                      <SortableContext
+                        items={exp.technologies || []}
+                        strategy={rectSortingStrategy}
+                      >
+                        <div className="flex flex-wrap gap-2">
+                          {(exp.technologies || []).map((tech, techIndex) => (
+                            <SortableSkillItem
+                              key={tech}
+                              skill={tech}
+                              onRemove={() =>
+                                handleRemoveWorkExpTechnology(exp.id, techIndex)
+                              }
+                            />
+                          ))}
+                        </div>
+                      </SortableContext>
+                    </DndContext>
+                  </div>
                 </CardBody>
               </Card>
             ))}
@@ -2573,25 +2707,30 @@ export default function ResumeEditPage({
                         }}
                       />
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      {proj.technologies.map((tech, techIndex) => (
-                        <Chip
-                          key={techIndex}
-                          endContent={
-                            <button
-                              className="ml-1"
-                              onClick={() =>
+                    <DndContext
+                      collisionDetection={closestCenter}
+                      sensors={sensors}
+                      onDragEnd={(event: DragEndEvent) =>
+                        handleProjectTechDragEnd(proj.id, event)
+                      }
+                    >
+                      <SortableContext
+                        items={proj.technologies}
+                        strategy={rectSortingStrategy}
+                      >
+                        <div className="flex flex-wrap gap-2">
+                          {proj.technologies.map((tech, techIndex) => (
+                            <SortableSkillItem
+                              key={tech}
+                              skill={tech}
+                              onRemove={() =>
                                 handleRemoveTechnology(proj.id, techIndex)
                               }
-                            >
-                              <X size={14} />
-                            </button>
-                          }
-                        >
-                          {tech}
-                        </Chip>
-                      ))}
-                    </div>
+                            />
+                          ))}
+                        </div>
+                      </SortableContext>
+                    </DndContext>
                   </div>
                 </CardBody>
               </Card>

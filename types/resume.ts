@@ -8,6 +8,7 @@ export interface WorkExperience {
   current?: boolean;
   description?: string; // Overall description of the company or role
   responsibilities: string[];
+  technologies?: string[]; // Skills/technologies used in this role
 }
 
 export interface Education {
