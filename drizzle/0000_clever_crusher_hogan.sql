@@ -59,6 +59,7 @@ CREATE TABLE "interview_preparation_materials" (
 	"title" varchar(255) NOT NULL,
 	"category" varchar(50) NOT NULL,
 	"content" text NOT NULL,
+	"tags" json DEFAULT '[]'::json,
 	"order" integer DEFAULT 0 NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL

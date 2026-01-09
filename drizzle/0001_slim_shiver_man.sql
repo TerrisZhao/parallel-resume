@@ -1,1 +1,0 @@
-ALTER TABLE "interview_preparation_materials" ADD COLUMN "tags" json DEFAULT '[]'::json;

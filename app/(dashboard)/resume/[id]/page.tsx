@@ -2151,6 +2151,7 @@ export default function ResumeEditPage({
                       language={
                         (resumeData.preferredLanguage as "en" | "zh") || "en"
                       }
+                      maxYear={new Date().getFullYear()}
                       value={normalizeDateString(exp.startDate) || ""}
                       onChange={(value) =>
                         handleUpdateWorkExperience(exp.id, "startDate", value)
@@ -2162,6 +2163,7 @@ export default function ResumeEditPage({
                       language={
                         (resumeData.preferredLanguage as "en" | "zh") || "en"
                       }
+                      maxYear={new Date().getFullYear()}
                       value={normalizeDateString(exp.endDate || "") || ""}
                       onChange={(value) =>
                         handleUpdateWorkExperience(exp.id, "endDate", value)
@@ -2482,6 +2484,7 @@ export default function ResumeEditPage({
                       language={
                         (resumeData.preferredLanguage as "en" | "zh") || "en"
                       }
+                      maxYear={new Date().getFullYear()}
                       value={normalizeDateString(proj.startDate) || ""}
                       onChange={(value) =>
                         handleUpdateProject(proj.id, "startDate", value)
@@ -2493,6 +2496,7 @@ export default function ResumeEditPage({
                       language={
                         (resumeData.preferredLanguage as "en" | "zh") || "en"
                       }
+                      maxYear={new Date().getFullYear()}
                       value={normalizeDateString(proj.endDate || "") || ""}
                       onChange={(value) =>
                         handleUpdateProject(proj.id, "endDate", value)

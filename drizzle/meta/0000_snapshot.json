@@ -1,5 +1,5 @@
 {
-  "id": "7ec24b19-8ab4-4855-b919-b7a1b3d5cac2",
+  "id": "5d0ea5f6-4c19-49c5-a64c-db1084cef2f9",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -388,6 +388,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "tags": {
+          "name": "tags",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'[]'::json"
         },
         "order": {
           "name": "order",

@@ -16,6 +16,7 @@ interface MonthYearPickerProps {
   placeholder?: string;
   isDisabled?: boolean;
   language?: "en" | "zh";
+  maxYear?: number; // Maximum year allowed (defaults to current year + 5)
 }
 
 export function MonthYearPicker({
@@ -25,12 +26,13 @@ export function MonthYearPicker({
   placeholder = "Select date",
   isDisabled = false,
   language = "en",
+  maxYear,
 }: MonthYearPickerProps) {
   const parsed = parseDateString(value || "");
   const selectedYear = parsed?.year || "";
   const selectedMonth = parsed?.month || "";
 
-  const yearOptions = getYearOptions();
+  const yearOptions = getYearOptions(1980, maxYear);
   const monthOptions = getMonthOptions(language);
 
   const handleYearChange = (newYear: string) => {
