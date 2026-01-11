@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@heroui/button";
 import { Card, CardBody } from "@heroui/card";
+import { Image } from "@heroui/image";
 import { Chip } from "@heroui/chip";
 import {
   Modal,
@@ -23,6 +24,10 @@ import {
   FileText,
   Edit,
   Trash2,
+  Building2,
+  Clock,
+  Link as LinkIcon,
+  StickyNote,
 } from "lucide-react";
 import { Icon } from "@iconify/react";
 
@@ -40,6 +45,7 @@ interface Interview {
   resumeId?: number;
   resumeName?: string;
   interviewTime: string;
+  duration?: string;
   stage: string;
   notes?: string;
   jobDescription?: string;
@@ -237,6 +243,7 @@ export default function InterviewsPage() {
     jobDescription?: string;
     coverLetter?: string;
     interviewTime?: string;
+    duration?: string;
   }) => {
     try {
       const payload = {
@@ -246,6 +253,7 @@ export default function InterviewsPage() {
         videoLink: data.videoLink || undefined,
         resumeId: data.resumeId,
         interviewTime: data.interviewTime || undefined,
+        duration: data.duration || undefined,
         stage: data.stage,
         notes: data.notes || undefined,
         jobDescription: data.jobDescription || undefined,
@@ -476,6 +484,12 @@ export default function InterviewsPage() {
                                 ).toLocaleString()}
                               </span>
                             </div>
+                            {interview.duration && (
+                              <div className="flex items-center gap-1.5 text-xs text-default-500">
+                                <Clock size={14} />
+                                <span>{interview.duration}</span>
+                              </div>
+                            )}
                           </CardBody>
                         </Card>
                       );
@@ -503,6 +517,9 @@ export default function InterviewsPage() {
             <ModalBody className="p-6">
               <InterviewWizard
                 initialData={wizardInitialData}
+                initialDuration={editingInterview?.duration}
+                initialInterviewTime={editingInterview?.interviewTime}
+                isEditing={!!editingInterview}
                 resumes={resumes}
                 onCancel={onClose}
                 onSubmit={handleWizardSubmit}
@@ -513,101 +530,233 @@ export default function InterviewsPage() {
       </Modal>
 
       {/* View Details Modal */}
-      <Modal isOpen={isViewOpen} size="2xl" onOpenChange={onViewClose}>
+      <Modal
+        isOpen={isViewOpen}
+        scrollBehavior="inside"
+        size="4xl"
+        onOpenChange={onViewClose}
+      >
         <ModalContent>
           {(onClose) => (
             <>
               <ModalHeader>{viewingInterview?.company}</ModalHeader>
-              <ModalBody className="gap-4">
+              <ModalBody className="gap-6">
                 {viewingInterview && (
                   <>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-default-500 mb-1">
-                          {t("interviewType")}
-                        </p>
-                        <div className="flex items-center gap-2">
-                          {getTypeIcon(viewingInterview.type)}
-                          <span>
-                            {t(
-                              `interviewType${viewingInterview.type.charAt(0).toUpperCase()}${viewingInterview.type.slice(1)}`,
+                    {/* Top Section: Info (Left) + Resume Preview (Right) */}
+                    <div className="grid grid-cols-2 gap-6 items-stretch">
+                      {/* Left Side: Interview Information */}
+                      <div className="space-y-4">
+                        {/* Company Name */}
+                        <div className="flex items-start gap-3">
+                          <Building2
+                            className="text-default-400 mt-0.5"
+                            size={18}
+                          />
+                          <div>
+                            <p className="text-xs text-default-400 mb-1">
+                              {t("company")}
+                            </p>
+                            <p className="text-lg font-semibold">
+                              {viewingInterview.company}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Stage */}
+                        <div className="flex items-center gap-3">
+                          <div className="w-4.5" />
+                          <div>
+                            <p className="text-xs text-default-400 mb-1">
+                              {t("stage")}
+                            </p>
+                            <Chip
+                              color={getStageColor(viewingInterview.stage)}
+                              size="sm"
+                              variant="flat"
+                            >
+                              {t(`stages.${viewingInterview.stage}`)}
+                            </Chip>
+                          </div>
+                        </div>
+
+                        {/* Interview Time */}
+                        <div className="flex items-start gap-3">
+                          <Clock
+                            className="text-default-400 mt-0.5"
+                            size={18}
+                          />
+                          <div>
+                            <p className="text-xs text-default-400 mb-1">
+                              {t("interviewTime")}
+                            </p>
+                            {viewingInterview.interviewTime ? (
+                              <>
+                                <p className="font-medium">
+                                  {new Date(
+                                    viewingInterview.interviewTime,
+                                  ).toLocaleString()}
+                                </p>
+                                {viewingInterview.duration && (
+                                  <p className="text-xs text-default-400 mt-0.5">
+                                    {t("duration")}: {viewingInterview.duration}
+                                  </p>
+                                )}
+                              </>
+                            ) : (
+                              <p className="text-sm text-default-400">
+                                {t("notScheduled")}
+                              </p>
                             )}
-                          </span>
+                          </div>
                         </div>
-                      </div>
-                      <div>
-                        <p className="text-sm text-default-500 mb-1">
-                          {t("stage")}
-                        </p>
-                        <Chip
-                          color={getStageColor(viewingInterview.stage)}
-                          variant="flat"
-                        >
-                          {t(`stages.${viewingInterview.stage}`)}
-                        </Chip>
-                      </div>
-                    </div>
-                    {viewingInterview.type === "offline" &&
-                      viewingInterview.location && (
-                        <div>
-                          <p className="text-sm text-default-500 mb-1">
-                            {t("location")}
-                          </p>
-                          <p>{viewingInterview.location}</p>
+
+                        {/* Interview Type */}
+                        <div className="flex items-start gap-3">
+                          {getTypeIcon(viewingInterview.type)}
+                          <div>
+                            <p className="text-xs text-default-400 mb-1">
+                              {t("interviewType")}
+                            </p>
+                            <p className="font-medium">
+                              {t(
+                                `interviewType${viewingInterview.type.charAt(0).toUpperCase()}${viewingInterview.type.slice(1)}`,
+                              )}
+                            </p>
+                          </div>
                         </div>
-                      )}
-                    {viewingInterview.type === "online" &&
-                      viewingInterview.videoLink && (
-                        <div>
-                          <p className="text-sm text-default-500 mb-1">
-                            {t("videoLink")}
-                          </p>
-                          <a
-                            className="text-primary hover:underline"
-                            href={viewingInterview.videoLink}
-                            rel="noopener noreferrer"
-                            target="_blank"
+
+                        {/* Location (for offline) */}
+                        {viewingInterview.type === "offline" &&
+                          viewingInterview.location && (
+                            <div className="flex items-start gap-3">
+                              <MapPin
+                                className="text-default-400 mt-0.5"
+                                size={18}
+                              />
+                              <div>
+                                <p className="text-xs text-default-400 mb-1">
+                                  {t("location")}
+                                </p>
+                                <p className="text-sm">
+                                  {viewingInterview.location}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+
+                        {/* Video Link (for online) */}
+                        {viewingInterview.type === "online" &&
+                          viewingInterview.videoLink && (
+                            <div className="flex items-start gap-3">
+                              <LinkIcon
+                                className="text-default-400 mt-0.5"
+                                size={18}
+                              />
+                              <div>
+                                <p className="text-xs text-default-400 mb-1">
+                                  {t("videoLink")}
+                                </p>
+                                <a
+                                  className="text-sm text-primary hover:underline truncate block max-w-75"
+                                  href={viewingInterview.videoLink}
+                                  rel="noopener noreferrer"
+                                  target="_blank"
+                                >
+                                  {viewingInterview.videoLink}
+                                </a>
+                              </div>
+                            </div>
+                          )}
+
+                        {/* Notes */}
+                        {viewingInterview.notes && (
+                          <div className="flex items-start gap-3">
+                            <StickyNote
+                              className="text-default-400 mt-0.5"
+                              size={18}
+                            />
+                            <div>
+                              <p className="text-xs text-default-400 mb-1">
+                                {t("notes")}
+                              </p>
+                              <p className="text-sm text-default-600 whitespace-pre-wrap line-clamp-3">
+                                {viewingInterview.notes}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Right Side: Resume Preview Thumbnail */}
+                      <div className="h-full">
+                        {viewingInterview.resumeId ? (
+                          <Card
+                            className="shadow-none border-1 border-default-200 overflow-hidden h-full"
+                            radius="lg"
                           >
-                            {viewingInterview.videoLink}
-                          </a>
-                        </div>
-                      )}
-                    <div>
-                      <p className="text-sm text-default-500 mb-1">
-                        {t("interviewTime")}
-                      </p>
-                      <p>
-                        {new Date(
-                          viewingInterview.interviewTime,
-                        ).toLocaleString()}
-                      </p>
+                            <CardBody className="p-0 h-full flex flex-col">
+                              <div className="relative w-full flex-1 overflow-hidden">
+                                <Image
+                                  alt={viewingInterview.resumeName || "Resume"}
+                                  className="object-cover object-top w-full h-full absolute inset-0"
+                                  classNames={{
+                                    wrapper: "!max-w-full h-full",
+                                    img: "w-full h-full object-cover object-top",
+                                  }}
+                                  radius="none"
+                                  src={`/api/resumes/${viewingInterview.resumeId}/thumbnail`}
+                                />
+                              </div>
+                              <div className="px-3 py-2 bg-default-50 shrink-0">
+                                <div className="flex items-center gap-2">
+                                  <FileText
+                                    className="text-default-400"
+                                    size={14}
+                                  />
+                                  <p className="text-xs font-medium truncate">
+                                    {viewingInterview.resumeName}
+                                  </p>
+                                </div>
+                              </div>
+                            </CardBody>
+                          </Card>
+                        ) : (
+                          <Card className="border-2 border-dashed border-default-200 h-full">
+                            <CardBody className="flex items-center justify-center">
+                              <div className="text-center">
+                                <FileText
+                                  className="text-default-300 mx-auto mb-2"
+                                  size={32}
+                                />
+                                <p className="text-xs text-default-400">
+                                  {t("noResumeSelected")}
+                                </p>
+                              </div>
+                            </CardBody>
+                          </Card>
+                        )}
+                      </div>
                     </div>
-                    {viewingInterview.resumeName && (
+
+                    {/* Bottom Section: Cover Letter */}
+                    {viewingInterview.coverLetter ? (
                       <div>
-                        <p className="text-sm text-default-500 mb-1">
-                          {t("relatedResume")}
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <FileText size={16} />
-                          <span>{viewingInterview.resumeName}</span>
-                        </div>
-                      </div>
-                    )}
-                    {viewingInterview.notes && (
-                      <div>
-                        <p className="text-sm text-default-500 mb-1">
-                          {t("notes")}
-                        </p>
-                        <p className="text-sm">{viewingInterview.notes}</p>
-                      </div>
-                    )}
-                    {viewingInterview.coverLetter && (
-                      <div>
-                        <p className="text-sm text-default-500 mb-1">
+                        <p className="text-sm font-medium text-default-700 mb-3">
                           {t("coverLetter")}
                         </p>
-                        <p className="text-sm whitespace-pre-wrap line-clamp-10">
-                          {viewingInterview.coverLetter}
+                        <Card className="bg-default-50">
+                          <CardBody className="p-4">
+                            <p className="text-sm whitespace-pre-wrap text-default-600 leading-relaxed">
+                              {viewingInterview.coverLetter}
+                            </p>
+                          </CardBody>
+                        </Card>
+                      </div>
+                    ) : (
+                      <div className="text-center py-4">
+                        <p className="text-sm text-default-400">
+                          {t("noCoverLetter")}
                         </p>
                       </div>
                     )}

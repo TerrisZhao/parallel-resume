@@ -26,11 +26,13 @@ interface InterviewTimeStepProps {
     date: DateValue | null,
     time: string,
     timeSlotRange: TimeSlot[],
+    duration: DurationEnum,
   ) => void;
   onBack: () => void;
   onSkip: () => void;
   initialDate?: DateValue | null;
   initialTime?: string;
+  initialDuration?: DurationEnum;
   formData: InterviewFormData;
 }
 
@@ -40,6 +42,7 @@ export default function InterviewTimeStep({
   onSkip,
   initialDate,
   initialTime = "",
+  initialDuration,
   formData,
 }: InterviewTimeStepProps) {
   const t = useTranslations("interviews");
@@ -53,7 +56,7 @@ export default function InterviewTimeStep({
     TimeSlot[]
   >([]);
   const [duration, setDuration] = useState<DurationEnum>(
-    DurationEnum.ThirtyMinutes,
+    initialDuration || DurationEnum.ThirtyMinutes,
   );
   const [timeFormat, setTimeFormat] = useState<TimeFormatEnum>(
     TimeFormatEnum.TwelveHour,
@@ -129,7 +132,7 @@ export default function InterviewTimeStep({
   };
 
   const handleConfirm = () => {
-    onNext(selectedDate, selectedTime, selectedTimeSlotRange);
+    onNext(selectedDate, selectedTime, selectedTimeSlotRange, duration);
   };
 
   const onTimeFormatChange = (selectedKey: React.Key) => {

@@ -574,12 +574,16 @@
       "nextSelectTime": "下一步：选择时间",
       "nextConfirm": "下一步：确认",
       "createInterview": "创建面试",
-      "creating": "创建中..."
+      "creating": "创建中...",
+      "updateInterview": "更新面试",
+      "updating": "更新中..."
     },
     "duration": "时长",
     "interviewDetails": "面试详情",
     "skipSchedule": "跳过此步骤",
-    "notScheduled": "暂未安排时间"
+    "notScheduled": "暂未安排时间",
+    "noResumeSelected": "未选择简历",
+    "noCoverLetter": "无求职信"
   },
   "interviewPrep": {
     "title": "面试准备",

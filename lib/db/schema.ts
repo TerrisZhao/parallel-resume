@@ -348,6 +348,7 @@ export const interviews = pgTable(
     location: varchar("location", { length: 500 }), // 面试地点（线下）
     videoLink: varchar("video_link", { length: 500 }), // 视频链接（线上）
     interviewTime: timestamp("interview_time"), // 面试时间（可选）
+    duration: varchar("duration", { length: 10 }), // 面试时长（如：15m, 30m, 1h）
     stage: interviewStageEnum("stage").notNull().default("applied"), // 面试阶段
     notes: text("notes"), // 备注
     jobDescription: text("job_description"), // 职位描述（用于AI生成Cover Letter）

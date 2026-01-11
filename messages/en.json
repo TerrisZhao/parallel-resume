@@ -574,12 +574,16 @@
       "nextSelectTime": "Next: Select Time",
       "nextConfirm": "Next: Confirm",
       "createInterview": "Create Interview",
-      "creating": "Creating..."
+      "creating": "Creating...",
+      "updateInterview": "Update Interview",
+      "updating": "Updating..."
     },
     "duration": "Duration",
     "interviewDetails": "Interview Details",
     "skipSchedule": "Skip this step",
-    "notScheduled": "Not scheduled yet"
+    "notScheduled": "Not scheduled yet",
+    "noResumeSelected": "No resume selected",
+    "noCoverLetter": "No cover letter"
   },
   "interviewPrep": {
     "title": "Interview Preparation",

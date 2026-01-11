@@ -29,6 +29,7 @@ export async function GET(
         resumeId: interviews.resumeId,
         resumeName: resumes.name,
         interviewTime: interviews.interviewTime,
+        duration: interviews.duration,
         stage: interviews.stage,
         notes: interviews.notes,
         jobDescription: interviews.jobDescription,
@@ -104,6 +105,7 @@ export async function PUT(
       videoLink,
       resumeId,
       interviewTime,
+      duration,
       stage,
       notes,
       jobDescription,
@@ -145,6 +147,7 @@ export async function PUT(
               ? new Date(interviewTime)
               : null
             : existing[0].interviewTime,
+        duration: duration !== undefined ? duration : existing[0].duration,
         stage: stage || existing[0].stage,
         notes: notes !== undefined ? notes : existing[0].notes,
         jobDescription:

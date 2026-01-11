@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { zhCN } from "date-fns/locale";
 import { type DateValue } from "@heroui/calendar";
+import { parseDate } from "@internationalized/date";
 import { useTranslations, useLocale } from "next-intl";
 
-import { type TimeSlot } from "../calendar-booking/calendar";
+import { DurationEnum, type TimeSlot } from "../calendar-booking/calendar";
 
 import InterviewInfoStep from "./interview-info-step";
 import InterviewTimeStep from "./interview-time-step";
@@ -25,6 +26,7 @@ export interface InterviewFormData {
   notes?: string;
   jobDescription?: string;
   coverLetter?: string;
+  duration?: string;
 }
 
 export interface Resume {
@@ -37,10 +39,13 @@ type WizardStep = "info" | "time" | "coverLetter" | "confirmation";
 interface InterviewWizardProps {
   resumes: Resume[];
   onSubmit: (
-    data: InterviewFormData & { interviewTime?: string },
+    data: InterviewFormData & { interviewTime?: string; duration?: string },
   ) => Promise<void>;
   onCancel: () => void;
   initialData?: Partial<InterviewFormData>;
+  initialInterviewTime?: string;
+  initialDuration?: string;
+  isEditing?: boolean;
 }
 
 export default function InterviewWizard({
@@ -48,6 +53,9 @@ export default function InterviewWizard({
   onSubmit,
   onCancel,
   initialData,
+  initialInterviewTime,
+  initialDuration,
+  isEditing = false,
 }: InterviewWizardProps) {
   const t = useTranslations("interviews");
   const locale = useLocale();
@@ -62,9 +70,36 @@ export default function InterviewWizard({
     notes: initialData?.notes || "",
     jobDescription: initialData?.jobDescription || "",
     coverLetter: initialData?.coverLetter || "",
+    duration: initialDuration || "",
   });
-  const [selectedDate, setSelectedDate] = useState<DateValue | null>(null);
-  const [selectedTime, setSelectedTime] = useState<string>("");
+
+  // Parse initial interview time if provided
+  const initialDateTime = useMemo(() => {
+    if (!initialInterviewTime) return { date: null, time: "" };
+    try {
+      const dateObj = new Date(initialInterviewTime);
+      const year = dateObj.getFullYear();
+      const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
+      const day = dateObj.getDate().toString().padStart(2, "0");
+      const hours = dateObj.getHours().toString().padStart(2, "0");
+      const minutes = dateObj.getMinutes().toString().padStart(2, "0");
+      const dateStr = `${year}-${month}-${day}`;
+
+      return {
+        date: parseDate(dateStr),
+        time: `${hours}:${minutes}`,
+      };
+    } catch {
+      return { date: null, time: "" };
+    }
+  }, [initialInterviewTime]);
+
+  const [selectedDate, setSelectedDate] = useState<DateValue | null>(
+    initialDateTime.date,
+  );
+  const [selectedTime, setSelectedTime] = useState<string>(
+    initialDateTime.time,
+  );
   const [selectedTimeSlotRange, setSelectedTimeSlotRange] = useState<
     TimeSlot[]
   >([]);
@@ -92,12 +127,14 @@ export default function InterviewWizard({
     date: DateValue | null,
     time: string,
     timeSlotRange: TimeSlot[],
+    duration: DurationEnum,
   ) => {
     if (date) {
       setSelectedDate(date);
     }
     setSelectedTime(time);
     setSelectedTimeSlotRange(timeSlotRange);
+    setFormData((prev) => ({ ...prev, duration }));
     setCurrentStep("confirmation");
   };
 
@@ -105,6 +142,7 @@ export default function InterviewWizard({
     setSelectedDate(null);
     setSelectedTime("");
     setSelectedTimeSlotRange([]);
+    setFormData((prev) => ({ ...prev, duration: undefined }));
     setCurrentStep("confirmation");
   };
 
@@ -133,6 +171,7 @@ export default function InterviewWizard({
       await onSubmit({
         ...formData,
         interviewTime: interviewDateTime,
+        duration: formData.duration,
       });
     } finally {
       setIsSubmitting(false);
@@ -173,7 +212,9 @@ export default function InterviewWizard({
     <div className="w-full">
       {/* Title */}
       <div className="mb-6">
-        <h2 className="text-xl font-semibold">{t("addInterview")}</h2>
+        <h2 className="text-xl font-semibold">
+          {isEditing ? t("editInterview") : t("addInterview")}
+        </h2>
       </div>
 
       {/* Steps Indicator */}
@@ -217,6 +258,9 @@ export default function InterviewWizard({
         <InterviewTimeStep
           formData={formData}
           initialDate={selectedDate}
+          initialDuration={
+            formData.duration ? (formData.duration as DurationEnum) : undefined
+          }
           initialTime={selectedTime}
           onBack={handleBack}
           onNext={handleTimeNext}
@@ -228,6 +272,7 @@ export default function InterviewWizard({
         <InterviewConfirmationStep
           formData={formData}
           formattedDateTime={getFormattedDateTime()}
+          isEditing={isEditing}
           isSubmitting={isSubmitting}
           resumes={resumes}
           selectedDate={selectedDate}

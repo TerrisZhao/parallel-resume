@@ -1,0 +1,1 @@
+ALTER TABLE "interviews" ADD COLUMN "duration" varchar(10);
