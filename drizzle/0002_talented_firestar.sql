@@ -1,0 +1,1 @@
+ALTER TABLE "interviews" ALTER COLUMN "interview_time" DROP NOT NULL;

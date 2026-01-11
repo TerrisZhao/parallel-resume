@@ -96,7 +96,9 @@ export default function Home() {
                 <p className="text-white font-semibold text-sm">
                   {t("promoTitle")}
                 </p>
-                <p className="text-white/90 text-xs">{t("promoDescription", { credits: freeCredits })}</p>
+                <p className="text-white/90 text-xs">
+                  {t("promoDescription", { credits: freeCredits })}
+                </p>
               </div>
             </CardBody>
           </Card>

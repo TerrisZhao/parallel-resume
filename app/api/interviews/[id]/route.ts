@@ -31,6 +31,8 @@ export async function GET(
         interviewTime: interviews.interviewTime,
         stage: interviews.stage,
         notes: interviews.notes,
+        jobDescription: interviews.jobDescription,
+        coverLetter: interviews.coverLetter,
         createdAt: interviews.createdAt,
         updatedAt: interviews.updatedAt,
       })
@@ -104,6 +106,8 @@ export async function PUT(
       interviewTime,
       stage,
       notes,
+      jobDescription,
+      coverLetter,
     } = body;
 
     // Verify resume belongs to user if resumeId is provided
@@ -135,11 +139,20 @@ export async function PUT(
         location: location !== undefined ? location : existing[0].location,
         videoLink: videoLink !== undefined ? videoLink : existing[0].videoLink,
         resumeId: resumeId !== undefined ? resumeId : existing[0].resumeId,
-        interviewTime: interviewTime
-          ? new Date(interviewTime)
-          : existing[0].interviewTime,
+        interviewTime:
+          interviewTime !== undefined
+            ? interviewTime
+              ? new Date(interviewTime)
+              : null
+            : existing[0].interviewTime,
         stage: stage || existing[0].stage,
         notes: notes !== undefined ? notes : existing[0].notes,
+        jobDescription:
+          jobDescription !== undefined
+            ? jobDescription
+            : existing[0].jobDescription,
+        coverLetter:
+          coverLetter !== undefined ? coverLetter : existing[0].coverLetter,
         updatedAt: new Date(),
       })
       .where(eq(interviews.id, parseInt(id)))

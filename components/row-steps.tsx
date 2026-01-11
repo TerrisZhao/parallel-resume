@@ -1,10 +1,10 @@
 "use client";
 
-import type {ComponentProps} from "react";
-import type {ButtonProps} from "@heroui/button";
+import type { ComponentProps } from "react";
+import type { ButtonProps } from "@heroui/button";
 
 import React from "react";
-import {m, LazyMotion, domAnimation} from "framer-motion";
+import { m, LazyMotion, domAnimation } from "framer-motion";
 import clsx from "clsx";
 
 // 自定义 useControlledState hook，替代 @react-stately/utils
@@ -80,11 +80,17 @@ export interface RowStepsProps extends React.HTMLAttributes<HTMLButtonElement> {
 
 function CheckIcon(props: ComponentProps<"svg">) {
   return (
-    <svg {...props} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+    <svg
+      {...props}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      viewBox="0 0 24 24"
+    >
       <m.path
-        animate={{pathLength: 1}}
+        animate={{ pathLength: 1 }}
         d="M5 13l4 4L19 7"
-        initial={{pathLength: 0}}
+        initial={{ pathLength: 0 }}
         strokeLinecap="round"
         strokeLinejoin="round"
         transition={{
@@ -167,20 +173,38 @@ const RowSteps = React.forwardRef<HTMLButtonElement, RowStepsProps>(
       if (!className?.includes("--step-fg-color")) colorsVars.unshift(fgColor);
       if (!className?.includes("--step-color")) colorsVars.unshift(userColor);
       if (!className?.includes("--inactive-bar-color"))
-        colorsVars.push("[--inactive-bar-color:hsl(var(--heroui-default-300))]");
+        colorsVars.push(
+          "[--inactive-bar-color:hsl(var(--heroui-default-300))]",
+        );
 
       return colorsVars;
     }, [color, className]);
 
     return (
-      <nav aria-label="Progress" className="-my-4 max-w-fit overflow-x-auto py-4">
-        <ol className={clsx("flex flex-row flex-nowrap gap-x-3", colors, className)}>
+      <nav
+        aria-label="Progress"
+        className="-my-4 max-w-fit overflow-x-auto py-4"
+      >
+        <ol
+          className={clsx(
+            "flex flex-row flex-nowrap gap-x-3",
+            colors,
+            className,
+          )}
+        >
           {steps?.map((step, stepIdx) => {
             let status =
-              currentStep === stepIdx ? "active" : currentStep < stepIdx ? "inactive" : "complete";
+              currentStep === stepIdx
+                ? "active"
+                : currentStep < stepIdx
+                  ? "inactive"
+                  : "complete";
 
             return (
-              <li key={stepIdx} className="relative flex w-full items-center pr-12">
+              <li
+                key={stepIdx}
+                className="relative flex w-full items-center pr-12"
+              >
                 <button
                   key={stepIdx}
                   ref={ref}
@@ -203,7 +227,7 @@ const RowSteps = React.forwardRef<HTMLButtonElement, RowStepsProps>(
                             },
                           )}
                           initial={false}
-                          transition={{duration: 0.25}}
+                          transition={{ duration: 0.25 }}
                           variants={{
                             inactive: {
                               backgroundColor: "transparent",
@@ -216,7 +240,8 @@ const RowSteps = React.forwardRef<HTMLButtonElement, RowStepsProps>(
                               color: "var(--active-color)",
                             },
                             complete: {
-                              backgroundColor: "var(--complete-background-color)",
+                              backgroundColor:
+                                "var(--complete-background-color)",
                               borderColor: "var(--complete-border-color)",
                             },
                           }}

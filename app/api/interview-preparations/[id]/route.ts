@@ -20,13 +20,7 @@ export async function PUT(
     const { id } = await params;
     const materialId = parseInt(id);
     const body = await request.json();
-    const {
-      title,
-      category,
-      content,
-      order,
-      tags,
-    } = body as {
+    const { title, category, content, order, tags } = body as {
       title?: string;
       category?: string;
       content?: string;

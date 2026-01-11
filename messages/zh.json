@@ -546,18 +546,40 @@
     "failedToDelete": "删除面试失败",
     "notes": "备注",
     "notesPlaceholder": "添加关于这次面试的备注...",
+    "coverLetter": "求职信",
+    "coverLetterPlaceholder": "在这里撰写你的求职信...",
+    "coverLetterHint": "求职信可以帮助你脱颖而出。你可以手动撰写或使用 AI 生成。",
+    "jobDescription": "职位描述",
+    "jobDescriptionPlaceholder": "粘贴职位描述，让 AI 为你生成针对性的求职信...",
+    "jobDescriptionHint": "提供职位描述以帮助 AI 生成个性化的求职信",
+    "jobDescriptionRequired": "请先输入职位描述",
+    "generateWithAI": "AI 生成",
+    "generating": "生成中...",
+    "coverLetterGenerated": "求职信生成成功",
+    "generateFailed": "生成求职信失败",
+    "skipCoverLetter": "跳过此步骤",
+    "selectResumeFirst": "请在第一步选择简历以使用 AI 生成",
+    "aiNotAvailable": "AI 生成不可用。请配置 AI 设置或手动输入。",
+    "aiGenerateSection": "AI 生成",
+    "checkingAI": "检查 AI 可用性...",
+    "creditsBalance": "积分余额",
+    "creditsConsumed": "消耗积分",
     "steps": {
       "information": "填写信息",
       "schedule": "选择时间",
+      "coverLetter": "求职信",
       "confirm": "确认预约"
     },
     "buttons": {
       "nextSelectTime": "下一步：选择时间",
+      "nextConfirm": "下一步：确认",
       "createInterview": "创建面试",
       "creating": "创建中..."
     },
     "duration": "时长",
-    "interviewDetails": "面试详情"
+    "interviewDetails": "面试详情",
+    "skipSchedule": "跳过此步骤",
+    "notScheduled": "暂未安排时间"
   },
   "interviewPrep": {
     "title": "面试准备",

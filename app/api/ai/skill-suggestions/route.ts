@@ -49,7 +49,8 @@ function getSkillSuggestionsPrompt(
       optimizationGuidance =
         "Based on technologies mentioned in work experience and project experience, supplement potentially missing skills and optimize grouping structure.";
     } else if (hasWorkExp) {
-      optimizationGuidance = "Based on responsibilities and requirements in work experience, supplement relevant skills.";
+      optimizationGuidance =
+        "Based on responsibilities and requirements in work experience, supplement relevant skills.";
     } else if (hasProjects) {
       optimizationGuidance =
         "Based on technology stack in project experience, supplement relevant skills and tools.";

@@ -17,12 +17,18 @@ import {
   timeFormats,
   durations,
 } from "../calendar-booking/calendar";
+
 import InterviewDetails from "./interview-details";
 import { type InterviewFormData } from "./interview-wizard";
 
 interface InterviewTimeStepProps {
-  onNext: (date: DateValue, time: string, timeSlotRange: TimeSlot[]) => void;
+  onNext: (
+    date: DateValue | null,
+    time: string,
+    timeSlotRange: TimeSlot[],
+  ) => void;
   onBack: () => void;
+  onSkip: () => void;
   initialDate?: DateValue | null;
   initialTime?: string;
   formData: InterviewFormData;
@@ -31,10 +37,12 @@ interface InterviewTimeStepProps {
 export default function InterviewTimeStep({
   onNext,
   onBack,
+  onSkip,
   initialDate,
   initialTime = "",
   formData,
 }: InterviewTimeStepProps) {
+  const t = useTranslations("interviews");
   const tCommon = useTranslations("common");
   const locale = useLocale();
   const [selectedDate, setSelectedDate] = useState<DateValue>(
@@ -190,7 +198,9 @@ export default function InterviewTimeStep({
             <p className="text-small flex items-center">
               <span className="text-default-700">
                 {locale === "zh"
-                  ? format(selectedDate.toString(), "M月d日 EEE", { locale: zhCN })
+                  ? format(selectedDate.toString(), "M月d日 EEE", {
+                      locale: zhCN,
+                    })
                   : format(selectedDate.toString(), "EEE d")}
               </span>
             </p>
@@ -222,9 +232,12 @@ export default function InterviewTimeStep({
         </div>
       </div>
 
-      <div className="flex justify-start mt-6">
+      <div className="flex justify-between mt-6">
         <Button variant="flat" onPress={onBack}>
           {tCommon("back")}
+        </Button>
+        <Button variant="light" onPress={onSkip}>
+          {t("skipSchedule")}
         </Button>
       </div>
     </div>

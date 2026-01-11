@@ -45,3 +45,5 @@ bun.lockb
 app.log
 app-error.log
 ios/
+.claude
+CLAUDE.md

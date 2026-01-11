@@ -347,9 +347,11 @@ export const interviews = pgTable(
     type: interviewTypeEnum("type").notNull(), // 面试类型
     location: varchar("location", { length: 500 }), // 面试地点（线下）
     videoLink: varchar("video_link", { length: 500 }), // 视频链接（线上）
-    interviewTime: timestamp("interview_time").notNull(), // 面试时间
+    interviewTime: timestamp("interview_time"), // 面试时间（可选）
     stage: interviewStageEnum("stage").notNull().default("applied"), // 面试阶段
     notes: text("notes"), // 备注
+    jobDescription: text("job_description"), // 职位描述（用于AI生成Cover Letter）
+    coverLetter: text("cover_letter"), // Cover Letter内容
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },

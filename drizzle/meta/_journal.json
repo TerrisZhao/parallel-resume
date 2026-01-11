@@ -8,6 +8,20 @@
       "when": 1767926416423,
       "tag": "0000_clever_crusher_hogan",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1768081477942,
+      "tag": "0001_lyrical_shiver_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1768102623754,
+      "tag": "0002_talented_firestar",
+      "breakpoints": true
     }
   ]
 }

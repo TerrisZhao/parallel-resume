@@ -42,6 +42,8 @@ interface Interview {
   interviewTime: string;
   stage: string;
   notes?: string;
+  jobDescription?: string;
+  coverLetter?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -109,6 +111,8 @@ export default function InterviewsPage() {
         resumeId: number;
         stage: string;
         notes: string;
+        jobDescription: string;
+        coverLetter: string;
       }>
     | undefined
   >(undefined);
@@ -182,6 +186,8 @@ export default function InterviewsPage() {
       resumeId: interview.resumeId,
       stage: interview.stage,
       notes: interview.notes,
+      jobDescription: interview.jobDescription,
+      coverLetter: interview.coverLetter,
     });
     onViewClose();
     onOpen();
@@ -228,7 +234,9 @@ export default function InterviewsPage() {
     resumeId?: number;
     stage: string;
     notes?: string;
-    interviewTime: string;
+    jobDescription?: string;
+    coverLetter?: string;
+    interviewTime?: string;
   }) => {
     try {
       const payload = {
@@ -237,9 +245,11 @@ export default function InterviewsPage() {
         location: data.location || undefined,
         videoLink: data.videoLink || undefined,
         resumeId: data.resumeId,
-        interviewTime: data.interviewTime,
+        interviewTime: data.interviewTime || undefined,
         stage: data.stage,
         notes: data.notes || undefined,
+        jobDescription: data.jobDescription || undefined,
+        coverLetter: data.coverLetter || undefined,
       };
 
       const response = editingInterview
@@ -589,6 +599,16 @@ export default function InterviewsPage() {
                           {t("notes")}
                         </p>
                         <p className="text-sm">{viewingInterview.notes}</p>
+                      </div>
+                    )}
+                    {viewingInterview.coverLetter && (
+                      <div>
+                        <p className="text-sm text-default-500 mb-1">
+                          {t("coverLetter")}
+                        </p>
+                        <p className="text-sm whitespace-pre-wrap line-clamp-10">
+                          {viewingInterview.coverLetter}
+                        </p>
                       </div>
                     )}
                   </>

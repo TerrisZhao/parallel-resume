@@ -27,6 +27,8 @@ export async function GET() {
         interviewTime: interviews.interviewTime,
         stage: interviews.stage,
         notes: interviews.notes,
+        jobDescription: interviews.jobDescription,
+        coverLetter: interviews.coverLetter,
         createdAt: interviews.createdAt,
         updatedAt: interviews.updatedAt,
       })
@@ -65,9 +67,11 @@ export async function POST(request: Request) {
       interviewTime,
       stage,
       notes,
+      jobDescription,
+      coverLetter,
     } = body;
 
-    if (!company || !type || !interviewTime || !stage) {
+    if (!company || !type || !stage) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 },
@@ -104,9 +108,11 @@ export async function POST(request: Request) {
         location: location || null,
         videoLink: videoLink || null,
         resumeId: resumeId || null,
-        interviewTime: new Date(interviewTime),
+        interviewTime: interviewTime ? new Date(interviewTime) : null,
         stage,
         notes: notes || null,
+        jobDescription: jobDescription || null,
+        coverLetter: coverLetter || null,
       })
       .returning();
 

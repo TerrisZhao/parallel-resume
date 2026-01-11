@@ -4,11 +4,12 @@ import { useTranslations } from "next-intl";
 import { Button } from "@heroui/button";
 import { Chip } from "@heroui/chip";
 import { Divider } from "@heroui/divider";
-import { Video, MapPin, Phone, Calendar, FileText } from "lucide-react";
+import { Video, MapPin, Phone, Calendar, FileText, Mail } from "lucide-react";
 import { type DateValue } from "@heroui/calendar";
 
-import { type InterviewFormData, type Resume } from "./interview-wizard";
 import { type TimeSlot } from "../calendar-booking/calendar";
+
+import { type InterviewFormData, type Resume } from "./interview-wizard";
 
 interface InterviewConfirmationStepProps {
   formData: InterviewFormData;
@@ -127,22 +128,37 @@ export default function InterviewConfirmationStep({
 
         <Divider />
 
-        {/* Date and Time */}
-        <div>
-          <p className="text-sm text-default-500 mb-2">{t("interviewTime")}</p>
-          <div className="flex items-center gap-2">
-            <Calendar className="text-primary" size={18} />
-            <span className="font-medium">{formattedDateTime}</span>
-          </div>
-          {selectedTimeSlotRange.length > 1 && (
-            <p className="text-xs text-default-400 mt-1">
-              {t("duration")}: {selectedTimeSlotRange[0].label} -{" "}
-              {selectedTimeSlotRange[1].label}
-            </p>
-          )}
-        </div>
-
-        <Divider />
+        {/* Date and Time - only show if selected */}
+        {formattedDateTime ? (
+          <>
+            <div>
+              <p className="text-sm text-default-500 mb-2">
+                {t("interviewTime")}
+              </p>
+              <div className="flex items-center gap-2">
+                <Calendar className="text-primary" size={18} />
+                <span className="font-medium">{formattedDateTime}</span>
+              </div>
+              {selectedTimeSlotRange.length > 1 && (
+                <p className="text-xs text-default-400 mt-1">
+                  {t("duration")}: {selectedTimeSlotRange[0].label} -{" "}
+                  {selectedTimeSlotRange[1].label}
+                </p>
+              )}
+            </div>
+            <Divider />
+          </>
+        ) : (
+          <>
+            <div>
+              <p className="text-sm text-default-500 mb-2">
+                {t("interviewTime")}
+              </p>
+              <p className="text-sm text-default-400">{t("notScheduled")}</p>
+            </div>
+            <Divider />
+          </>
+        )}
 
         {/* Resume */}
         {selectedResume && (
@@ -154,6 +170,24 @@ export default function InterviewConfirmationStep({
               <div className="flex items-center gap-2">
                 <FileText size={18} />
                 <span>{selectedResume.name}</span>
+              </div>
+            </div>
+            <Divider />
+          </>
+        )}
+
+        {/* Cover Letter */}
+        {formData.coverLetter && (
+          <>
+            <div>
+              <p className="text-sm text-default-500 mb-2">
+                {t("coverLetter")}
+              </p>
+              <div className="flex items-start gap-2">
+                <Mail className="mt-1 flex-shrink-0" size={18} />
+                <p className="text-sm whitespace-pre-wrap line-clamp-6">
+                  {formData.coverLetter}
+                </p>
               </div>
             </div>
             <Divider />
@@ -177,7 +211,9 @@ export default function InterviewConfirmationStep({
             {tCommon("back")}
           </Button>
           <Button color="primary" isLoading={isSubmitting} onPress={onConfirm}>
-            {isSubmitting ? t("buttons.creating") : t("buttons.createInterview")}
+            {isSubmitting
+              ? t("buttons.creating")
+              : t("buttons.createInterview")}
           </Button>
         </div>
       </div>

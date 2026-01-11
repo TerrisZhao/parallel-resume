@@ -25,8 +25,11 @@ export default function CalendarTimeSelect({
     const slots: TimeSlot[] = [];
     const totalMinutesInDay = 24 * 60;
     const intervalMinutes =
-      duration === DurationEnum.FifteenMinutes ? 15 :
-      duration === DurationEnum.OneHour ? 60 : 30;
+      duration === DurationEnum.FifteenMinutes
+        ? 15
+        : duration === DurationEnum.OneHour
+          ? 60
+          : 30;
 
     for (
       let minutes = 0;
@@ -58,7 +61,10 @@ export default function CalendarTimeSelect({
   }, [timeFormat, duration]);
 
   return (
-    <ScrollShadow hideScrollBar className="flex w-full h-full max-h-full flex-col gap-2 overflow-y-auto">
+    <ScrollShadow
+      hideScrollBar
+      className="flex w-full h-full max-h-full flex-col gap-2 overflow-y-auto"
+    >
       {timeSlots.map((slot) => (
         <CalendarTime
           key={slot.value}

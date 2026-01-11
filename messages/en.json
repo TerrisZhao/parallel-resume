@@ -546,18 +546,40 @@
     "failedToDelete": "Failed to delete interview",
     "notes": "Notes",
     "notesPlaceholder": "Add any notes about this interview...",
+    "coverLetter": "Cover Letter",
+    "coverLetterPlaceholder": "Write your cover letter here...",
+    "coverLetterHint": "A cover letter helps you stand out. You can write it manually or use AI to generate one.",
+    "jobDescription": "Job Description",
+    "jobDescriptionPlaceholder": "Paste the job description here for AI to generate a tailored cover letter...",
+    "jobDescriptionHint": "Provide the job description to help AI generate a personalized cover letter",
+    "jobDescriptionRequired": "Please enter the job description first",
+    "generateWithAI": "Generate with AI",
+    "generating": "Generating...",
+    "coverLetterGenerated": "Cover letter generated successfully",
+    "generateFailed": "Failed to generate cover letter",
+    "skipCoverLetter": "Skip this step",
+    "selectResumeFirst": "Please select a resume in the first step to use AI generation",
+    "aiNotAvailable": "AI generation is not available. Please configure AI settings or enter manually.",
+    "aiGenerateSection": "AI Generation",
+    "checkingAI": "Checking AI availability...",
+    "creditsBalance": "Credits",
+    "creditsConsumed": "Credits consumed",
     "steps": {
       "information": "Information",
       "schedule": "Schedule",
+      "coverLetter": "Cover Letter",
       "confirm": "Confirm"
     },
     "buttons": {
       "nextSelectTime": "Next: Select Time",
+      "nextConfirm": "Next: Confirm",
       "createInterview": "Create Interview",
       "creating": "Creating..."
     },
     "duration": "Duration",
-    "interviewDetails": "Interview Details"
+    "interviewDetails": "Interview Details",
+    "skipSchedule": "Skip this step",
+    "notScheduled": "Not scheduled yet"
   },
   "interviewPrep": {
     "title": "Interview Preparation",

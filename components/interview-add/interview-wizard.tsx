@@ -6,10 +6,12 @@ import { zhCN } from "date-fns/locale";
 import { type DateValue } from "@heroui/calendar";
 import { useTranslations, useLocale } from "next-intl";
 
+import { type TimeSlot } from "../calendar-booking/calendar";
+
 import InterviewInfoStep from "./interview-info-step";
 import InterviewTimeStep from "./interview-time-step";
+import CoverLetterStep, { type CoverLetterData } from "./cover-letter-step";
 import InterviewConfirmationStep from "./interview-confirmation-step";
-import { type TimeSlot } from "../calendar-booking/calendar";
 
 import RowSteps from "@/components/row-steps";
 
@@ -21,6 +23,8 @@ export interface InterviewFormData {
   resumeId?: number;
   stage: string;
   notes?: string;
+  jobDescription?: string;
+  coverLetter?: string;
 }
 
 export interface Resume {
@@ -28,12 +32,12 @@ export interface Resume {
   name: string;
 }
 
-type WizardStep = "info" | "time" | "confirmation";
+type WizardStep = "info" | "time" | "coverLetter" | "confirmation";
 
 interface InterviewWizardProps {
   resumes: Resume[];
   onSubmit: (
-    data: InterviewFormData & { interviewTime: string },
+    data: InterviewFormData & { interviewTime?: string },
   ) => Promise<void>;
   onCancel: () => void;
   initialData?: Partial<InterviewFormData>;
@@ -56,6 +60,8 @@ export default function InterviewWizard({
     resumeId: initialData?.resumeId,
     stage: initialData?.stage || "applied",
     notes: initialData?.notes || "",
+    jobDescription: initialData?.jobDescription || "",
+    coverLetter: initialData?.coverLetter || "",
   });
   const [selectedDate, setSelectedDate] = useState<DateValue | null>(null);
   const [selectedTime, setSelectedTime] = useState<string>("");
@@ -66,36 +72,63 @@ export default function InterviewWizard({
 
   const handleInfoNext = (data: InterviewFormData) => {
     setFormData(data);
+    setCurrentStep("coverLetter");
+  };
+
+  const handleCoverLetterNext = (data: CoverLetterData) => {
+    setFormData({
+      ...formData,
+      jobDescription: data.jobDescription,
+      coverLetter: data.coverLetter,
+    });
+    setCurrentStep("time");
+  };
+
+  const handleCoverLetterSkip = () => {
     setCurrentStep("time");
   };
 
   const handleTimeNext = (
-    date: DateValue,
+    date: DateValue | null,
     time: string,
     timeSlotRange: TimeSlot[],
   ) => {
-    setSelectedDate(date);
+    if (date) {
+      setSelectedDate(date);
+    }
     setSelectedTime(time);
     setSelectedTimeSlotRange(timeSlotRange);
     setCurrentStep("confirmation");
   };
 
+  const handleTimeSkip = () => {
+    setSelectedDate(null);
+    setSelectedTime("");
+    setSelectedTimeSlotRange([]);
+    setCurrentStep("confirmation");
+  };
+
   const handleBack = () => {
-    if (currentStep === "time") {
+    if (currentStep === "coverLetter") {
       setCurrentStep("info");
+    } else if (currentStep === "time") {
+      setCurrentStep("coverLetter");
     } else if (currentStep === "confirmation") {
       setCurrentStep("time");
     }
   };
 
   const handleConfirm = async () => {
-    if (!selectedDate || !selectedTime) return;
-
     setIsSubmitting(true);
     try {
-      // 将日期和时间组合成 ISO 字符串
-      const dateStr = selectedDate.toString(); // YYYY-MM-DD
-      const interviewDateTime = `${dateStr}T${selectedTime}:00`;
+      let interviewDateTime: string | undefined;
+
+      // 如果选择了日期和时间，则组合成 ISO 字符串
+      if (selectedDate && selectedTime) {
+        const dateStr = selectedDate.toString(); // YYYY-MM-DD
+
+        interviewDateTime = `${dateStr}T${selectedTime}:00`;
+      }
 
       await onSubmit({
         ...formData,
@@ -116,6 +149,7 @@ export default function InterviewWizard({
       // 中文格式：2026年1月9日 星期五 下午2:30
       return format(date, "yyyy年M月d日 EEEE a h:mm", { locale: zhCN });
     }
+
     // 英文格式：Friday, January 9, 2026 at 2:30 PM
     return format(date, "EEEE, MMMM d, yyyy 'at' h:mm a");
   };
@@ -124,10 +158,12 @@ export default function InterviewWizard({
     switch (currentStep) {
       case "info":
         return 0;
-      case "time":
+      case "coverLetter":
         return 1;
-      case "confirmation":
+      case "time":
         return 2;
+      case "confirmation":
+        return 3;
       default:
         return 0;
     }
@@ -146,6 +182,7 @@ export default function InterviewWizard({
           currentStep={getCurrentStepIndex()}
           steps={[
             { title: t("steps.information") },
+            { title: t("steps.coverLetter") },
             { title: t("steps.schedule") },
             { title: t("steps.confirm") },
           ]}
@@ -162,6 +199,20 @@ export default function InterviewWizard({
         />
       )}
 
+      {currentStep === "coverLetter" && (
+        <CoverLetterStep
+          company={formData.company}
+          initialData={{
+            jobDescription: formData.jobDescription || "",
+            coverLetter: formData.coverLetter || "",
+          }}
+          resumeId={formData.resumeId}
+          onBack={handleBack}
+          onNext={handleCoverLetterNext}
+          onSkip={handleCoverLetterSkip}
+        />
+      )}
+
       {currentStep === "time" && (
         <InterviewTimeStep
           formData={formData}
@@ -169,6 +220,7 @@ export default function InterviewWizard({
           initialTime={selectedTime}
           onBack={handleBack}
           onNext={handleTimeNext}
+          onSkip={handleTimeSkip}
         />
       )}
 

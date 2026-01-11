@@ -17,6 +17,7 @@ export function MeshGradient({ className = "" }: MeshGradientProps) {
 
   const initGradient = useCallback(() => {
     const canvas = canvasRef.current;
+
     if (!canvas) return;
 
     const gl = canvas.getContext("webgl", {
@@ -24,8 +25,10 @@ export function MeshGradient({ className = "" }: MeshGradientProps) {
       alpha: true,
       premultipliedAlpha: false,
     });
+
     if (!gl) {
       console.warn("WebGL not supported, falling back to CSS gradient");
+
       return;
     }
 
@@ -130,17 +133,20 @@ export function MeshGradient({ className = "" }: MeshGradientProps) {
     function createShader(
       gl: WebGLRenderingContext,
       type: number,
-      source: string
+      source: string,
     ): WebGLShader | null {
       const shader = gl.createShader(type);
+
       if (!shader) return null;
       gl.shaderSource(shader, source);
       gl.compileShader(shader);
       if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
         console.error("Shader compile error:", gl.getShaderInfoLog(shader));
         gl.deleteShader(shader);
+
         return null;
       }
+
       return shader;
     }
 
@@ -148,9 +154,10 @@ export function MeshGradient({ className = "" }: MeshGradientProps) {
     function createProgram(
       gl: WebGLRenderingContext,
       vertexShader: WebGLShader,
-      fragmentShader: WebGLShader
+      fragmentShader: WebGLShader,
     ): WebGLProgram | null {
       const program = gl.createProgram();
+
       if (!program) return null;
       gl.attachShader(program, vertexShader);
       gl.attachShader(program, fragmentShader);
@@ -158,8 +165,10 @@ export function MeshGradient({ className = "" }: MeshGradientProps) {
       if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
         console.error("Program link error:", gl.getProgramInfoLog(program));
         gl.deleteProgram(program);
+
         return null;
       }
+
       return program;
     }
 
@@ -167,21 +176,23 @@ export function MeshGradient({ className = "" }: MeshGradientProps) {
     const fragmentShader = createShader(
       gl,
       gl.FRAGMENT_SHADER,
-      fragmentShaderSource
+      fragmentShaderSource,
     );
 
     if (!vertexShader || !fragmentShader) return;
 
     const program = createProgram(gl, vertexShader, fragmentShader);
+
     if (!program) return;
 
     // 设置顶点缓冲区 (全屏四边形)
     const positionBuffer = gl.createBuffer();
+
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     gl.bufferData(
       gl.ARRAY_BUFFER,
       new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]),
-      gl.STATIC_DRAW
+      gl.STATIC_DRAW,
     );
 
     const positionLocation = gl.getAttribLocation(program, "a_position");
@@ -206,11 +217,23 @@ export function MeshGradient({ className = "" }: MeshGradientProps) {
 
       glContext.enableVertexAttribArray(positionLocation);
       glContext.bindBuffer(glContext.ARRAY_BUFFER, positionBuffer);
-      glContext.vertexAttribPointer(positionLocation, 2, glContext.FLOAT, false, 0, 0);
+      glContext.vertexAttribPointer(
+        positionLocation,
+        2,
+        glContext.FLOAT,
+        false,
+        0,
+        0,
+      );
 
       const elapsed = (performance.now() - startTimeRef.current) / 1000;
+
       glContext.uniform1f(timeLocation, elapsed);
-      glContext.uniform2f(resolutionLocation, canvasElement.width, canvasElement.height);
+      glContext.uniform2f(
+        resolutionLocation,
+        canvasElement.width,
+        canvasElement.height,
+      );
 
       glContext.drawArrays(glContext.TRIANGLES, 0, 6);
 
@@ -220,7 +243,11 @@ export function MeshGradient({ className = "" }: MeshGradientProps) {
     function resizeCanvasIfNeeded() {
       const displayWidth = canvasElement.clientWidth;
       const displayHeight = canvasElement.clientHeight;
-      if (canvasElement.width !== displayWidth || canvasElement.height !== displayHeight) {
+
+      if (
+        canvasElement.width !== displayWidth ||
+        canvasElement.height !== displayHeight
+      ) {
         canvasElement.width = displayWidth;
         canvasElement.height = displayHeight;
         glContext.viewport(0, 0, displayWidth, displayHeight);
@@ -241,6 +268,7 @@ export function MeshGradient({ className = "" }: MeshGradientProps) {
 
   useEffect(() => {
     const cleanup = initGradient();
+
     return () => {
       if (cleanup) cleanup();
       cancelAnimationFrame(animationRef.current);
@@ -258,4 +286,3 @@ export function MeshGradient({ className = "" }: MeshGradientProps) {
     />
   );
 }
-

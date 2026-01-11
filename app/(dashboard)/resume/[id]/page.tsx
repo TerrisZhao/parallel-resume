@@ -783,7 +783,9 @@ function EditableName({
       type="button"
       onClick={handleStartEdit}
     >
-      <span className="text-3xl leading-6 font-semibold">{name || "Resume"}</span>
+      <span className="text-3xl leading-6 font-semibold">
+        {name || "Resume"}
+      </span>
       <span className="ml-2 text-xs text-default-500 hidden sm:inline-flex items-center gap-1">
         <Edit3 size={14} />
       </span>
@@ -1096,9 +1098,9 @@ export default function ResumeEditPage({
   const [activeSkillId, setActiveSkillId] = useState<string | null>(null);
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
   const [isAiOptimizationEnabled, setIsAiOptimizationEnabled] = useState(false);
-  const [techInputValues, setTechInputValues] = useState<Record<string, string>>(
-    {},
-  );
+  const [techInputValues, setTechInputValues] = useState<
+    Record<string, string>
+  >({});
 
   // Summary enhancement states
   const [isSummaryEnhancing, setIsSummaryEnhancing] = useState(false);
@@ -1196,7 +1198,9 @@ export default function ResumeEditPage({
     // Check if there are skills to optimize
     const skillGroups = resumeData.keySkills as SkillGroup[];
     const hasSkills =
-      skillGroups && skillGroups.length > 0 && skillGroups.some((g) => g.skills.length > 0);
+      skillGroups &&
+      skillGroups.length > 0 &&
+      skillGroups.some((g) => g.skills.length > 0);
 
     if (!hasSkills) {
       addToast({
@@ -1765,7 +1769,10 @@ export default function ResumeEditPage({
         ...resumeData,
         workExperience: resumeData.workExperience.map((exp) =>
           exp.id === expId
-            ? { ...exp, technologies: [...(exp.technologies || []), tech.trim()] }
+            ? {
+                ...exp,
+                technologies: [...(exp.technologies || []), tech.trim()],
+              }
             : exp,
         ),
       });
@@ -1780,7 +1787,9 @@ export default function ResumeEditPage({
         exp.id === expId
           ? {
               ...exp,
-              technologies: (exp.technologies || []).filter((_, i) => i !== index),
+              technologies: (exp.technologies || []).filter(
+                (_, i) => i !== index,
+              ),
             }
           : exp,
       ),
@@ -2964,7 +2973,7 @@ export default function ResumeEditPage({
                 {skillOptimization.reasoning && (
                   <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                     <h4 className="font-semibold mb-2 text-sm flex items-center gap-2">
-                      <Sparkles size={16} className="text-blue-600" />
+                      <Sparkles className="text-blue-600" size={16} />
                       {t("aiReasoning")}
                     </h4>
                     <p className="text-sm text-default-700">
