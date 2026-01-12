@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import puppeteer, { Browser } from "puppeteer";
+import { eq } from "drizzle-orm";
+
+import { db } from "@/lib/db/drizzle";
+import { resumes } from "@/lib/db/schema";
+import { uploadToR2 } from "@/lib/utils/r2-client";
 
 // Puppeteer configuration for different environments
 function getBrowserConfig() {
@@ -70,6 +75,44 @@ export async function GET(request: NextRequest) {
       { error: "Resume ID is required" },
       { status: 400 },
     );
+  }
+
+  try {
+    // Check if resume exists and has cached PDF
+    const [resume] = await db
+      .select()
+      .from(resumes)
+      .where(eq(resumes.id, Number(resumeId)));
+
+    if (!resume) {
+      return NextResponse.json(
+        { error: "Resume not found" },
+        { status: 404 },
+      );
+    }
+
+    // Check if PDF is cached and up-to-date
+    // PDF is valid if:
+    // 1. pdfUrl exists
+    // 2. pdfGeneratedAt exists
+    // 3. pdfGeneratedAt >= updatedAt (PDF was generated after last resume update)
+    const isPdfCached =
+      resume.pdfUrl &&
+      resume.pdfGeneratedAt &&
+      resume.pdfGeneratedAt >= resume.updatedAt;
+
+    if (isPdfCached) {
+      console.log(`Using cached PDF for resume ${resumeId}: ${resume.pdfUrl}`);
+      // Redirect to cached PDF
+      return NextResponse.redirect(resume.pdfUrl);
+    }
+
+    console.log(
+      `Generating new PDF for resume ${resumeId} (last update: ${resume.updatedAt}, last PDF: ${resume.pdfGeneratedAt})`,
+    );
+  } catch (error) {
+    console.error("Error checking PDF cache:", error);
+    // Continue to generate PDF even if cache check fails
   }
 
   let browser: Browser | null = null;
@@ -206,6 +249,7 @@ export async function GET(request: NextRequest) {
 
     // Get resume name for filename
     let fileName = "Resume.pdf";
+    let fullName = "";
 
     try {
       const resumeDataResponse = await fetch(
@@ -217,14 +261,46 @@ export async function GET(request: NextRequest) {
 
       if (resumeDataResponse.ok) {
         const resumeData = await resumeDataResponse.json();
-        const fullName = resumeData.resume.fullName || resumeData.resume.name;
 
+        fullName = resumeData.resume.fullName || resumeData.resume.name;
         if (fullName) {
           fileName = `${fullName.replace(/\s+/g, "_")}_Resume.pdf`;
         }
       }
     } catch (error) {
       console.error("Error fetching resume data for filename:", error);
+    }
+
+    // Upload PDF to R2 and update database
+    try {
+      console.log(`Uploading PDF to R2 for resume ${resumeId}...`);
+      const timestamp = Date.now();
+      const objectKey = `resumes/${resumeId}/resume_${timestamp}.pdf`;
+      const uploadResult = await uploadToR2(
+        objectKey,
+        Buffer.from(pdf),
+        "application/pdf",
+        fileName,
+      );
+
+      if (uploadResult.success && uploadResult.url) {
+        console.log(`PDF uploaded successfully: ${uploadResult.url}`);
+        // Update database with PDF URL and generation timestamp
+        await db
+          .update(resumes)
+          .set({
+            pdfUrl: uploadResult.url,
+            pdfGeneratedAt: new Date(),
+          })
+          .where(eq(resumes.id, Number(resumeId)));
+
+        console.log(`Database updated with PDF URL for resume ${resumeId}`);
+      } else {
+        console.error("Failed to upload PDF to R2:", uploadResult.error);
+      }
+    } catch (error) {
+      console.error("Error uploading PDF to R2:", error);
+      // Continue to return PDF even if upload fails
     }
 
     // Return PDF

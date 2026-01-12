@@ -244,6 +244,8 @@ export const resumes = pgTable(
       .notNull()
       .default(false), // AI优化总开关
     jobDescription: text("job_description"), // 职位描述（AI优化时使用）
+    pdfUrl: varchar("pdf_url", { length: 500 }), // PDF文件在R2的URL
+    pdfGeneratedAt: timestamp("pdf_generated_at"), // PDF生成时间
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
