@@ -44,6 +44,7 @@ interface Interview {
   videoLink?: string;
   resumeId?: number;
   resumeName?: string;
+  resumePdfUrl?: string | null;
   interviewTime: string;
   duration?: string;
   stage: string;
@@ -697,16 +698,28 @@ export default function InterviewsPage() {
                           >
                             <CardBody className="p-0 h-full flex flex-col">
                               <div className="relative w-full flex-1 overflow-hidden">
-                                <Image
-                                  alt={viewingInterview.resumeName || "Resume"}
-                                  className="object-cover object-top w-full h-full absolute inset-0"
-                                  classNames={{
-                                    wrapper: "!max-w-full h-full",
-                                    img: "w-full h-full object-cover object-top",
-                                  }}
-                                  radius="none"
-                                  src={`/api/resumes/${viewingInterview.resumeId}/thumbnail`}
-                                />
+                                {viewingInterview.resumePdfUrl ? (
+                                  // Use cached PDF URL if available
+                                  <iframe
+                                    className="w-full h-full border-none"
+                                    src={`${viewingInterview.resumePdfUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+                                    title={
+                                      viewingInterview.resumeName || "Resume"
+                                    }
+                                  />
+                                ) : (
+                                  // Fallback to thumbnail API if no cached PDF
+                                  <Image
+                                    alt={viewingInterview.resumeName || "Resume"}
+                                    className="object-cover object-top w-full h-full absolute inset-0"
+                                    classNames={{
+                                      wrapper: "!max-w-full h-full",
+                                      img: "w-full h-full object-cover object-top",
+                                    }}
+                                    radius="none"
+                                    src={`/api/resumes/${viewingInterview.resumeId}/thumbnail`}
+                                  />
+                                )}
                               </div>
                               <div className="px-3 py-2 bg-default-50 shrink-0">
                                 <div className="flex items-center gap-2">
