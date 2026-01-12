@@ -238,12 +238,18 @@ export default function SettingsPage() {
         setAiConfigMode(configMode);
         setOriginalAiConfigMode(configMode);
 
+        // 初始化 model 和 originalAiModel（所有模式都需要）
+        setAiModel(model);
+        setOriginalAiModel(model);
+
+        // 初始时至少让当前模型出现在下拉列表中，避免下拉为空
+        if (model) {
+          setAvailableModels([{ id: model, name: model, pricing: null }]);
+        }
+
         if (provider) {
           setAiProvider(provider);
           setOriginalAiProvider(provider);
-
-          setAiModel(model);
-          setOriginalAiModel(model);
 
           setAiApiEndpoint(endpoint);
           setOriginalAiApiEndpoint(endpoint);
@@ -256,11 +262,6 @@ export default function SettingsPage() {
             setAiApiKey(maskedKey);
             setOriginalAiApiKey(maskedKey);
             setIsApiKeyMasked(true);
-          }
-
-          // 初始时至少让当前模型出现在下拉列表中，避免下拉为空
-          if (model) {
-            setAvailableModels([{ id: model, name: model, pricing: null }]);
           }
         }
       } catch (error) {
