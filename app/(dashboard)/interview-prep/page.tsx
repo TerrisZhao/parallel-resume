@@ -17,7 +17,7 @@ import { Input, Textarea } from "@heroui/input";
 import { Select, SelectItem } from "@heroui/select";
 import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
 import { addToast } from "@heroui/toast";
-import { Plus, Edit, Trash2, X } from "lucide-react";
+import { Plus, Edit, Trash2, X, Sparkles } from "lucide-react";
 import { Icon } from "@iconify/react";
 
 import { usePageHeader } from "../use-page-header";
@@ -69,6 +69,15 @@ export default function InterviewPrepPage() {
     null,
   );
 
+  // AI生成相关状态
+  const [resumes, setResumes] = useState<any[]>([]);
+  const [selectedResumeId, setSelectedResumeId] = useState<number | null>(null);
+  const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [projectsAndWorks, setProjectsAndWorks] = useState<
+    Array<{ id: number; name: string; type: "project" | "work" }>
+  >([]);
+
   const allTags = Array.from(
     new Set(
       materials.flatMap((m) => (m.tags && Array.isArray(m.tags) ? m.tags : [])),
@@ -99,6 +108,7 @@ export default function InterviewPrepPage() {
   // Fetch materials
   useEffect(() => {
     void fetchMaterials();
+    void fetchResumes();
   }, []);
 
   const fetchMaterials = async () => {
@@ -118,15 +128,85 @@ export default function InterviewPrepPage() {
     }
   };
 
+  const fetchResumes = async () => {
+    try {
+      const response = await fetch("/api/resumes");
+
+      if (response.ok) {
+        const data = await response.json();
+
+        setResumes(data.resumes || []);
+      }
+    } catch (error) {
+      console.error("Error fetching resumes:", error);
+    }
+  };
+
+  // 当选择简历时，获取该简历的项目和工作经历
+  useEffect(() => {
+    const fetchResumeDetails = async () => {
+      if (!selectedResumeId) {
+        setProjectsAndWorks([]);
+        setSelectedItemId(null);
+
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/resumes/${selectedResumeId}`);
+
+        if (response.ok) {
+          const { resume } = await response.json();
+          const items: Array<{
+            id: number;
+            name: string;
+            type: "project" | "work";
+          }> = [];
+
+          // 添加项目
+          if (resume.projects && resume.projects.length > 0) {
+            resume.projects.forEach((project: any) => {
+              items.push({
+                id: parseInt(project.id),
+                name: `${t("categories.project")}: ${project.name}`,
+                type: "project",
+              });
+            });
+          }
+
+          // 添加工作经历
+          if (resume.workExperience && resume.workExperience.length > 0) {
+            resume.workExperience.forEach((work: any) => {
+              items.push({
+                id: parseInt(work.id),
+                name: `${t("categories.work")}: ${work.company} - ${work.position}`,
+                type: "work",
+              });
+            });
+          }
+
+          setProjectsAndWorks(items);
+          setSelectedItemId(null);
+        }
+      } catch (error) {
+        console.error("Error fetching resume details:", error);
+      }
+    };
+
+    void fetchResumeDetails();
+  }, [selectedResumeId, t]);
+
   const handleAddNew = () => {
     setEditingMaterial(null);
     setFormData({
       title: "",
       content: "",
-      category: selectedCategory,
+      category: selectedCategory === "all" ? "self_intro" : selectedCategory,
       tags: [],
     });
     setTagInputValue("");
+    setSelectedResumeId(null);
+    setSelectedItemId(null);
     onOpen();
   };
 
@@ -139,6 +219,8 @@ export default function InterviewPrepPage() {
       tags: material.tags ?? [],
     });
     setTagInputValue("");
+    setSelectedResumeId(null);
+    setSelectedItemId(null);
     onOpen();
   };
 
@@ -240,6 +322,82 @@ export default function InterviewPrepPage() {
 
       return tags.includes(selectedTagFilter);
     });
+  };
+
+  const handleGenerateWithAI = async () => {
+    // 验证
+    if (!formData.title.trim()) {
+      addToast({
+        title: t("fillTitleFirst"),
+        color: "warning",
+      });
+
+      return;
+    }
+
+    if (!selectedResumeId) {
+      addToast({
+        title: t("selectResumeFirst"),
+        color: "warning",
+      });
+
+      return;
+    }
+
+    // 如果是项目或工作经历类别，需要选择具体项目或工作
+    if (
+      (formData.category === "project" || formData.category === "work") &&
+      !selectedItemId
+    ) {
+      addToast({
+        title: t("selectProjectOrWork"),
+        color: "warning",
+      });
+
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const payload: any = {
+        resumeId: selectedResumeId,
+        title: formData.title,
+        category: formData.category,
+      };
+
+      // 只在需要时添加itemId
+      if (selectedItemId !== null) {
+        payload.itemId = selectedItemId;
+      }
+
+      const response = await fetch("/api/ai/generate-interview-material", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        setFormData({ ...formData, content: data.content });
+        addToast({
+          title: t("generateSuccess"),
+          color: "success",
+        });
+      } else {
+        const errorData = await response.json();
+
+        throw new Error(errorData.error || "Failed to generate");
+      }
+    } catch (error) {
+      console.error("Error generating material:", error);
+      addToast({
+        title: t("generateFailed"),
+        color: "danger",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   if (isLoading) {
@@ -371,14 +529,20 @@ export default function InterviewPrepPage() {
                   isRequired
                   label={t("category")}
                   selectedKeys={[formData.category]}
-                  onSelectionChange={(keys) =>
+                  onSelectionChange={(keys) => {
+                    const newCategory = Array.from(keys)[0] as string;
+
                     setFormData({
                       ...formData,
-                      category: Array.from(keys)[0] as string,
-                    })
-                  }
+                      category: newCategory,
+                    });
+                    // 切换category时，如果不是project或work，清空selectedItemId
+                    if (newCategory !== "project" && newCategory !== "work") {
+                      setSelectedItemId(null);
+                    }
+                  }}
                 >
-                  {CATEGORIES.map((category) => (
+                  {CATEGORIES.filter((cat) => cat !== "all").map((category) => (
                     <SelectItem key={category}>
                       {t(`categories.${category}`)}
                     </SelectItem>
@@ -501,17 +665,86 @@ export default function InterviewPrepPage() {
                   }
                 />
               </ModalBody>
-              <ModalFooter>
-                <Button variant="flat" onPress={onClose}>
-                  {tCommon("cancel")}
-                </Button>
-                <Button
-                  color="primary"
-                  isLoading={isSaving}
-                  onPress={handleSave}
-                >
-                  {tCommon("save")}
-                </Button>
+              <ModalFooter className="justify-between">
+                <div className="flex items-center gap-2">
+                  <Select
+                    className="w-48"
+                    placeholder={t("selectResumePlaceholder")}
+                    selectedKeys={
+                      selectedResumeId ? [selectedResumeId.toString()] : []
+                    }
+                    size="sm"
+                    onSelectionChange={(keys) => {
+                      const key = Array.from(keys)[0] as string | undefined;
+
+                      setSelectedResumeId(key ? parseInt(key) : null);
+                    }}
+                  >
+                    {resumes.length === 0 ? (
+                      <SelectItem key="no-resume" isDisabled>
+                        {t("noResumeAvailable")}
+                      </SelectItem>
+                    ) : (
+                      resumes.map((resume) => (
+                        <SelectItem key={resume.id.toString()}>
+                          {resume.name}
+                        </SelectItem>
+                      ))
+                    )}
+                  </Select>
+                  {(formData.category === "project" ||
+                    formData.category === "work") && (
+                    <Select
+                      className="w-64"
+                      isDisabled={!selectedResumeId}
+                      placeholder={t("selectProjectOrWorkPlaceholder")}
+                      selectedKeys={
+                        selectedItemId ? [selectedItemId.toString()] : []
+                      }
+                      size="sm"
+                      onSelectionChange={(keys) => {
+                        const key = Array.from(keys)[0] as string | undefined;
+
+                        setSelectedItemId(key ? parseInt(key) : null);
+                      }}
+                    >
+                      {projectsAndWorks.length === 0 ? (
+                        <SelectItem key="no-item" isDisabled>
+                          {t("noProjectOrWorkAvailable")}
+                        </SelectItem>
+                      ) : (
+                        projectsAndWorks.map((item) => (
+                          <SelectItem key={item.id.toString()}>
+                            {item.name}
+                          </SelectItem>
+                        ))
+                      )}
+                    </Select>
+                  )}
+                  <Button
+                    color="secondary"
+                    isDisabled={!selectedResumeId || isGenerating}
+                    isLoading={isGenerating}
+                    size="sm"
+                    startContent={!isGenerating && <Sparkles size={16} />}
+                    variant="flat"
+                    onPress={handleGenerateWithAI}
+                  >
+                    {isGenerating ? t("generating") : t("generateWithAI")}
+                  </Button>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="flat" onPress={onClose}>
+                    {tCommon("cancel")}
+                  </Button>
+                  <Button
+                    color="primary"
+                    isLoading={isSaving}
+                    onPress={handleSave}
+                  >
+                    {tCommon("save")}
+                  </Button>
+                </div>
               </ModalFooter>
             </>
           )}
