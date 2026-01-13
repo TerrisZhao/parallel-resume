@@ -24,9 +24,17 @@ const generateMaterialSchema = z.object({
   itemId: z.number().optional(), // For project or work category
 });
 
-const SYSTEM_PROMPT = `You are a professional career interview coach specializing in helping candidates prepare for job interviews. Your responses should be well-structured, professional, and tailored to the candidate's experience.
+const SYSTEM_PROMPT = `You are a job candidate answering questions in a real interview.
 
-CRITICAL: Detect the language of the resume content and generate your response in THE SAME LANGUAGE. If the resume is in Chinese, write in Chinese. If in English, write in English.`;
+Your answers must sound like natural spoken language, not written text.
+Keep answers short, clear, and realistic.
+Do NOT sound like a coach, article, or textbook.
+
+CRITICAL:
+- Detect the language of the resume content and respond in the SAME language.
+- Speak like a real person in an interview.
+- Prefer simple words and short sentences.
+`;
 
 function getSelfIntroPrompt(
   resumeData: {
@@ -39,48 +47,31 @@ function getSelfIntroPrompt(
 ): string {
   const hasWorkExp = workExperiences && workExperiences.length > 0;
 
-  return `Generate a professional self-introduction for an interview based on the following candidate information.
+  return `Generate a short self-introduction for a real job interview.
 
-**Title/Context:** ${title}
+Context: ${title}
 
-**Candidate Information:**
+Candidate info:
 - Name: ${resumeData.fullName || "Candidate"}
-${resumeData.summary ? `- Professional Summary: ${resumeData.summary}` : ""}
-${resumeData.keySkills?.length ? `- Key Skills: ${resumeData.keySkills.join(", ")}` : ""}
+${resumeData.summary ? `- Background: ${resumeData.summary}` : ""}
+${resumeData.keySkills?.length ? `- Skills: ${resumeData.keySkills.join(", ")}` : ""}
 
-${
-  hasWorkExp
-    ? `**Recent Work Experience:**
-${workExperiences
-  .slice(0, 3)
-  .map(
-    (exp: any) =>
-      `- ${exp.company} | ${exp.position} (${exp.startDate} - ${exp.current ? "Present" : exp.endDate})
-  ${exp.description || ""}
-  ${exp.responsibilities?.length ? `Key achievements: ${exp.responsibilities.slice(0, 2).join("; ")}` : ""}`,
-  )
-  .join("\n")}`
-    : ""
-}
+${hasWorkExp ? `
+Recent experience (for reference only):
+${workExperiences.slice(0, 2).map(exp =>
+`- ${exp.company}, ${exp.position}: ${exp.description || ""}`
+).join("\n")}
+` : ""}
 
-**Requirements - Follow the F-A-R-S-E Formula (EXACTLY 5 sentences):**
-1. **F — Foundation**: State who you are and your professional identity (EXACTLY 1 sentence)
-2. **A — Area of Expertise**: Highlight your core skills and the value you bring (EXACTLY 1 sentence)
-3. **R — Relevant Experience**: Mention ONE specific, job-relevant experience with concrete results (EXACTLY 1 sentence)
-4. **S — Strengths**: Emphasize ONE key soft skill such as collaboration, communication, or adaptability (EXACTLY 1 sentence)
-5. **E — Expectation**: Briefly explain why you're interested in this opportunity (EXACTLY 1 sentence)
+Rules:
+- Speak as if you are answering in a real interview
+- Use 3–4 short sentences only
+- About 20–30 seconds when spoken
+- Simple, spoken language (use "I'm", "I've")
+- Focus on what you do and what you're good at
+- No formal structure, no bullet points, no frameworks
 
-**Critical Guidelines:**
-- Generate EXACTLY 5 sentences total, no more, no less
-- Use simple, everyday words - write as if speaking naturally to someone
-- Use conversational, spoken language (e.g., "I'm" instead of "I am", "I've worked" instead of "I have worked")
-- Avoid complex vocabulary, jargon, or overly formal phrases
-- Keep sentences short and direct
-- Sound natural and human, not robotic or scripted
-- Focus on outcomes, not storytelling
-- Write in the same language as the resume content
-
-Generate ONLY the self-introduction content consisting of exactly 5 sentences, using simple conversational language, without any JSON formatting, additional explanation, or extra content.`;
+Generate ONLY the spoken self-introduction.`;
 }
 
 function getQAPrompt(
@@ -94,41 +85,29 @@ function getQAPrompt(
 ): string {
   const hasWorkExp = workExperiences && workExperiences.length > 0;
 
-  return `Generate a professional answer to the following interview question based on the candidate's background.
+  return `Answer the following interview question as if you are speaking naturally.
 
-**Question:** ${title}
+Question: ${title}
 
-**Candidate Information:**
-- Name: ${resumeData.fullName || "Candidate"}
-${resumeData.summary ? `- Professional Summary: ${resumeData.summary}` : ""}
-${resumeData.keySkills?.length ? `- Key Skills: ${resumeData.keySkills.join(", ")}` : ""}
+Background (for reference only):
+${resumeData.summary || ""}
+${resumeData.keySkills?.length ? resumeData.keySkills.join(", ") : ""}
 
-${
-  hasWorkExp
-    ? `**Work Experience:**
-${workExperiences
-  .slice(0, 3)
-  .map(
-    (exp: any) =>
-      `- ${exp.company} | ${exp.position} (${exp.startDate} - ${exp.current ? "Present" : exp.endDate})
-  ${exp.description || ""}
-  ${exp.responsibilities?.length ? `Responsibilities: ${exp.responsibilities.join("; ")}` : ""}`,
-  )
-  .join("\n")}`
-    : ""
-}
+${hasWorkExp ? `
+Recent experience:
+${workExperiences.slice(0, 1).map(exp =>
+`${exp.company}, ${exp.position}: ${exp.description || ""}`
+).join("\n")}
+` : ""}
 
-**Requirements:**
-- Generate EXACTLY 1-2 sentences total
-- Keep it extremely simple and direct - answer the question clearly
-- Use everyday conversational language, as if speaking naturally in an interview
-- Use simple words and short sentences
-- If relevant, briefly mention ONE specific example or result from experience
-- Sound natural and human, not robotic
-- Avoid jargon, complex vocabulary, or overly formal language
-- Write in the same language as the resume content
+Rules:
+- 1–2 short sentences only
+- Direct answer, no introduction
+- Simple spoken language
+- Mention one example if useful
+- No explanations or summaries
 
-Generate ONLY the answer content consisting of 1-2 simple, conversational sentences, without any JSON formatting, additional explanation, or extra content.`;
+Generate ONLY the answer.`;
 }
 
 function getProjectPrompt(
@@ -138,28 +117,25 @@ function getProjectPrompt(
   project: any,
   title: string,
 ): string {
-  return `Generate a professional interview answer about the following project.
+  return `Explain this project as if an interviewer asked you about it.
 
-**Title/Context:** ${title}
+Question: ${title}
 
-**Project Details:**
+Project:
 - Name: ${project.name}
-- Role: ${project.role}
-- Duration: ${project.startDate} - ${project.current ? "Present" : project.endDate}
-- Description: ${project.description}
-${project.technologies?.length ? `- Technologies: ${project.technologies.join(", ")}` : ""}
+- Your role: ${project.role}
+- What you did: ${project.description}
+${project.technologies?.length ? `- Tech: ${project.technologies.join(", ")}` : ""}
 
-**Requirements:**
-1. Use the STAR method (Situation, Task, Action, Result)
-2. Highlight your specific contributions and role
-3. Emphasize technical challenges and how you overcame them
-4. Include measurable outcomes if possible
-5. Keep it structured and easy to follow (2-3 minutes)
-6. Structure: Project overview → Your role → Key challenges → Solutions → Results
+Rules:
+- Spoken interview style
+- 30–60 seconds
+- Focus on what YOU did
+- Mention one challenge and one result
+- Simple words, short sentences
+- No formal structure
 
-**IMPORTANT: Write in the same language as the project description.**
-
-Generate ONLY the interview preparation content, without any JSON formatting or additional explanation.`;
+Generate ONLY the spoken answer.`;
 }
 
 function getWorkPrompt(
@@ -169,28 +145,25 @@ function getWorkPrompt(
   workExperience: any,
   title: string,
 ): string {
-  return `Generate a professional interview answer about the following work experience.
+  return `Answer an interview question about this work experience.
 
-**Title/Context:** ${title}
+Question: ${title}
 
-**Work Experience Details:**
+Work experience:
 - Company: ${workExperience.company}
-- Position: ${workExperience.position}
-- Duration: ${workExperience.startDate} - ${workExperience.current ? "Present" : workExperience.endDate}
-${workExperience.description ? `- Overview: ${workExperience.description}` : ""}
-${workExperience.responsibilities?.length ? `- Key Responsibilities: ${workExperience.responsibilities.join("; ")}` : ""}
+- Role: ${workExperience.position}
+- What you did: ${workExperience.description || ""}
+${workExperience.responsibilities?.length ? workExperience.responsibilities.join("; ") : ""}
 
-**Requirements:**
-1. Use the STAR method (Situation, Task, Action, Result)
-2. Highlight key achievements and contributions
-3. Emphasize your growth and learning
-4. Include specific, quantifiable results when possible
-5. Keep it structured and compelling (2-3 minutes)
-6. Structure: Company/role context → Main responsibilities → Key achievements → Impact
+Rules:
+- Speak like a real candidate
+- 30–60 seconds max
+- Focus on impact, not duties
+- Mention one concrete result
+- Simple language, natural tone
+- No STAR labels or bullet points
 
-**IMPORTANT: Write in the same language as the work experience description.**
-
-Generate ONLY the interview preparation content, without any JSON formatting or additional explanation.`;
+Generate ONLY the spoken interview answer.`;
 }
 
 export async function POST(request: NextRequest) {
@@ -216,8 +189,12 @@ export async function POST(request: NextRequest) {
     const { config: aiConfig, mode } = aiConfigData;
 
     const body = await request.json();
+    console.log("Received request body:", body);
+    
     const { resumeId, title, category, itemId } =
       generateMaterialSchema.parse(body);
+
+    console.log("Parsed request:", { resumeId, title, category, itemId });
 
     // 验证简历所有权并获取简历数据
     const [resume] = await db
@@ -274,20 +251,70 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // 确保 itemId 是数字类型
+      const projectId = typeof itemId === "string" ? parseInt(itemId, 10) : itemId;
+
+      console.log("Querying project:", {
+        projectId,
+        projectIdType: typeof projectId,
+        resumeId,
+        resumeIdType: typeof resumeId,
+        originalItemId: itemId,
+        originalItemIdType: typeof itemId,
+      });
+
+      if (isNaN(projectId)) {
+        return NextResponse.json(
+          { error: "Invalid project ID format" },
+          { status: 400 },
+        );
+      }
+
       const [project] = await db
         .select()
         .from(resumeProjects)
         .where(
           and(
-            eq(resumeProjects.id, itemId),
+            eq(resumeProjects.id, projectId),
             eq(resumeProjects.resumeId, resumeId),
           ),
         )
         .limit(1);
 
+      console.log("Project query result:", project ? "found" : "not found");
+
       if (!project) {
+        // 检查项目是否存在（不检查 resumeId），用于调试
+        const [projectExists] = await db
+          .select()
+          .from(resumeProjects)
+          .where(eq(resumeProjects.id, projectId))
+          .limit(1);
+
+        // 列出该简历的所有项目，用于调试
+        const allProjects = await db
+          .select()
+          .from(resumeProjects)
+          .where(eq(resumeProjects.resumeId, resumeId))
+          .orderBy(resumeProjects.order);
+
+        console.log("All projects for resume", resumeId, ":", allProjects.map(p => ({ id: p.id, name: p.name })));
+
+        if (projectExists) {
+          return NextResponse.json(
+            {
+              error: "Project not found in this resume",
+              details: `Project ID ${projectId} exists but does not belong to resume ID ${resumeId}. Available project IDs: ${allProjects.map(p => p.id).join(", ")}`,
+            },
+            { status: 404 },
+          );
+        }
+
         return NextResponse.json(
-          { error: "Project not found" },
+          {
+            error: "Project not found",
+            details: `Project ID ${projectId} does not exist. Available project IDs for this resume: ${allProjects.map(p => p.id).join(", ") || "none"}`,
+          },
           { status: 404 },
         );
       }
@@ -308,20 +335,50 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // 确保 itemId 是数字类型
+      const workExpId = typeof itemId === "string" ? parseInt(itemId, 10) : itemId;
+
+      if (isNaN(workExpId)) {
+        return NextResponse.json(
+          { error: "Invalid work experience ID format" },
+          { status: 400 },
+        );
+      }
+
       const [workExp] = await db
         .select()
         .from(resumeWorkExperiences)
         .where(
           and(
-            eq(resumeWorkExperiences.id, itemId),
+            eq(resumeWorkExperiences.id, workExpId),
             eq(resumeWorkExperiences.resumeId, resumeId),
           ),
         )
         .limit(1);
 
       if (!workExp) {
+        // 检查工作经历是否存在（不检查 resumeId），用于调试
+        const [workExpExists] = await db
+          .select()
+          .from(resumeWorkExperiences)
+          .where(eq(resumeWorkExperiences.id, workExpId))
+          .limit(1);
+
+        if (workExpExists) {
+          return NextResponse.json(
+            {
+              error: "Work experience not found in this resume",
+              details: `Work experience ID ${workExpId} exists but does not belong to resume ID ${resumeId}`,
+            },
+            { status: 404 },
+          );
+        }
+
         return NextResponse.json(
-          { error: "Work experience not found" },
+          {
+            error: "Work experience not found",
+            details: `Work experience ID ${workExpId} does not exist`,
+          },
           { status: 404 },
         );
       }
@@ -437,3 +494,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
