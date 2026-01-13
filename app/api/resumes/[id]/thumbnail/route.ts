@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 
 import { db } from "@/lib/db/drizzle";
 import { resumes } from "@/lib/db/schema";
+import { uploadToR2 } from "@/lib/utils/r2-client";
 
 export const dynamic = "force-dynamic";
 
@@ -29,46 +30,68 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const themeColor = searchParams.get("color");
 
-    // Fetch resume data to get language preference
+    // Fetch resume data
     const [resume] = await db
       .select()
       .from(resumes)
       .where(eq(resumes.id, resumeId));
 
+    if (!resume) {
+      return NextResponse.json(
+        { error: "Resume not found" },
+        { status: 404 },
+      );
+    }
+
+    // Check if thumbnail is cached and up-to-date
+    // Thumbnail is valid if:
+    // 1. thumbnailUrl exists
+    // 2. thumbnailGeneratedAt exists
+    // 3. thumbnailGeneratedAt >= updatedAt (thumbnail was generated after last resume update)
+    const isThumbnailCached =
+      resume.thumbnailUrl &&
+      resume.thumbnailGeneratedAt &&
+      resume.thumbnailGeneratedAt >= resume.updatedAt;
+
+    if (isThumbnailCached) {
+      // Redirect to cached thumbnail URL
+      return NextResponse.redirect(resume.thumbnailUrl);
+    }
+
     // Use saved language preference, or auto-detect as fallback
     let language = "en";
 
-    if (resume) {
-      if (resume.preferredLanguage) {
-        language = resume.preferredLanguage;
-      } else {
-        // Fallback: Auto-detect language based on content
-        const textToCheck = [
-          resume.fullName,
-          resume.summary,
-          resume.additionalInfo,
-        ]
-          .filter(Boolean)
-          .join(" ");
+    if (resume.preferredLanguage) {
+      language = resume.preferredLanguage;
+    } else {
+      // Fallback: Auto-detect language based on content
+      const textToCheck = [
+        resume.fullName,
+        resume.summary,
+        resume.additionalInfo,
+      ]
+        .filter(Boolean)
+        .join(" ");
 
-        if (containsChinese(textToCheck)) {
-          language = "zh";
-        }
+      if (containsChinese(textToCheck)) {
+        language = "zh";
       }
     }
+
+    // Use theme color from query param or from database
+    const finalThemeColor = themeColor || resume.themeColor || "#000000";
 
     // URL of the print preview page
     const printUrl = new URL(`${baseUrl}/resume/print/${id}`);
 
-    if (themeColor) {
-      printUrl.searchParams.set("themeColor", themeColor);
-    }
+    printUrl.searchParams.set("themeColor", finalThemeColor);
     printUrl.searchParams.set("language", language);
     // Mark as PDF/thumbnail generation to bypass browser redirect
     printUrl.searchParams.set("_pdf", "true");
 
     console.log("Generating thumbnail for resume:", id);
     console.log("Detected language:", language);
+    console.log("Theme color:", finalThemeColor);
     console.log("Print URL:", printUrl.toString());
 
     // Launch puppeteer
@@ -94,6 +117,8 @@ export async function GET(
       deviceScaleFactor: 2, // For better quality
     });
 
+    let screenshot: Buffer;
+
     try {
       // Navigate to the print page
       await page.goto(printUrl.toString(), {
@@ -105,24 +130,63 @@ export async function GET(
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       // Take screenshot
-      const screenshot = await page.screenshot({
+      const screenshotBuffer = await page.screenshot({
         type: "png",
         fullPage: false,
         optimizeForSpeed: false,
       });
 
-      await browser.close();
+      screenshot = Buffer.from(screenshotBuffer);
 
-      // Return the image
+      await browser.close();
+    } catch (error) {
+      await browser.close();
+      throw error;
+    }
+
+    // Upload thumbnail to R2 and update database
+    try {
+      const timestamp = Date.now();
+      const objectKey = `resumes/${resumeId}/thumbnail_${timestamp}.png`;
+
+      const uploadResult = await uploadToR2(
+        objectKey,
+        screenshot,
+        "image/png",
+        `thumbnail_${resumeId}.png`,
+      );
+
+      if (uploadResult.success && uploadResult.url) {
+        // Update database with thumbnail URL and generation timestamp
+        await db
+          .update(resumes)
+          .set({
+            thumbnailUrl: uploadResult.url,
+            thumbnailGeneratedAt: new Date(),
+          })
+          .where(eq(resumes.id, resumeId));
+
+        // Redirect to the uploaded thumbnail URL
+        return NextResponse.redirect(uploadResult.url);
+      } else {
+        console.error("Failed to upload thumbnail to R2:", uploadResult.error);
+        // Fallback: Return the image directly if upload fails
+        return new NextResponse(screenshot, {
+          headers: {
+            "Content-Type": "image/png",
+            "Cache-Control": "public, max-age=3600, s-maxage=3600",
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Error uploading thumbnail to R2:", error);
+      // Fallback: Return the image directly if upload fails
       return new NextResponse(screenshot, {
         headers: {
           "Content-Type": "image/png",
           "Cache-Control": "public, max-age=3600, s-maxage=3600",
         },
       });
-    } catch (error) {
-      await browser.close();
-      throw error;
     }
   } catch (error) {
     console.error("Error generating thumbnail:", error);

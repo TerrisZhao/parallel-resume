@@ -842,6 +842,9 @@ export default function InterviewPrepPage() {
                   </Button>
                   <Button
                     color="primary"
+                    isDisabled={
+                      !formData.title.trim() || !formData.content.trim()
+                    }
                     isLoading={isSaving}
                     onPress={handleSave}
                   >

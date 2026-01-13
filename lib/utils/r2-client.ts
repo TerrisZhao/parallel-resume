@@ -164,7 +164,10 @@ export async function uploadToR2(
   } catch (error) {
     console.error("上传到R2失败:", error);
 
-    return { success: false, error: "上传文件失败" };
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "上传文件失败",
+    };
   }
 }
 

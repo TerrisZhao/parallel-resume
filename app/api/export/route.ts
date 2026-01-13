@@ -498,6 +498,7 @@ export async function GET(request: NextRequest) {
     console.log("Generating PDF...");
 
     // Generate PDF
+    console.log("📄 Generating PDF...");
     const pdf = await page.pdf({
       format: "A4",
       printBackground: true,
@@ -541,7 +542,6 @@ export async function GET(request: NextRequest) {
 
     // Upload PDF to R2 and update database
     try {
-      console.log(`Uploading PDF to R2 for resume ${resumeId}...`);
       const timestamp = Date.now();
       const objectKey = `resumes/${resumeId}/resume_${timestamp}.pdf`;
       const uploadResult = await uploadToR2(

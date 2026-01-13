@@ -24,7 +24,6 @@ export async function GET() {
         videoLink: interviews.videoLink,
         resumeId: interviews.resumeId,
         resumeName: resumes.name,
-        resumePdfUrl: resumes.pdfUrl,
         interviewTime: interviews.interviewTime,
         duration: interviews.duration,
         stage: interviews.stage,
