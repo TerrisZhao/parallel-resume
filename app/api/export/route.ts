@@ -1,10 +1,272 @@
 import { NextRequest, NextResponse } from "next/server";
 import puppeteer, { Browser } from "puppeteer";
-import { eq } from "drizzle-orm";
+import { eq, asc } from "drizzle-orm";
 
 import { db } from "@/lib/db/drizzle";
-import { resumes } from "@/lib/db/schema";
+import {
+  resumes,
+  resumeWorkExperiences,
+  resumeEducation,
+  resumeProjects,
+} from "@/lib/db/schema";
 import { uploadToR2 } from "@/lib/utils/r2-client";
+
+// Helper function to format resume as TXT
+async function handleTxtExport(resumeId: string, language: string) {
+  try {
+    // Fetch resume data from database
+    const [resume] = await db
+      .select()
+      .from(resumes)
+      .where(eq(resumes.id, Number(resumeId)));
+
+    if (!resume) {
+      return NextResponse.json(
+        { error: "Resume not found" },
+        { status: 404 },
+      );
+    }
+
+    // Fetch related data from associated tables
+    const workExperience = await db
+      .select()
+      .from(resumeWorkExperiences)
+      .where(eq(resumeWorkExperiences.resumeId, Number(resumeId)))
+      .orderBy(asc(resumeWorkExperiences.order));
+
+    const education = await db
+      .select()
+      .from(resumeEducation)
+      .where(eq(resumeEducation.resumeId, Number(resumeId)))
+      .orderBy(asc(resumeEducation.order));
+
+    const projects = await db
+      .select()
+      .from(resumeProjects)
+      .where(eq(resumeProjects.resumeId, Number(resumeId)))
+      .orderBy(asc(resumeProjects.order));
+
+    // Assemble full resume data
+    const fullResumeData = {
+      ...resume,
+      workExperience,
+      education,
+      projects,
+    };
+
+    // Format resume data as plain text
+    const txtContent = formatResumeAsTxt(fullResumeData, language);
+
+    // Get resume name for filename
+    const fullName = resume.fullName || resume.name || "Resume";
+    const fileName = `${fullName.replace(/\s+/g, "_")}_Resume.txt`;
+
+    // Return TXT file
+    return new NextResponse(txtContent, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Content-Disposition": `attachment; filename="${fileName}"`,
+        "Cache-Control": "no-cache",
+      },
+    });
+  } catch (error: any) {
+    console.error("TXT generation error:", error);
+
+    return NextResponse.json(
+      {
+        error: "Failed to generate TXT",
+        details: error.message,
+      },
+      { status: 500 },
+    );
+  }
+}
+
+// Format resume data as plain text
+function formatResumeAsTxt(resume: any, language: string): string {
+  const isZh = language === "zh";
+  const lines: string[] = [];
+
+  // Helper to add section header
+  const addSection = (title: string) => {
+    lines.push("");
+    lines.push("=".repeat(60));
+    lines.push(title);
+    lines.push("=".repeat(60));
+  };
+
+  // Header - Contact Information
+  if (resume.fullName) {
+    lines.push(resume.fullName.toUpperCase());
+    lines.push("");
+  }
+
+  const contactInfo: string[] = [];
+
+  if (resume.phone) contactInfo.push(resume.phone);
+  if (resume.email) contactInfo.push(resume.email);
+  if (resume.location) contactInfo.push(resume.location);
+
+  if (contactInfo.length > 0) {
+    lines.push(contactInfo.join(" | "));
+  }
+
+  const links: string[] = [];
+
+  if (resume.linkedin) links.push(`LinkedIn: ${resume.linkedin}`);
+  if (resume.github) links.push(`GitHub: ${resume.github}`);
+  if (resume.website) links.push(`Website: ${resume.website}`);
+
+  if (links.length > 0) {
+    lines.push(links.join(" | "));
+  }
+
+  // Summary
+  if (resume.summary) {
+    addSection(isZh ? "个人简介" : "SUMMARY");
+    lines.push(resume.summary);
+  }
+
+  // Key Skills
+  if (resume.keySkills && Array.isArray(resume.keySkills) && resume.keySkills.length > 0) {
+    addSection(isZh ? "核心技能" : "KEY SKILLS");
+    
+    // Check if it's a simple string array or grouped format
+    if (typeof resume.keySkills[0] === "string") {
+      // Simple format: ["skill1", "skill2", ...]
+      lines.push(resume.keySkills.join(", "));
+    } else {
+      // Grouped format: [{groupName: "...", skills: [...]}, ...]
+      resume.keySkills.forEach((group: any) => {
+        if (group && group.groupName && Array.isArray(group.skills)) {
+          lines.push(`${group.groupName}: ${group.skills.join(", ")}`);
+        }
+      });
+    }
+  }
+
+  // Work Experience
+  if (resume.workExperience && Array.isArray(resume.workExperience) && resume.workExperience.length > 0) {
+    addSection(isZh ? "工作经历" : "WORK EXPERIENCE");
+    resume.workExperience.forEach((exp: any) => {
+      lines.push("");
+      
+      if (exp.position && exp.company) {
+        lines.push(`${exp.position} - ${exp.company}`);
+      } else if (exp.position) {
+        lines.push(exp.position);
+      } else if (exp.company) {
+        lines.push(exp.company);
+      }
+      
+      if (exp.startDate) {
+        const endDate = exp.current
+          ? isZh
+            ? "至今"
+            : "Present"
+          : exp.endDate || "";
+
+        lines.push(`${exp.startDate} - ${endDate}`);
+      }
+
+      if (exp.description) {
+        lines.push(exp.description);
+      }
+
+      // Handle responsibilities (JSON array)
+      if (exp.responsibilities && Array.isArray(exp.responsibilities) && exp.responsibilities.length > 0) {
+        exp.responsibilities.forEach((resp: string) => {
+          if (resp && typeof resp === "string") {
+            lines.push(`  • ${resp}`);
+          }
+        });
+      }
+    });
+  }
+
+  // Education
+  if (resume.education && Array.isArray(resume.education) && resume.education.length > 0) {
+    addSection(isZh ? "教育背景" : "EDUCATION");
+    resume.education.forEach((edu: any) => {
+      lines.push("");
+      
+      if (edu.school) {
+        lines.push(edu.school);
+      }
+      
+      const degreeInfo = [edu.degree, edu.major].filter(Boolean).join(
+        isZh ? " " : " in ",
+      );
+
+      if (degreeInfo) {
+        lines.push(degreeInfo);
+      }
+      
+      if (edu.startDate) {
+        const endDate = edu.current
+          ? isZh
+            ? "至今"
+            : "Present"
+          : edu.endDate || "";
+
+        lines.push(`${edu.startDate} - ${endDate}`);
+      }
+
+      if (edu.gpa) {
+        lines.push(`GPA: ${edu.gpa}`);
+      }
+    });
+  }
+
+  // Projects
+  if (resume.projects && Array.isArray(resume.projects) && resume.projects.length > 0) {
+    addSection(isZh ? "项目经历" : "PROJECTS");
+    resume.projects.forEach((proj: any) => {
+      lines.push("");
+      
+      if (proj.name) {
+        lines.push(`${proj.name}${proj.role ? ` - ${proj.role}` : ""}`);
+      }
+      
+      if (proj.startDate) {
+        const endDate = proj.current
+          ? isZh
+            ? "至今"
+            : "Present"
+          : proj.endDate || "";
+
+        lines.push(`${proj.startDate} - ${endDate}`);
+      }
+
+      if (proj.description) {
+        lines.push(proj.description);
+      }
+
+      // Handle technologies (JSON array)
+      if (proj.technologies && Array.isArray(proj.technologies) && proj.technologies.length > 0) {
+        const techList = proj.technologies.filter((tech: any) => tech && typeof tech === "string");
+        
+        if (techList.length > 0) {
+          lines.push(
+            `${isZh ? "技术栈" : "Technologies"}: ${techList.join(", ")}`,
+          );
+        }
+      }
+    });
+  }
+
+  // Additional Information
+  if (resume.additionalInfo) {
+    addSection(isZh ? "附加信息" : "ADDITIONAL INFORMATION");
+    lines.push(resume.additionalInfo);
+  }
+
+  lines.push("");
+  lines.push("");
+
+  return lines.join("\n");
+}
 
 // Puppeteer configuration for different environments
 function getBrowserConfig() {
@@ -69,12 +331,18 @@ export async function GET(request: NextRequest) {
   const resumeId = searchParams.get("id");
   const themeColor = searchParams.get("themeColor");
   const language = searchParams.get("language") || "en";
+  const format = searchParams.get("format") || "pdf";
 
   if (!resumeId) {
     return NextResponse.json(
       { error: "Resume ID is required" },
       { status: 400 },
     );
+  }
+
+  // Handle TXT format export
+  if (format === "txt") {
+    return handleTxtExport(resumeId, language);
   }
 
   try {

@@ -473,7 +473,9 @@
     "themeColor": "Theme Color",
     "customColor": "Custom Color",
     "edit": "Edit",
-    "exportPDF": "PDF"
+    "export": "Export",
+    "exportPDF": "PDF",
+    "exportTXT": "TXT"
   },
   "errors": {
     "generic": "An error occurred",

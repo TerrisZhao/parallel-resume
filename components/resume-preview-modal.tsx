@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Button } from "@heroui/button";
+import { Button, ButtonGroup } from "@heroui/button";
 import { Divider } from "@heroui/divider";
 import {
   Modal,
@@ -11,7 +11,13 @@ import {
   ModalHeader,
 } from "@heroui/modal";
 import { Popover, PopoverContent, PopoverTrigger } from "@heroui/popover";
-import { Download, Edit, Palette } from "lucide-react";
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from "@heroui/dropdown";
+import { Download, Edit, Palette, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { CloseIcon } from "@heroui/shared-icons";
 import { useTranslations } from "next-intl";
@@ -51,6 +57,7 @@ export function ResumePreviewModal({
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [languageInitialized, setLanguageInitialized] = useState(false);
+  const [exportFormat, setExportFormat] = useState<"pdf" | "txt">("pdf");
   const [internalResumeData, setInternalResumeData] =
     useState<ResumeData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -139,7 +146,7 @@ export function ResumePreviewModal({
     }
   };
 
-  const handleExportPDF = async () => {
+  const handleExport = async (format: "pdf" | "txt" = exportFormat) => {
     if (!resumeId) return;
 
     setIsExporting(true);
@@ -147,6 +154,7 @@ export function ResumePreviewModal({
       const exportUrl = new URL("/api/export", window.location.origin);
 
       exportUrl.searchParams.set("id", resumeId.toString());
+      exportUrl.searchParams.set("format", format);
       if (resumeData?.themeColor) {
         exportUrl.searchParams.set("themeColor", resumeData.themeColor);
       }
@@ -155,24 +163,26 @@ export function ResumePreviewModal({
       const response = await fetch(exportUrl.toString());
 
       if (!response.ok) {
-        throw new Error("Failed to generate PDF");
+        throw new Error(`Failed to generate ${format.toUpperCase()}`);
       }
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
 
+      const baseFileName = resumeData?.fullName
+        ? `${resumeData.fullName.replace(/\s+/g, "_")}_Resume`
+        : "Resume";
+
       a.href = url;
-      a.download = resumeData?.fullName
-        ? `${resumeData.fullName.replace(/\s+/g, "_")}_Resume.pdf`
-        : "Resume.pdf";
+      a.download = `${baseFileName}.${format}`;
       document.body.appendChild(a);
       a.click();
 
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      console.error("Error exporting PDF:", error);
+      console.error(`Error exporting ${format.toUpperCase()}:`, error);
     } finally {
       setIsExporting(false);
     }
@@ -351,17 +361,39 @@ export function ResumePreviewModal({
               <Edit size={18} />
               {t("edit")}
             </Button>
-            <Button
-              color="primary"
-              isLoading={isExporting}
-              startContent={!isExporting && <Download size={18} />}
-              onPress={async () => {
-                await handleExportPDF();
-                onClose();
-              }}
-            >
-              {t("exportPDF")}
-            </Button>
+            <ButtonGroup color="primary" variant="solid">
+              <Button
+                isLoading={isExporting}
+                startContent={!isExporting && <Download size={18} />}
+                onPress={async () => {
+                  await handleExport(exportFormat);
+                  onClose();
+                }}
+              >
+                {t("export")} {exportFormat.toUpperCase()}
+              </Button>
+              <Dropdown placement="bottom-end">
+                <DropdownTrigger>
+                  <Button isIconOnly isLoading={isExporting}>
+                    {!isExporting && <ChevronDown size={16} />}
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu
+                  disallowEmptySelection
+                  aria-label="Export format"
+                  selectedKeys={[exportFormat]}
+                  selectionMode="single"
+                  onSelectionChange={(keys) => {
+                    const selected = Array.from(keys)[0] as "pdf" | "txt";
+
+                    setExportFormat(selected);
+                  }}
+                >
+                  <DropdownItem key="pdf">{t("exportPDF")}</DropdownItem>
+                  <DropdownItem key="txt">{t("exportTXT")}</DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+            </ButtonGroup>
           </div>
         </ModalFooter>
       </ModalContent>

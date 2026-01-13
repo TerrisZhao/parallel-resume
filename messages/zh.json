@@ -473,7 +473,9 @@
     "themeColor": "主题颜色",
     "customColor": "自定义颜色",
     "edit": "编辑",
-    "exportPDF": "PDF"
+    "export": "导出",
+    "exportPDF": "PDF",
+    "exportTXT": "TXT"
   },
   "errors": {
     "generic": "发生错误",
