@@ -298,13 +298,13 @@ export async function POST(request: NextRequest) {
           .where(eq(resumeProjects.resumeId, resumeId))
           .orderBy(resumeProjects.order);
 
-        console.log("All projects for resume", resumeId, ":", allProjects.map(p => ({ id: p.id, name: p.name })));
+        console.log("All projects for resume", resumeId, ":", allProjects.map((p: { id: any; name: any; }) => ({ id: p.id, name: p.name })));
 
         if (projectExists) {
           return NextResponse.json(
             {
               error: "Project not found in this resume",
-              details: `Project ID ${projectId} exists but does not belong to resume ID ${resumeId}. Available project IDs: ${allProjects.map(p => p.id).join(", ")}`,
+              details: `Project ID ${projectId} exists but does not belong to resume ID ${resumeId}. Available project IDs: ${allProjects.map((p: { id: any; }) => p.id).join(", ")}`,
             },
             { status: 404 },
           );
@@ -313,7 +313,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           {
             error: "Project not found",
-            details: `Project ID ${projectId} does not exist. Available project IDs for this resume: ${allProjects.map(p => p.id).join(", ") || "none"}`,
+            details: `Project ID ${projectId} does not exist. Available project IDs for this resume: ${allProjects.map((p: { id: any; }) => p.id).join(", ") || "none"}`,
           },
           { status: 404 },
         );
