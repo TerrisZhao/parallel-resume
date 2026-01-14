@@ -30,6 +30,7 @@ interface ResumePreviewModalProps {
   onClose: () => void;
   resumeId: number | null;
   resumeData?: ResumeData;
+  resumeName?: string; // Resume name (not fullName)
   onThemeColorChange?: (color: string) => void;
 }
 
@@ -49,6 +50,7 @@ export function ResumePreviewModal({
   onClose,
   resumeId,
   resumeData: externalResumeData,
+  resumeName: externalResumeName,
   onThemeColorChange,
 }: ResumePreviewModalProps) {
   const router = useRouter();
@@ -60,10 +62,12 @@ export function ResumePreviewModal({
   const [exportFormat, setExportFormat] = useState<"pdf" | "txt">("pdf");
   const [internalResumeData, setInternalResumeData] =
     useState<ResumeData | null>(null);
+  const [internalResumeName, setInternalResumeName] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const colorInputRef = useRef<HTMLInputElement>(null);
 
   const resumeData = externalResumeData || internalResumeData;
+  const resumeName = externalResumeName || internalResumeName;
 
   // Fetch resume data if not provided
   useEffect(() => {
@@ -76,6 +80,9 @@ export function ResumePreviewModal({
 
           if (response.ok) {
             const resume = data.resume;
+
+            // Save resume name separately
+            setInternalResumeName(resume.name || null);
 
             setInternalResumeData({
               fullName: resume.fullName || "",
@@ -163,26 +170,85 @@ export function ResumePreviewModal({
       const response = await fetch(exportUrl.toString());
 
       if (!response.ok) {
-        throw new Error(`Failed to generate ${format.toUpperCase()}`);
+        // Try to get error message from response
+        let errorMessage = `Failed to generate ${format.toUpperCase()}`;
+        try {
+          const errorData = await response.json();
+          if (errorData.error || errorData.details) {
+            errorMessage = errorData.details || errorData.error || errorMessage;
+          }
+        } catch {
+          // If response is not JSON, use default error message
+        }
+        throw new Error(errorMessage);
       }
 
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
+      // For PDF format, API returns JSON with URL and filename
+      if (format === "pdf") {
+        const data = await response.json();
+        if (data.url) {
+          // Use filename from API response if available, otherwise fallback to local data
+          // Use resume name, not fullName
+          const fileName = data.filename || 
+            (resumeName
+              ? `${resumeName.replace(/\s+/g, "_")}_Resume.pdf`
+              : "Resume.pdf");
+          
+          console.log("Exporting PDF:", { url: data.url, filename: fileName, apiFilename: data.filename });
+          
+          // Fetch PDF from external URL and create blob to set filename correctly
+          // (download attribute doesn't work with cross-origin URLs)
+          const pdfResponse = await fetch(data.url);
+          if (!pdfResponse.ok) {
+            throw new Error("Failed to fetch PDF from external URL");
+          }
+          
+          const blob = await pdfResponse.blob();
+          const blobUrl = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          
+          a.href = blobUrl;
+          a.download = fileName; // This will work with blob URL
+          document.body.appendChild(a);
+          a.click();
+          
+          window.URL.revokeObjectURL(blobUrl);
+          document.body.removeChild(a);
+        } else {
+          throw new Error("PDF URL not found in response");
+        }
+      } else {
+        // For TXT format, API returns file directly
+        // Try to get filename from Content-Disposition header, otherwise use local data
+        // Use resume name, not fullName
+        const contentDisposition = response.headers.get("Content-Disposition");
+        let fileName = resumeName
+          ? `${resumeName.replace(/\s+/g, "_")}_Resume.${format}`
+          : `Resume.${format}`;
+        
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(/filename="?(.+?)"?$/i);
+          if (filenameMatch && filenameMatch[1]) {
+            fileName = filenameMatch[1];
+          }
+        }
+        
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
 
-      const baseFileName = resumeData?.fullName
-        ? `${resumeData.fullName.replace(/\s+/g, "_")}_Resume`
-        : "Resume";
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
 
-      a.href = url;
-      a.download = `${baseFileName}.${format}`;
-      document.body.appendChild(a);
-      a.click();
-
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }
     } catch (error) {
       console.error(`Error exporting ${format.toUpperCase()}:`, error);
+      // You might want to show a toast notification here
+      alert(error instanceof Error ? error.message : `Failed to export ${format.toUpperCase()}`);
     } finally {
       setIsExporting(false);
     }

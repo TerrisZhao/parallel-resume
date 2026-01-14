@@ -57,9 +57,9 @@ async function handleTxtExport(resumeId: string, language: string) {
     // Format resume data as plain text
     const txtContent = formatResumeAsTxt(fullResumeData, language);
 
-    // Get resume name for filename
-    const fullName = resume.fullName || resume.name || "Resume";
-    const fileName = `${fullName.replace(/\s+/g, "_")}_Resume.txt`;
+    // Get resume name for filename (use resume name, not fullName)
+    const resumeName = resume.name || "Resume";
+    const fileName = `${resumeName.replace(/\s+/g, "_")}_Resume.txt`;
 
     // Return TXT file
     return new NextResponse(txtContent, {
@@ -345,20 +345,20 @@ export async function GET(request: NextRequest) {
     return handleTxtExport(resumeId, language);
   }
 
+  // Fetch resume once and reuse for cache + filename
+  const [resume] = await db
+    .select()
+    .from(resumes)
+    .where(eq(resumes.id, Number(resumeId)));
+
+  if (!resume) {
+    return NextResponse.json({ error: "Resume not found" }, { status: 404 });
+  }
+
+  const resumeNameForFile = resume.name || "Resume";
+  const pdfFileName = `${resumeNameForFile.replace(/\s+/g, "_")}_Resume.pdf`;
+
   try {
-    // Check if resume exists and has cached PDF
-    const [resume] = await db
-      .select()
-      .from(resumes)
-      .where(eq(resumes.id, Number(resumeId)));
-
-    if (!resume) {
-      return NextResponse.json(
-        { error: "Resume not found" },
-        { status: 404 },
-      );
-    }
-
     // Check if PDF is cached and up-to-date
     // PDF is valid if:
     // 1. pdfUrl exists
@@ -369,10 +369,21 @@ export async function GET(request: NextRequest) {
       resume.pdfGeneratedAt &&
       resume.pdfGeneratedAt >= resume.updatedAt;
 
-    if (isPdfCached) {
+    if (isPdfCached && resume.pdfUrl) {
       console.log(`Using cached PDF for resume ${resumeId}: ${resume.pdfUrl}`);
-      // Redirect to cached PDF
-      return NextResponse.redirect(resume.pdfUrl);
+      console.log(
+        `Cached PDF filename: ${pdfFileName} (resume name: ${resume.name})`,
+      );
+
+      // Return PDF URL as external link with filename
+      return NextResponse.json(
+        {
+          url: resume.pdfUrl,
+          filename: pdfFileName,
+          cached: true,
+        },
+        { status: 200 },
+      );
     }
 
     console.log(
@@ -517,30 +528,11 @@ export async function GET(request: NextRequest) {
     await page.close();
 
     // Get resume name for filename
-    let fileName = "Resume.pdf";
-    let fullName = "";
-
-    try {
-      const resumeDataResponse = await fetch(
-        `${baseUrl}/api/resumes/${resumeId}`,
-        {
-          cache: "no-store",
-        },
-      );
-
-      if (resumeDataResponse.ok) {
-        const resumeData = await resumeDataResponse.json();
-
-        fullName = resumeData.resume.fullName || resumeData.resume.name;
-        if (fullName) {
-          fileName = `${fullName.replace(/\s+/g, "_")}_Resume.pdf`;
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching resume data for filename:", error);
-    }
+    const fileName = pdfFileName;
+    console.log(`New PDF filename: ${fileName} (resume name: ${resume.name})`);
 
     // Upload PDF to R2 and update database
+    let pdfUrl: string | null = null;
     try {
       const timestamp = Date.now();
       const objectKey = `resumes/${resumeId}/resume_${timestamp}.pdf`;
@@ -552,7 +544,8 @@ export async function GET(request: NextRequest) {
       );
 
       if (uploadResult.success && uploadResult.url) {
-        console.log(`PDF uploaded successfully: ${uploadResult.url}`);
+        pdfUrl = uploadResult.url;
+        console.log(`PDF uploaded successfully: ${pdfUrl}`);
         // Update database with PDF URL and generation timestamp
         await db
           .update(resumes)
@@ -565,21 +558,27 @@ export async function GET(request: NextRequest) {
         console.log(`Database updated with PDF URL for resume ${resumeId}`);
       } else {
         console.error("Failed to upload PDF to R2:", uploadResult.error);
+        throw new Error("Failed to upload PDF to R2");
       }
     } catch (error) {
       console.error("Error uploading PDF to R2:", error);
-      // Continue to return PDF even if upload fails
+      // If upload fails, we cannot return external link, so return error
+      throw new Error("Failed to upload PDF to storage");
     }
 
-    // Return PDF
-    return new NextResponse(pdf, {
-      status: 200,
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${fileName}"`,
-        "Cache-Control": "no-cache",
+    // Return PDF URL as external link
+    if (!pdfUrl) {
+      throw new Error("PDF URL is not available");
+    }
+
+    return NextResponse.json(
+      {
+        url: pdfUrl,
+        filename: fileName,
+        cached: false,
       },
-    });
+      { status: 200 },
+    );
   } catch (error: any) {
     console.error("PDF generation error:", error);
 
