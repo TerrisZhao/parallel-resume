@@ -22,10 +22,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#e879f9" },
-    { media: "(prefers-color-scheme: dark)", color: "#a21caf" },
-  ],
+  // themeColor 由 ThemeColorUpdater 组件动态管理
 };
 
 export default async function RootLayout({

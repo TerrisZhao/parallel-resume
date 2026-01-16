@@ -11,6 +11,7 @@ import { I18nProvider } from "@react-aria/i18n";
 
 import { ClientSessionProvider } from "@/components/client-session-provider";
 import { ClientThemeProvider } from "@/components/client-theme-provider";
+import { ThemeColorUpdater } from "@/components/theme-color-updater";
 
 export interface ProvidersProps {
   children: React.ReactNode;
@@ -37,6 +38,7 @@ export function Providers({ children, themeProps }: ProvidersProps) {
       <I18nProvider locale={ariaLocale}>
         <HeroUIProvider navigate={router.push}>
           <ClientThemeProvider themeProps={themeProps as any}>
+            <ThemeColorUpdater />
             <ToastProvider placement="top-right" />
             {children}
           </ClientThemeProvider>
