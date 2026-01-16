@@ -29,6 +29,7 @@ export default function AdminLayout({
   const { data: session, status } = useSession();
   const [selectedKey, setSelectedKey] = useState("users");
   const [isSidebarCompact, setIsSidebarCompact] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   // 权限检查：只有 owner 可以访问
   useEffect(() => {
@@ -66,14 +67,47 @@ export default function AdminLayout({
     }
   }, [pathname]);
 
-  // 从 localStorage 读取 sidebar 状态
+  // 客户端挂载后立即初始化 sidebar 状态
   useEffect(() => {
-    const saved = localStorage.getItem("sidebar-compact-admin");
+    setIsClient(true);
 
-    if (saved !== null) {
-      setIsSidebarCompact(saved === "true");
+    // 检查屏幕宽度
+    const isSmallScreen = window.matchMedia("(max-width: 768px)").matches;
+
+    if (isSmallScreen) {
+      // 小屏幕直接收起
+      setIsSidebarCompact(true);
+    } else {
+      // 大屏幕检查 localStorage
+      const saved = localStorage.getItem("sidebar-compact-admin");
+      if (saved !== null) {
+        setIsSidebarCompact(saved === "true");
+      }
     }
   }, []);
+
+  // 监听屏幕宽度变化，自动收起 sidebar（仅收起，不自动展开）
+  useEffect(() => {
+    if (!isClient) return;
+
+    const mediaQuery = window.matchMedia("(max-width: 768px)");
+
+    const handleMediaChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      if (e.matches) {
+        // 屏幕宽度 < md 时，自动收起
+        setIsSidebarCompact(true);
+        localStorage.setItem("sidebar-compact-admin", "true");
+      }
+      // 屏幕宽度 >= md 时，不做任何操作（不自动展开）
+    };
+
+    // 监听变化
+    mediaQuery.addEventListener("change", handleMediaChange);
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleMediaChange);
+    };
+  }, [isClient]);
 
   // 切换 sidebar 状态
   const toggleSidebar = () => {
@@ -131,7 +165,9 @@ export default function AdminLayout({
               {!isSidebarCompact && (
                 <div className="flex flex-col">
                   <span className="text-small font-bold">Parallel Resume</span>
-                  <span className="text-tiny text-default-400">{t("title")}</span>
+                  <span className="text-tiny text-default-400">
+                    {t("title")}
+                  </span>
                 </div>
               )}
             </div>
@@ -144,7 +180,10 @@ export default function AdminLayout({
                 variant="light"
                 onPress={toggleSidebar}
               >
-                <Icon icon="solar:sidebar-minimalistic-bold-duotone" width={20} />
+                <Icon
+                  icon="solar:sidebar-minimalistic-bold-duotone"
+                  width={20}
+                />
               </Button>
             )}
           </div>
@@ -190,11 +229,11 @@ export default function AdminLayout({
           {/* Bottom Actions */}
           <div className="mt-auto flex items-center gap-1 flex-col justify-center">
             <Button
-              fullWidth={!isSidebarCompact}
-              isIconOnly={isSidebarCompact}
               className={`text-small text-default-500 data-[hover=true]:text-foreground ${
                 isSidebarCompact ? "justify-center" : "justify-start"
               }`}
+              fullWidth={!isSidebarCompact}
+              isIconOnly={isSidebarCompact}
               startContent={
                 isSidebarCompact ? undefined : (
                   <Icon

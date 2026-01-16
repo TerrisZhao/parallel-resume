@@ -55,6 +55,7 @@ export default function DashboardLayout({
   const [hideUpgradeCard, setHideUpgradeCard] = useState(false);
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
   const [isSidebarCompact, setIsSidebarCompact] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   // 根据用户角色动态生成 sidebar items
   const items: SidebarItem[] = [
@@ -221,14 +222,47 @@ export default function DashboardLayout({
     return () => clearInterval(interval);
   }, [fetchUnreadCount]);
 
-  // 从 localStorage 读取 sidebar 状态
+  // 客户端挂载后立即初始化 sidebar 状态
   useEffect(() => {
-    const saved = localStorage.getItem("sidebar-compact");
+    setIsClient(true);
 
-    if (saved !== null) {
-      setIsSidebarCompact(saved === "true");
+    // 检查屏幕宽度
+    const isSmallScreen = window.matchMedia("(max-width: 768px)").matches;
+
+    if (isSmallScreen) {
+      // 小屏幕直接收起
+      setIsSidebarCompact(true);
+    } else {
+      // 大屏幕检查 localStorage
+      const saved = localStorage.getItem("sidebar-compact");
+      if (saved !== null) {
+        setIsSidebarCompact(saved === "true");
+      }
     }
   }, []);
+
+  // 监听屏幕宽度变化，自动收起 sidebar（仅收起，不自动展开）
+  useEffect(() => {
+    if (!isClient) return;
+
+    const mediaQuery = window.matchMedia("(max-width: 768px)");
+
+    const handleMediaChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      if (e.matches) {
+        // 屏幕宽度 < md 时，自动收起
+        setIsSidebarCompact(true);
+        localStorage.setItem("sidebar-compact", "true");
+      }
+      // 屏幕宽度 >= md 时，不做任何操作（不自动展开）
+    };
+
+    // 监听变化
+    mediaQuery.addEventListener("change", handleMediaChange);
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleMediaChange);
+    };
+  }, [isClient]);
 
   // 切换 sidebar 状态
   const toggleSidebar = () => {
@@ -317,7 +351,10 @@ export default function DashboardLayout({
                 variant="light"
                 onPress={toggleSidebar}
               >
-                <Icon icon="solar:sidebar-minimalistic-bold-duotone" width={20} />
+                <Icon
+                  icon="solar:sidebar-minimalistic-bold-duotone"
+                  width={20}
+                />
               </Button>
             )}
           </div>
@@ -410,47 +447,49 @@ export default function DashboardLayout({
               credits === 0 &&
               !hideUpgradeCard &&
               !isSidebarCompact && (
-              <Card
-                className="relative mx-2 mb-8 overflow-visible bg-background/10 backdrop-blur-lg backdrop-saturate-150"
-                shadow="sm"
-              >
-                <Button
-                  isIconOnly
-                  className="absolute right-2 top-2 z-10 min-w-unit-6 w-6 h-6 text-default-400 data-[hover=true]:text-default-600"
-                  size="sm"
-                  variant="light"
-                  onPress={() => setHideUpgradeCard(true)}
+                <Card
+                  className="relative mx-2 mb-8 overflow-visible bg-background/10 backdrop-blur-lg backdrop-saturate-150"
+                  shadow="sm"
                 >
-                  <Icon icon="solar:close-circle-bold" width={18} />
-                </Button>
-                <CardBody className="items-center pb-8 pt-5 text-center">
-                  <h3 className="text-medium font-medium text-default-700">
-                    {t("upgradeToPro")}
-                    <span aria-label="rocket-emoji" className="ml-2" role="img">
-                      🚀
-                    </span>
-                  </h3>
-                  <p className="p-4 text-small text-default-500">
-                    {t("upgradeDescription")}
-                  </p>
-                </CardBody>
-                <div className="absolute -bottom-5 left-0 right-0 flex justify-center">
                   <Button
-                    className="px-10 shadow-md"
-                    color="primary"
-                    radius="full"
-                    variant="shadow"
-                    onPress={() => router.push("/subscription")}
+                    isIconOnly
+                    className="absolute right-2 top-2 z-10 min-w-unit-6 w-6 h-6 text-default-400 data-[hover=true]:text-default-600"
+                    size="sm"
+                    variant="light"
+                    onPress={() => setHideUpgradeCard(true)}
                   >
-                    {t("upgrade")}
+                    <Icon icon="solar:close-circle-bold" width={18} />
                   </Button>
-                </div>
-              </Card>
-            )}
+                  <CardBody className="items-center pb-8 pt-5 text-center">
+                    <h3 className="text-medium font-medium text-default-700">
+                      {t("upgradeToPro")}
+                      <span
+                        aria-label="rocket-emoji"
+                        className="ml-2"
+                        role="img"
+                      >
+                        🚀
+                      </span>
+                    </h3>
+                    <p className="p-4 text-small text-default-500">
+                      {t("upgradeDescription")}
+                    </p>
+                  </CardBody>
+                  <div className="absolute -bottom-5 left-0 right-0 flex justify-center">
+                    <Button
+                      className="px-10 shadow-md"
+                      color="primary"
+                      radius="full"
+                      variant="shadow"
+                      onPress={() => router.push("/subscription")}
+                    >
+                      {t("upgrade")}
+                    </Button>
+                  </div>
+                </Card>
+              )}
             {(hasSubscription || credits > 0 || hideUpgradeCard) && (
               <Button
-                fullWidth={!isSidebarCompact}
-                isIconOnly={isSidebarCompact}
                 className={`mb-1 ${
                   isSidebarCompact ? "justify-center" : "justify-start"
                 } ${
@@ -458,6 +497,8 @@ export default function DashboardLayout({
                     ? "bg-default-100 text-foreground"
                     : "text-default-500 data-[hover=true]:text-foreground"
                 }`}
+                fullWidth={!isSidebarCompact}
+                isIconOnly={isSidebarCompact}
                 startContent={
                   isSidebarCompact ? undefined : (
                     <Icon
@@ -491,13 +532,13 @@ export default function DashboardLayout({
               </Button>
             )}
             <Button
-              fullWidth={!isSidebarCompact}
-              isIconOnly={isSidebarCompact}
               className={`${isSidebarCompact ? "justify-center" : "justify-start"} ${
                 selectedKey === "settings"
                   ? "bg-default-100 text-foreground"
                   : "text-default-500 data-[hover=true]:text-foreground"
               }`}
+              fullWidth={!isSidebarCompact}
+              isIconOnly={isSidebarCompact}
               startContent={
                 isSidebarCompact ? undefined : (
                   <Icon
@@ -530,18 +571,20 @@ export default function DashboardLayout({
               )}
             </Button>
             <Button
-              fullWidth={!isSidebarCompact}
-              isIconOnly={isSidebarCompact}
               className={`${isSidebarCompact ? "justify-center" : "justify-start"} ${
                 selectedKey === "help"
                   ? "bg-default-100 text-foreground"
                   : "text-default-500 data-[hover=true]:text-foreground"
               }`}
+              fullWidth={!isSidebarCompact}
+              isIconOnly={isSidebarCompact}
               startContent={
                 isSidebarCompact ? undefined : (
                   <Icon
                     className={
-                      selectedKey === "help" ? "text-primary" : "text-default-500"
+                      selectedKey === "help"
+                        ? "text-primary"
+                        : "text-default-500"
                     }
                     icon="solar:question-circle-bold-duotone"
                     width={24}
@@ -567,9 +610,7 @@ export default function DashboardLayout({
             <Spacer y={2} />
             <div
               className={`flex items-center gap-4 ${
-                isSidebarCompact
-                  ? "flex-col justify-center"
-                  : "justify-between"
+                isSidebarCompact ? "flex-col justify-center" : "justify-between"
               }`}
             >
               <Button
@@ -619,11 +660,11 @@ export default function DashboardLayout({
                 </Button>
               </Badge>
               <Button
-                  isIconOnly
-                  className="text-default-500 data-[hover=true]:text-foreground"
-                  title={t("logoutButtonTitle")}
-                  variant="light"
-                  onPress={() => setShowLogoutModal(true)}
+                isIconOnly
+                className="text-default-500 data-[hover=true]:text-foreground"
+                title={t("logoutButtonTitle")}
+                variant="light"
+                onPress={() => setShowLogoutModal(true)}
               >
                 <Icon icon="solar:logout-2-bold-duotone" width={24} />
               </Button>

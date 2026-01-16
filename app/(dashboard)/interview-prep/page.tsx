@@ -17,7 +17,16 @@ import { Input, Textarea } from "@heroui/input";
 import { Select, SelectItem } from "@heroui/select";
 import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
 import { addToast } from "@heroui/toast";
-import { Plus, Edit, Trash2, X, Sparkles, Languages, Play, Pause } from "lucide-react";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  X,
+  Sparkles,
+  Languages,
+  Play,
+  Pause,
+} from "lucide-react";
 import { Icon } from "@iconify/react";
 
 import { usePageHeader } from "../use-page-header";
@@ -88,9 +97,9 @@ export default function InterviewPrepPage() {
   const [selectedResumeId, setSelectedResumeId] = useState<number | null>(null);
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [projects, setProjects] = useState<
-    Array<{ id: number; name: string }>
-  >([]);
+  const [projects, setProjects] = useState<Array<{ id: number; name: string }>>(
+    [],
+  );
   const [works, setWorks] = useState<
     Array<{ id: number; name: string; company: string; position: string }>
   >([]);
@@ -178,6 +187,7 @@ export default function InterviewPrepPage() {
 
           // 设置项目列表
           const projectList: Array<{ id: number; name: string }> = [];
+
           if (resume.projects && resume.projects.length > 0) {
             resume.projects.forEach((project: any) => {
               projectList.push({
@@ -195,6 +205,7 @@ export default function InterviewPrepPage() {
             company: string;
             position: string;
           }> = [];
+
           if (resume.workExperience && resume.workExperience.length > 0) {
             resume.workExperience.forEach((work: any) => {
               workList.push({
@@ -358,6 +369,7 @@ export default function InterviewPrepPage() {
     if (isPlaying) {
       // 暂停播放
       const audio = audioElements[materialId];
+
       if (audio) {
         audio.pause();
       }
@@ -368,6 +380,7 @@ export default function InterviewPrepPage() {
     } else {
       // 开始播放
       let audio = audioElements[materialId];
+
       if (!audio) {
         audio = new Audio(audioUrl);
         audio.addEventListener("ended", () => {
@@ -476,13 +489,16 @@ export default function InterviewPrepPage() {
           });
 
           // 重新获取简历详情以更新项目列表
-          const resumeResponse = await fetch(`/api/resumes/${selectedResumeId}`);
+          const resumeResponse = await fetch(
+            `/api/resumes/${selectedResumeId}`,
+          );
 
           if (resumeResponse.ok) {
             const { resume } = await resumeResponse.json();
 
             // 更新项目列表
             const projectList: Array<{ id: number; name: string }> = [];
+
             if (resume.projects && resume.projects.length > 0) {
               resume.projects.forEach((project: any) => {
                 projectList.push({
@@ -500,6 +516,7 @@ export default function InterviewPrepPage() {
               company: string;
               position: string;
             }> = [];
+
             if (resume.workExperience && resume.workExperience.length > 0) {
               resume.workExperience.forEach((work: any) => {
                 workList.push({
@@ -515,7 +532,9 @@ export default function InterviewPrepPage() {
             setSelectedItemId(null);
           }
         } else {
-          throw new Error(errorData.error || errorData.details || "Failed to generate");
+          throw new Error(
+            errorData.error || errorData.details || "Failed to generate",
+          );
         }
       }
     } catch (error) {
@@ -612,12 +631,20 @@ export default function InterviewPrepPage() {
                   {material.audioUrl && (
                     <Button
                       isIconOnly
-                      color={playingAudioMap[material.id] ? "primary" : "default"}
+                      color={
+                        playingAudioMap[material.id] ? "primary" : "default"
+                      }
                       size="sm"
                       variant={playingAudioMap[material.id] ? "flat" : "light"}
-                      onPress={() => toggleAudioPlayback(material.id, material.audioUrl!)}
+                      onPress={() =>
+                        toggleAudioPlayback(material.id, material.audioUrl!)
+                      }
                     >
-                      {playingAudioMap[material.id] ? <Pause size={16} /> : <Play size={16} />}
+                      {playingAudioMap[material.id] ? (
+                        <Pause size={16} />
+                      ) : (
+                        <Play size={16} />
+                      )}
                     </Button>
                   )}
                   {material.translation && (
@@ -827,109 +854,109 @@ export default function InterviewPrepPage() {
                 />
                 <div className="flex items-center gap-2">
                   <Select
-                      className="w-48"
-                      label={t("selectResumePlaceholder")}
-                      placeholder={t("selectResumePlaceholder")}
+                    className="w-48"
+                    label={t("selectResumePlaceholder")}
+                    placeholder={t("selectResumePlaceholder")}
+                    selectedKeys={
+                      selectedResumeId ? [selectedResumeId.toString()] : []
+                    }
+                    selectionMode="single"
+                    size="sm"
+                    onSelectionChange={(keys) => {
+                      const key = Array.from(keys)[0] as string | undefined;
+
+                      setSelectedResumeId(key ? parseInt(key) : null);
+                    }}
+                  >
+                    {resumes.length === 0 ? (
+                      <SelectItem key="no-resume" isDisabled>
+                        {t("noResumeAvailable")}
+                      </SelectItem>
+                    ) : (
+                      resumes.map((resume) => (
+                        <SelectItem
+                          key={resume.id.toString()}
+                          textValue={resume.name}
+                        >
+                          {resume.name}
+                        </SelectItem>
+                      ))
+                    )}
+                  </Select>
+                  {formData.category === "project" && (
+                    <Select
+                      className="w-64"
+                      isDisabled={!selectedResumeId}
+                      label={t("selectProjectPlaceholder")}
+                      placeholder={t("selectProjectPlaceholder")}
                       selectedKeys={
-                        selectedResumeId ? [selectedResumeId.toString()] : []
+                        selectedItemId ? [selectedItemId.toString()] : []
                       }
                       selectionMode="single"
                       size="sm"
                       onSelectionChange={(keys) => {
                         const key = Array.from(keys)[0] as string | undefined;
 
-                        setSelectedResumeId(key ? parseInt(key) : null);
+                        setSelectedItemId(key ? parseInt(key) : null);
                       }}
-                  >
-                    {resumes.length === 0 ? (
-                        <SelectItem key="no-resume" isDisabled>
-                          {t("noResumeAvailable")}
+                    >
+                      {projects.length === 0 ? (
+                        <SelectItem key="no-project" isDisabled>
+                          {t("noProjectAvailable")}
                         </SelectItem>
-                    ) : (
-                        resumes.map((resume) => (
-                            <SelectItem
-                                key={resume.id.toString()}
-                                textValue={resume.name}
-                            >
-                              {resume.name}
-                            </SelectItem>
+                      ) : (
+                        projects.map((project) => (
+                          <SelectItem
+                            key={project.id.toString()}
+                            textValue={project.name}
+                          >
+                            {project.name}
+                          </SelectItem>
                         ))
-                    )}
-                  </Select>
-                  {formData.category === "project" && (
-                      <Select
-                          className="w-64"
-                          isDisabled={!selectedResumeId}
-                          label={t("selectProjectPlaceholder")}
-                          placeholder={t("selectProjectPlaceholder")}
-                          selectedKeys={
-                            selectedItemId ? [selectedItemId.toString()] : []
-                          }
-                          selectionMode="single"
-                          size="sm"
-                          onSelectionChange={(keys) => {
-                            const key = Array.from(keys)[0] as string | undefined;
-
-                            setSelectedItemId(key ? parseInt(key) : null);
-                          }}
-                      >
-                        {projects.length === 0 ? (
-                            <SelectItem key="no-project" isDisabled>
-                              {t("noProjectAvailable")}
-                            </SelectItem>
-                        ) : (
-                            projects.map((project) => (
-                                <SelectItem
-                                    key={project.id.toString()}
-                                    textValue={project.name}
-                                >
-                                  {project.name}
-                                </SelectItem>
-                            ))
-                        )}
-                      </Select>
+                      )}
+                    </Select>
                   )}
                   {formData.category === "work" && (
-                      <Select
-                          className="w-64"
-                          isDisabled={!selectedResumeId}
-                          label={t("selectWorkPlaceholder")}
-                          placeholder={t("selectWorkPlaceholder")}
-                          selectedKeys={
-                            selectedItemId ? [selectedItemId.toString()] : []
-                          }
-                          selectionMode="single"
-                          size="sm"
-                          onSelectionChange={(keys) => {
-                            const key = Array.from(keys)[0] as string | undefined;
+                    <Select
+                      className="w-64"
+                      isDisabled={!selectedResumeId}
+                      label={t("selectWorkPlaceholder")}
+                      placeholder={t("selectWorkPlaceholder")}
+                      selectedKeys={
+                        selectedItemId ? [selectedItemId.toString()] : []
+                      }
+                      selectionMode="single"
+                      size="sm"
+                      onSelectionChange={(keys) => {
+                        const key = Array.from(keys)[0] as string | undefined;
 
-                            setSelectedItemId(key ? parseInt(key) : null);
-                          }}
-                      >
-                        {works.length === 0 ? (
-                            <SelectItem key="no-work" isDisabled>
-                              {t("noWorkAvailable")}
-                            </SelectItem>
-                        ) : (
-                            works.map((work) => (
-                                <SelectItem
-                                    key={work.id.toString()}
-                                    textValue={`${work.company} - ${work.position}`}
-                                >
-                                  {work.company} - {work.position}
-                                </SelectItem>
-                            ))
-                        )}
-                      </Select>
+                        setSelectedItemId(key ? parseInt(key) : null);
+                      }}
+                    >
+                      {works.length === 0 ? (
+                        <SelectItem key="no-work" isDisabled>
+                          {t("noWorkAvailable")}
+                        </SelectItem>
+                      ) : (
+                        works.map((work) => (
+                          <SelectItem
+                            key={work.id.toString()}
+                            textValue={`${work.company} - ${work.position}`}
+                          >
+                            {work.company} - {work.position}
+                          </SelectItem>
+                        ))
+                      )}
+                    </Select>
                   )}
                   <Button
-                      color="secondary"
-                      isDisabled={!selectedResumeId || isGenerating}
-                      isLoading={isGenerating}
-                      size="lg"
-                      startContent={!isGenerating && <Sparkles size={16} />}
-                      variant="flat"
-                      onPress={handleGenerateWithAI}
+                    color="secondary"
+                    isDisabled={!selectedResumeId || isGenerating}
+                    isLoading={isGenerating}
+                    size="lg"
+                    startContent={!isGenerating && <Sparkles size={16} />}
+                    variant="flat"
+                    onPress={handleGenerateWithAI}
                   >
                     {isGenerating ? t("generating") : t("generateWithAI")}
                   </Button>

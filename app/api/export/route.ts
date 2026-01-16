@@ -21,10 +21,7 @@ async function handleTxtExport(resumeId: string, language: string) {
       .where(eq(resumes.id, Number(resumeId)));
 
     if (!resume) {
-      return NextResponse.json(
-        { error: "Resume not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Resume not found" }, { status: 404 });
     }
 
     // Fetch related data from associated tables
@@ -129,9 +126,13 @@ function formatResumeAsTxt(resume: any, language: string): string {
   }
 
   // Key Skills
-  if (resume.keySkills && Array.isArray(resume.keySkills) && resume.keySkills.length > 0) {
+  if (
+    resume.keySkills &&
+    Array.isArray(resume.keySkills) &&
+    resume.keySkills.length > 0
+  ) {
     addSection(isZh ? "核心技能" : "KEY SKILLS");
-    
+
     // Check if it's a simple string array or grouped format
     if (typeof resume.keySkills[0] === "string") {
       // Simple format: ["skill1", "skill2", ...]
@@ -157,11 +158,15 @@ function formatResumeAsTxt(resume: any, language: string): string {
   }
 
   // Work Experience
-  if (resume.workExperience && Array.isArray(resume.workExperience) && resume.workExperience.length > 0) {
+  if (
+    resume.workExperience &&
+    Array.isArray(resume.workExperience) &&
+    resume.workExperience.length > 0
+  ) {
     addSection(isZh ? "工作经历" : "WORK EXPERIENCE");
     resume.workExperience.forEach((exp: any) => {
       lines.push("");
-      
+
       if (exp.position && exp.company) {
         lines.push(`${exp.position} - ${exp.company}`);
       } else if (exp.position) {
@@ -169,7 +174,7 @@ function formatResumeAsTxt(resume: any, language: string): string {
       } else if (exp.company) {
         lines.push(exp.company);
       }
-      
+
       if (exp.startDate) {
         const endDate = exp.current
           ? isZh
@@ -185,7 +190,11 @@ function formatResumeAsTxt(resume: any, language: string): string {
       }
 
       // Handle responsibilities (JSON array)
-      if (exp.responsibilities && Array.isArray(exp.responsibilities) && exp.responsibilities.length > 0) {
+      if (
+        exp.responsibilities &&
+        Array.isArray(exp.responsibilities) &&
+        exp.responsibilities.length > 0
+      ) {
         exp.responsibilities.forEach((resp: string) => {
           if (resp && typeof resp === "string") {
             lines.push(`  • ${resp}`);
@@ -196,23 +205,27 @@ function formatResumeAsTxt(resume: any, language: string): string {
   }
 
   // Education
-  if (resume.education && Array.isArray(resume.education) && resume.education.length > 0) {
+  if (
+    resume.education &&
+    Array.isArray(resume.education) &&
+    resume.education.length > 0
+  ) {
     addSection(isZh ? "教育背景" : "EDUCATION");
     resume.education.forEach((edu: any) => {
       lines.push("");
-      
+
       if (edu.school) {
         lines.push(edu.school);
       }
-      
-      const degreeInfo = [edu.degree, edu.major].filter(Boolean).join(
-        isZh ? " " : " in ",
-      );
+
+      const degreeInfo = [edu.degree, edu.major]
+        .filter(Boolean)
+        .join(isZh ? " " : " in ");
 
       if (degreeInfo) {
         lines.push(degreeInfo);
       }
-      
+
       if (edu.startDate) {
         const endDate = edu.current
           ? isZh
@@ -230,15 +243,19 @@ function formatResumeAsTxt(resume: any, language: string): string {
   }
 
   // Projects
-  if (resume.projects && Array.isArray(resume.projects) && resume.projects.length > 0) {
+  if (
+    resume.projects &&
+    Array.isArray(resume.projects) &&
+    resume.projects.length > 0
+  ) {
     addSection(isZh ? "项目经历" : "PROJECTS");
     resume.projects.forEach((proj: any) => {
       lines.push("");
-      
+
       if (proj.name) {
         lines.push(`${proj.name}${proj.role ? ` - ${proj.role}` : ""}`);
       }
-      
+
       if (proj.startDate) {
         const endDate = proj.current
           ? isZh
@@ -254,9 +271,15 @@ function formatResumeAsTxt(resume: any, language: string): string {
       }
 
       // Handle technologies (JSON array)
-      if (proj.technologies && Array.isArray(proj.technologies) && proj.technologies.length > 0) {
-        const techList = proj.technologies.filter((tech: any) => tech && typeof tech === "string");
-        
+      if (
+        proj.technologies &&
+        Array.isArray(proj.technologies) &&
+        proj.technologies.length > 0
+      ) {
+        const techList = proj.technologies.filter(
+          (tech: any) => tech && typeof tech === "string",
+        );
+
         if (techList.length > 0) {
           lines.push(
             `${isZh ? "技术栈" : "Technologies"}: ${techList.join(", ")}`,
@@ -539,10 +562,12 @@ export async function GET(request: NextRequest) {
 
     // Get resume name for filename
     const fileName = pdfFileName;
+
     console.log(`New PDF filename: ${fileName} (resume name: ${resume.name})`);
 
     // Upload PDF to R2 and update database
     let pdfUrl: string | null = null;
+
     try {
       const timestamp = Date.now();
       const objectKey = `resumes/${resumeId}/resume_${timestamp}.pdf`;

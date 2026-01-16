@@ -28,7 +28,8 @@ export async function generateTTS(
     }
 
     // 从环境变量读取TTS API配置
-    const ttsApiEndpoint = process.env.TTS_API_ENDPOINT || "http://localhost:8880/v1/audio/speech";
+    const ttsApiEndpoint =
+      process.env.TTS_API_ENDPOINT || "http://localhost:8880/v1/audio/speech";
 
     // 调用文字转语音接口
     const ttsResponse = await fetch(ttsApiEndpoint, {

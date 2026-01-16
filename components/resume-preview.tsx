@@ -125,7 +125,10 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             <div className="space-y-1">
               {(data.keySkills as any[]).map((group, groupIndex) => (
                 <div key={groupIndex}>
-                  <div className="text-sm font-semibold mb-1" style={{ color: themeColor }}>
+                  <div
+                    className="text-sm font-semibold mb-1"
+                    style={{ color: themeColor }}
+                  >
                     {group.groupName}:
                   </div>
                   {group.skills.map((skill: string, skillIndex: number) => (

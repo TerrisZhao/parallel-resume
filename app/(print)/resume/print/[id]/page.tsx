@@ -570,18 +570,20 @@ export default async function PrintResumePage({
                           >
                             {group.groupName}:
                           </div>
-                          {group.skills.map((skill: string, skillIndex: number) => (
-                            <div
-                              key={skillIndex}
-                              style={{
-                                fontSize: "14px",
-                                marginLeft: "16px",
-                                marginBottom: "2px",
-                              }}
-                            >
-                              • {skill}
-                            </div>
-                          ))}
+                          {group.skills.map(
+                            (skill: string, skillIndex: number) => (
+                              <div
+                                key={skillIndex}
+                                style={{
+                                  fontSize: "14px",
+                                  marginLeft: "16px",
+                                  marginBottom: "2px",
+                                }}
+                              >
+                                • {skill}
+                              </div>
+                            ),
+                          )}
                         </div>
                       ),
                     )}

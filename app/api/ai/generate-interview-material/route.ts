@@ -56,12 +56,17 @@ About you:
 ${resumeData.summary ? `- Background: ${resumeData.summary}` : ""}
 ${resumeData.keySkills?.length ? `- Skills: ${resumeData.keySkills.join(", ")}` : ""}
 
-${hasWorkExp ? `
+${
+  hasWorkExp
+    ? `
 Recent work (just reference):
-${workExperiences.slice(0, 2).map(exp =>
-`- ${exp.company}, ${exp.position}: ${exp.description || ""}`
-).join("\n")}
-` : ""}
+${workExperiences
+  .slice(0, 2)
+  .map((exp) => `- ${exp.company}, ${exp.position}: ${exp.description || ""}`)
+  .join("\n")}
+`
+    : ""
+}
 
 Rules:
 - Talk like you're in the interview right now
@@ -93,12 +98,17 @@ Background (just reference):
 ${resumeData.summary || ""}
 ${resumeData.keySkills?.length ? resumeData.keySkills.join(", ") : ""}
 
-${hasWorkExp ? `
+${
+  hasWorkExp
+    ? `
 Recent work:
-${workExperiences.slice(0, 1).map(exp =>
-`${exp.company}, ${exp.position}: ${exp.description || ""}`
-).join("\n")}
-` : ""}
+${workExperiences
+  .slice(0, 1)
+  .map((exp) => `${exp.company}, ${exp.position}: ${exp.description || ""}`)
+  .join("\n")}
+`
+    : ""
+}
 
 Rules:
 - Just 1-2 short sentences
@@ -189,8 +199,9 @@ export async function POST(request: NextRequest) {
     const { config: aiConfig, mode } = aiConfigData;
 
     const body = await request.json();
+
     console.log("Received request body:", body);
-    
+
     const { resumeId, title, category, itemId } =
       generateMaterialSchema.parse(body);
 
@@ -252,7 +263,8 @@ export async function POST(request: NextRequest) {
       }
 
       // 确保 itemId 是数字类型
-      const projectId = typeof itemId === "string" ? parseInt(itemId, 10) : itemId;
+      const projectId =
+        typeof itemId === "string" ? parseInt(itemId, 10) : itemId;
 
       console.log("Querying project:", {
         projectId,
@@ -298,13 +310,21 @@ export async function POST(request: NextRequest) {
           .where(eq(resumeProjects.resumeId, resumeId))
           .orderBy(resumeProjects.order);
 
-        console.log("All projects for resume", resumeId, ":", allProjects.map((p: { id: any; name: any; }) => ({ id: p.id, name: p.name })));
+        console.log(
+          "All projects for resume",
+          resumeId,
+          ":",
+          allProjects.map((p: { id: any; name: any }) => ({
+            id: p.id,
+            name: p.name,
+          })),
+        );
 
         if (projectExists) {
           return NextResponse.json(
             {
               error: "Project not found in this resume",
-              details: `Project ID ${projectId} exists but does not belong to resume ID ${resumeId}. Available project IDs: ${allProjects.map((p: { id: any; }) => p.id).join(", ")}`,
+              details: `Project ID ${projectId} exists but does not belong to resume ID ${resumeId}. Available project IDs: ${allProjects.map((p: { id: any }) => p.id).join(", ")}`,
             },
             { status: 404 },
           );
@@ -313,7 +333,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           {
             error: "Project not found",
-            details: `Project ID ${projectId} does not exist. Available project IDs for this resume: ${allProjects.map((p: { id: any; }) => p.id).join(", ") || "none"}`,
+            details: `Project ID ${projectId} does not exist. Available project IDs for this resume: ${allProjects.map((p: { id: any }) => p.id).join(", ") || "none"}`,
           },
           { status: 404 },
         );
@@ -336,7 +356,8 @@ export async function POST(request: NextRequest) {
       }
 
       // 确保 itemId 是数字类型
-      const workExpId = typeof itemId === "string" ? parseInt(itemId, 10) : itemId;
+      const workExpId =
+        typeof itemId === "string" ? parseInt(itemId, 10) : itemId;
 
       if (isNaN(workExpId)) {
         return NextResponse.json(
@@ -494,4 +515,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

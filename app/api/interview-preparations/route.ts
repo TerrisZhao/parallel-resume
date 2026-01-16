@@ -32,6 +32,7 @@ async function translateContent(content: string): Promise<string | null> {
     }
   } catch (error) {
     console.error("Translation error:", error);
+
     // 翻译失败时返回 null,不影响主流程
     return null;
   }
@@ -113,9 +114,11 @@ export async function POST(request: NextRequest) {
 
     // 如果内容是英文（不包含中文），生成TTS
     let audioUrl: string | null = null;
+
     if (!containsChinese(content)) {
       try {
         const ttsResult = await generateTTS(content);
+
         if (ttsResult.success && ttsResult.url) {
           audioUrl = ttsResult.url;
         }

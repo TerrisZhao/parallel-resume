@@ -37,10 +37,7 @@ export async function GET(
       .where(eq(resumes.id, resumeId));
 
     if (!resume) {
-      return NextResponse.json(
-        { error: "Resume not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Resume not found" }, { status: 404 });
     }
 
     // Check if thumbnail is cached and up-to-date
@@ -170,6 +167,7 @@ export async function GET(
         return NextResponse.redirect(uploadResult.url);
       } else {
         console.error("Failed to upload thumbnail to R2:", uploadResult.error);
+
         // Fallback: Return the image directly if upload fails
         return new NextResponse(screenshot, {
           headers: {
@@ -180,6 +178,7 @@ export async function GET(
       }
     } catch (error) {
       console.error("Error uploading thumbnail to R2:", error);
+
       // Fallback: Return the image directly if upload fails
       return new NextResponse(screenshot, {
         headers: {

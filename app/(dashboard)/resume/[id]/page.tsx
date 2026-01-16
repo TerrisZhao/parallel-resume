@@ -2098,8 +2098,8 @@ export default function ResumeEditPage({
               <div className="flex items-center gap-3">
                 <h3 className="text-lg font-semibold">{t("keySkills")}</h3>
                 <Switch
-                  size="sm"
                   isSelected={resumeData.keySkillsSingleLine}
+                  size="sm"
                   onValueChange={(value) =>
                     setResumeData({
                       ...resumeData,
