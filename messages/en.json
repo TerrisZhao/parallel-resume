@@ -503,7 +503,9 @@
     "logoutButtonTitle": "Log Out",
     "languageButtonTitle": "切换语言",
     "themeButtonTitle": "Toggle Theme",
-    "messagesButtonTitle": "Messages"
+    "messagesButtonTitle": "Messages",
+    "collapseSidebar": "Collapse Sidebar",
+    "expandSidebar": "Expand Sidebar"
   },
   "help": {
     "title": "Help & Feedback",
@@ -715,6 +717,8 @@
     "subscriptionManagement": "Subscription Management",
     "subscriptionManagementDesc": "Manage user subscriptions and payments",
     "backToDashboard": "Back to Dashboard",
+    "collapseSidebar": "Collapse Sidebar",
+    "expandSidebar": "Expand Sidebar",
     "user": "User",
     "email": "Email",
     "name": "Name",

@@ -54,6 +54,7 @@ export default function DashboardLayout({
   const [hasCheckedPassword, setHasCheckedPassword] = useState(false);
   const [hideUpgradeCard, setHideUpgradeCard] = useState(false);
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
+  const [isSidebarCompact, setIsSidebarCompact] = useState(false);
 
   // 根据用户角色动态生成 sidebar items
   const items: SidebarItem[] = [
@@ -220,6 +221,23 @@ export default function DashboardLayout({
     return () => clearInterval(interval);
   }, [fetchUnreadCount]);
 
+  // 从 localStorage 读取 sidebar 状态
+  useEffect(() => {
+    const saved = localStorage.getItem("sidebar-compact");
+
+    if (saved !== null) {
+      setIsSidebarCompact(saved === "true");
+    }
+  }, []);
+
+  // 切换 sidebar 状态
+  const toggleSidebar = () => {
+    const newState = !isSidebarCompact;
+
+    setIsSidebarCompact(newState);
+    localStorage.setItem("sidebar-compact", String(newState));
+  };
+
   const handleThemeToggle = async () => {
     const newTheme = theme === "dark" ? "light" : "dark";
 
@@ -264,30 +282,74 @@ export default function DashboardLayout({
   return (
     <div className=" h-screen bg-gradient-to-br from-rose-400 via-fuchsia-500/50 to-indigo-500 dark:from-rose-400 dark:via-fuchsia-500/50 dark:to-indigo-500 p-3">
       <div className="flex h-full rounded-3xl overflow-hidden">
-        <aside className="relative flex h-full w-72 flex-shrink-0 flex-col border-r border-divider p-6 bg-background/95 dark:bg-background/80 backdrop-blur-lg backdrop-saturate-150">
-          {/* Logo */}
-          <div
-            className="flex cursor-pointer items-center gap-2 px-2 transition-opacity hover:opacity-80"
-            role="button"
-            tabIndex={0}
-            onClick={() => router.push("/")}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                router.push("/");
-              }
-            }}
-          >
-            <Logo />
-            <span className="text-small font-bold">Parallel Resume</span>
+        <aside
+          className={`relative flex h-full flex-shrink-0 flex-col border-r border-divider p-6 bg-background/95 dark:bg-background/80 backdrop-blur-lg backdrop-saturate-150 transition-all duration-300 ease-in-out ${
+            isSidebarCompact ? "w-[88px]" : "w-72"
+          }`}
+        >
+          {/* Logo and Toggle Button */}
+          <div className="flex items-center justify-between">
+            <div
+              className={`flex cursor-pointer items-center gap-2 px-2 transition-opacity hover:opacity-80 ${
+                isSidebarCompact ? "mx-auto" : ""
+              }`}
+              role="button"
+              tabIndex={0}
+              onClick={() => router.push("/")}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  router.push("/");
+                }
+              }}
+            >
+              <Logo />
+              {!isSidebarCompact && (
+                <span className="text-small font-bold">Parallel Resume</span>
+              )}
+            </div>
+            {!isSidebarCompact && (
+              <Button
+                isIconOnly
+                className="text-default-500 data-[hover=true]:text-foreground"
+                size="sm"
+                title={t("collapseSidebar")}
+                variant="light"
+                onPress={toggleSidebar}
+              >
+                <Icon icon="solar:sidebar-minimalistic-bold-duotone" width={20} />
+              </Button>
+            )}
           </div>
+
+          {isSidebarCompact && (
+            <div className="flex justify-center mt-4">
+              <Button
+                isIconOnly
+                className="text-default-500 data-[hover=true]:text-foreground"
+                size="sm"
+                title={t("expandSidebar")}
+                variant="light"
+                onPress={toggleSidebar}
+              >
+                <Icon
+                  icon="solar:sidebar-minimalistic-bold-duotone"
+                  width={20}
+                />
+              </Button>
+            </div>
+          )}
 
           <Spacer y={8} />
 
           {/* User Info */}
           {session?.user && (
             <>
-              <div className="flex items-center gap-3 px-2">
+              <div
+                className={`flex items-center gap-3 px-2 ${
+                  isSidebarCompact ? "justify-center" : ""
+                }`}
+              >
                 <div className="relative">
                   <Avatar
                     isBordered
@@ -308,14 +370,16 @@ export default function DashboardLayout({
                     </div>
                   )}
                 </div>
-                <div className="flex flex-col">
-                  <p className="text-small font-medium text-default-600">
-                    {session.user.name || session.user.email}
-                  </p>
-                  <p className="text-tiny text-default-400">
-                    {session.user.email}
-                  </p>
-                </div>
+                {!isSidebarCompact && (
+                  <div className="flex flex-col">
+                    <p className="text-small font-medium text-default-600">
+                      {session.user.name || session.user.email}
+                    </p>
+                    <p className="text-tiny text-default-400">
+                      {session.user.email}
+                    </p>
+                  </div>
+                )}
               </div>
               <Spacer y={6} />
             </>
@@ -325,6 +389,7 @@ export default function DashboardLayout({
           <ScrollShadow className="-mr-6 h-full max-h-full py-6 pr-6">
             <Sidebar
               defaultSelectedKey={selectedKey}
+              isCompact={isSidebarCompact}
               items={items}
               onSelect={(key) => {
                 const item = items.find((i) => i.key === key);
@@ -340,8 +405,11 @@ export default function DashboardLayout({
           <Spacer y={8} />
 
           {/* Bottom Actions */}
-          <div className="mt-auto flex flex-col">
-            {!hasSubscription && credits === 0 && !hideUpgradeCard && (
+          <div className="mt-auto flex items-center gap-1 flex-col justify-center">
+            {!hasSubscription &&
+              credits === 0 &&
+              !hideUpgradeCard &&
+              !isSidebarCompact && (
               <Card
                 className="relative mx-2 mb-8 overflow-visible bg-background/10 backdrop-blur-lg backdrop-saturate-150"
                 shadow="sm"
@@ -381,13 +449,33 @@ export default function DashboardLayout({
             )}
             {(hasSubscription || credits > 0 || hideUpgradeCard) && (
               <Button
-                fullWidth
-                className={`justify-start mb-1 ${
+                fullWidth={!isSidebarCompact}
+                isIconOnly={isSidebarCompact}
+                className={`mb-1 ${
+                  isSidebarCompact ? "justify-center" : "justify-start"
+                } ${
                   selectedKey === "subscription"
                     ? "bg-default-100 text-foreground"
                     : "text-default-500 data-[hover=true]:text-foreground"
                 }`}
                 startContent={
+                  isSidebarCompact ? undefined : (
+                    <Icon
+                      className={
+                        selectedKey === "subscription"
+                          ? "text-primary"
+                          : "text-default-500"
+                      }
+                      icon="solar:crown-bold-duotone"
+                      width={24}
+                    />
+                  )
+                }
+                title={isSidebarCompact ? t("subscription") : undefined}
+                variant="light"
+                onPress={() => router.push("/subscription/manage")}
+              >
+                {isSidebarCompact ? (
                   <Icon
                     className={
                       selectedKey === "subscription"
@@ -397,21 +485,37 @@ export default function DashboardLayout({
                     icon="solar:crown-bold-duotone"
                     width={24}
                   />
-                }
-                variant="light"
-                onPress={() => router.push("/subscription/manage")}
-              >
-                {t("subscription")}
+                ) : (
+                  t("subscription")
+                )}
               </Button>
             )}
             <Button
-              fullWidth
-              className={`justify-start ${
+              fullWidth={!isSidebarCompact}
+              isIconOnly={isSidebarCompact}
+              className={`${isSidebarCompact ? "justify-center" : "justify-start"} ${
                 selectedKey === "settings"
                   ? "bg-default-100 text-foreground"
                   : "text-default-500 data-[hover=true]:text-foreground"
               }`}
               startContent={
+                isSidebarCompact ? undefined : (
+                  <Icon
+                    className={
+                      selectedKey === "settings"
+                        ? "text-primary"
+                        : "text-default-500"
+                    }
+                    icon="solar:settings-bold-duotone"
+                    width={24}
+                  />
+                )
+              }
+              title={isSidebarCompact ? t("settings") : undefined}
+              variant="light"
+              onPress={() => router.push("/settings")}
+            >
+              {isSidebarCompact ? (
                 <Icon
                   className={
                     selectedKey === "settings"
@@ -421,20 +525,34 @@ export default function DashboardLayout({
                   icon="solar:settings-bold-duotone"
                   width={24}
                 />
-              }
-              variant="light"
-              onPress={() => router.push("/settings")}
-            >
-              {t("settings")}
+              ) : (
+                t("settings")
+              )}
             </Button>
             <Button
-              fullWidth
-              className={`justify-start ${
+              fullWidth={!isSidebarCompact}
+              isIconOnly={isSidebarCompact}
+              className={`${isSidebarCompact ? "justify-center" : "justify-start"} ${
                 selectedKey === "help"
                   ? "bg-default-100 text-foreground"
                   : "text-default-500 data-[hover=true]:text-foreground"
               }`}
               startContent={
+                isSidebarCompact ? undefined : (
+                  <Icon
+                    className={
+                      selectedKey === "help" ? "text-primary" : "text-default-500"
+                    }
+                    icon="solar:question-circle-bold-duotone"
+                    width={24}
+                  />
+                )
+              }
+              title={isSidebarCompact ? t("help") : undefined}
+              variant="light"
+              onPress={() => router.push("/help")}
+            >
+              {isSidebarCompact ? (
                 <Icon
                   className={
                     selectedKey === "help" ? "text-primary" : "text-default-500"
@@ -442,23 +560,18 @@ export default function DashboardLayout({
                   icon="solar:question-circle-bold-duotone"
                   width={24}
                 />
-              }
-              variant="light"
-              onPress={() => router.push("/help")}
-            >
-              {t("help")}
+              ) : (
+                t("help")
+              )}
             </Button>
             <Spacer y={2} />
-            <div className="flex items-center justify-between gap-1">
-              <Button
-                isIconOnly
-                className="text-default-500 data-[hover=true]:text-foreground"
-                title={t("logoutButtonTitle")}
-                variant="light"
-                onPress={() => setShowLogoutModal(true)}
-              >
-                <Icon icon="solar:logout-2-bold-duotone" width={24} />
-              </Button>
+            <div
+              className={`flex items-center gap-4 ${
+                isSidebarCompact
+                  ? "flex-col justify-center"
+                  : "justify-between"
+              }`}
+            >
               <Button
                 isIconOnly
                 className="text-default-500 data-[hover=true]:text-foreground"
@@ -505,6 +618,15 @@ export default function DashboardLayout({
                   <Icon icon="solar:letter-bold-duotone" width={24} />
                 </Button>
               </Badge>
+              <Button
+                  isIconOnly
+                  className="text-default-500 data-[hover=true]:text-foreground"
+                  title={t("logoutButtonTitle")}
+                  variant="light"
+                  onPress={() => setShowLogoutModal(true)}
+              >
+                <Icon icon="solar:logout-2-bold-duotone" width={24} />
+              </Button>
             </div>
           </div>
         </aside>

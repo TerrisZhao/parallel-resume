@@ -503,7 +503,9 @@
     "logoutButtonTitle": "退出登录",
     "languageButtonTitle": "Switch Language",
     "themeButtonTitle": "切换主题",
-    "messagesButtonTitle": "消息"
+    "messagesButtonTitle": "消息",
+    "collapseSidebar": "收起侧边栏",
+    "expandSidebar": "展开侧边栏"
   },
   "help": {
     "title": "帮助与反馈",
@@ -716,6 +718,8 @@
     "subscriptionManagement": "订阅管理",
     "subscriptionManagementDesc": "管理用户订阅和支付信息",
     "backToDashboard": "返回控制台",
+    "collapseSidebar": "收起侧边栏",
+    "expandSidebar": "展开侧边栏",
     "user": "用户",
     "email": "邮箱",
     "name": "姓名",

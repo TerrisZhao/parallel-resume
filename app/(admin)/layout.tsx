@@ -28,6 +28,7 @@ export default function AdminLayout({
   const t = useTranslations("admin");
   const { data: session, status } = useSession();
   const [selectedKey, setSelectedKey] = useState("users");
+  const [isSidebarCompact, setIsSidebarCompact] = useState(false);
 
   // 权限检查：只有 owner 可以访问
   useEffect(() => {
@@ -65,6 +66,23 @@ export default function AdminLayout({
     }
   }, [pathname]);
 
+  // 从 localStorage 读取 sidebar 状态
+  useEffect(() => {
+    const saved = localStorage.getItem("sidebar-compact-admin");
+
+    if (saved !== null) {
+      setIsSidebarCompact(saved === "true");
+    }
+  }, []);
+
+  // 切换 sidebar 状态
+  const toggleSidebar = () => {
+    const newState = !isSidebarCompact;
+
+    setIsSidebarCompact(newState);
+    localStorage.setItem("sidebar-compact-admin", String(newState));
+  };
+
   // 显示加载状态
   if (status === "loading") {
     return (
@@ -88,26 +106,66 @@ export default function AdminLayout({
   return (
     <div className=" h-screen bg-gradient-to-br from-rose-400 via-fuchsia-500/50 to-indigo-500 dark:from-rose-400 dark:via-fuchsia-500/50 dark:to-indigo-500 p-3">
       <div className="flex h-full rounded-3xl overflow-hidden">
-        <aside className="relative flex h-full w-72 flex-shrink-0 flex-col border-r border-divider p-6 bg-background/95 dark:bg-background/80 backdrop-blur-lg backdrop-saturate-150">
-          {/* Logo and Title */}
-          <div
-            className="flex cursor-pointer items-center gap-2 px-2 transition-opacity hover:opacity-80"
-            role="button"
-            tabIndex={0}
-            onClick={() => router.push("/")}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                router.push("/");
-              }
-            }}
-          >
-            <Logo />
-            <div className="flex flex-col">
-              <span className="text-small font-bold">Parallel Resume</span>
-              <span className="text-tiny text-default-400">{t("title")}</span>
+        <aside
+          className={`relative flex h-full flex-shrink-0 flex-col border-r border-divider p-6 bg-background/95 dark:bg-background/80 backdrop-blur-lg backdrop-saturate-150 transition-all duration-300 ease-in-out ${
+            isSidebarCompact ? "w-[88px]" : "w-72"
+          }`}
+        >
+          {/* Logo and Toggle Button */}
+          <div className="flex items-center justify-between">
+            <div
+              className={`flex cursor-pointer items-center gap-2 px-2 transition-opacity hover:opacity-80 ${
+                isSidebarCompact ? "mx-auto" : ""
+              }`}
+              role="button"
+              tabIndex={0}
+              onClick={() => router.push("/")}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  router.push("/");
+                }
+              }}
+            >
+              <Logo />
+              {!isSidebarCompact && (
+                <div className="flex flex-col">
+                  <span className="text-small font-bold">Parallel Resume</span>
+                  <span className="text-tiny text-default-400">{t("title")}</span>
+                </div>
+              )}
             </div>
+            {!isSidebarCompact && (
+              <Button
+                isIconOnly
+                className="text-default-500 data-[hover=true]:text-foreground"
+                size="sm"
+                title={t("collapseSidebar")}
+                variant="light"
+                onPress={toggleSidebar}
+              >
+                <Icon icon="solar:sidebar-minimalistic-bold-duotone" width={20} />
+              </Button>
+            )}
           </div>
+
+          {isSidebarCompact && (
+            <div className="flex justify-center mt-4">
+              <Button
+                isIconOnly
+                className="text-default-500 data-[hover=true]:text-foreground"
+                size="sm"
+                title={t("expandSidebar")}
+                variant="light"
+                onPress={toggleSidebar}
+              >
+                <Icon
+                  icon="solar:sidebar-minimalistic-bold-duotone"
+                  width={20}
+                />
+              </Button>
+            </div>
+          )}
 
           <Spacer y={8} />
 
@@ -115,6 +173,7 @@ export default function AdminLayout({
           <ScrollShadow className="-mr-6 h-full max-h-full py-6 pr-6">
             <Sidebar
               defaultSelectedKey={selectedKey}
+              isCompact={isSidebarCompact}
               items={items}
               onSelect={(key) => {
                 const item = items.find((i) => i.key === key);
@@ -129,21 +188,35 @@ export default function AdminLayout({
           <Spacer y={8} />
 
           {/* Bottom Actions */}
-          <div className="mt-auto flex flex-col">
+          <div className="mt-auto flex items-center gap-1 flex-col justify-center">
             <Button
-              fullWidth
-              className="justify-start text-small text-default-500 data-[hover=true]:text-foreground"
+              fullWidth={!isSidebarCompact}
+              isIconOnly={isSidebarCompact}
+              className={`text-small text-default-500 data-[hover=true]:text-foreground ${
+                isSidebarCompact ? "justify-center" : "justify-start"
+              }`}
               startContent={
+                isSidebarCompact ? undefined : (
+                  <Icon
+                    className="text-default-500"
+                    icon="solar:alt-arrow-left-bold-duotone"
+                    width={24}
+                  />
+                )
+              }
+              title={isSidebarCompact ? t("backToDashboard") : undefined}
+              variant="light"
+              onPress={() => router.push("/resume")}
+            >
+              {isSidebarCompact ? (
                 <Icon
                   className="text-default-500"
                   icon="solar:alt-arrow-left-bold-duotone"
                   width={24}
                 />
-              }
-              variant="light"
-              onPress={() => router.push("/resume")}
-            >
-              {t("backToDashboard")}
+              ) : (
+                t("backToDashboard")
+              )}
             </Button>
           </div>
         </aside>
