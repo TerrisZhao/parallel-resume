@@ -313,6 +313,14 @@ export default function DashboardLayout({
     }
   };
 
+  // 检查是否是专注模式页面
+  const isPracticePage = pathname.includes("/interview-prep/practice");
+
+  // 如果是专注模式页面，只渲染children
+  if (isPracticePage) {
+    return <>{children}</>;
+  }
+
   return (
     <div className=" h-screen bg-gradient-to-br from-rose-400 via-fuchsia-500/50 to-indigo-500 dark:from-rose-400 dark:via-fuchsia-500/50 dark:to-indigo-500 p-3">
       <div className="flex h-full rounded-3xl overflow-hidden">

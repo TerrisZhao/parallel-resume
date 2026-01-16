@@ -556,9 +556,48 @@ export default function InterviewPrepPage() {
     );
   }
 
+  const handleStartPractice = () => {
+    const filteredMaterials = getMaterialsByCategory(selectedCategory);
+
+    if (filteredMaterials.length === 0) {
+      addToast({
+        title: t("noMaterialsToPractice"),
+        color: "warning",
+      });
+
+      return;
+    }
+
+    // 构建URL参数
+    const params = new URLSearchParams();
+
+    params.set("category", selectedCategory);
+    if (selectedTagFilter) {
+      params.set("tag", selectedTagFilter);
+    }
+
+    window.location.href = `/interview-prep/practice?${params.toString()}`;
+  };
+
   return (
     <div className="flex flex-col h-full">
       <div className="relative flex items-center justify-center mb-4">
+        {/* 开始练习按钮 - 左侧 */}
+        <div className="absolute left-0">
+          {getMaterialsByCategory(selectedCategory).length > 0 && (
+            <Button
+              color="primary"
+              size="sm"
+              startContent={<Play size={16} />}
+              variant="flat"
+              onPress={handleStartPractice}
+            >
+              {t("startPractice")}
+            </Button>
+          )}
+        </div>
+
+        {/* Tabs - 中间 */}
         <Tabs
           color="primary"
           radius="full"
@@ -569,26 +608,30 @@ export default function InterviewPrepPage() {
             <Tab key={category} title={t(`categories.${category}`)} />
           ))}
         </Tabs>
-        {allTags.length > 0 && (
-          <Select
-            aria-label={t("tagFilter")}
-            className="absolute right-0 w-80"
-            placeholder={t("tagFilterPlaceholder")}
-            selectedKeys={selectedTagFilter ? [selectedTagFilter] : []}
-            selectionMode="single"
-            size="sm"
-            onSelectionChange={(keys) => {
-              const keyArr = Array.from(keys);
-              const value = (keyArr[0] as string | undefined) ?? null;
 
-              setSelectedTagFilter(value);
-            }}
-          >
-            {allTags.map((tag) => (
-              <SelectItem key={tag}>{tag}</SelectItem>
-            ))}
-          </Select>
-        )}
+        {/* Filter - 右侧 */}
+        <div className="absolute right-0">
+          {allTags.length > 0 && (
+            <Select
+              aria-label={t("tagFilter")}
+              className="w-80"
+              placeholder={t("tagFilterPlaceholder")}
+              selectedKeys={selectedTagFilter ? [selectedTagFilter] : []}
+              selectionMode="single"
+              size="sm"
+              onSelectionChange={(keys) => {
+                const keyArr = Array.from(keys);
+                const value = (keyArr[0] as string | undefined) ?? null;
+
+                setSelectedTagFilter(value);
+              }}
+            >
+              {allTags.map((tag) => (
+                <SelectItem key={tag}>{tag}</SelectItem>
+              ))}
+            </Select>
+          )}
+        </div>
       </div>
       <div className="space-y-4 pb-6">
         {getMaterialsByCategory(selectedCategory).length === 0 ? (

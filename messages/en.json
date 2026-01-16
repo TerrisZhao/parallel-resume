@@ -646,7 +646,10 @@
     "deleteSpecificPrep": "Delete Preparation",
     "noSpecificPreps": "No preparation materials for this interview yet",
     "noSpecificPrepsDescription": "Add preparation materials tailored for this specific interview",
-    "audioPlaybackError": "Failed to play audio"
+    "audioPlaybackError": "Failed to play audio",
+    "startPractice": "Start Practice",
+    "noMaterialsToPractice": "No materials to practice",
+    "failedToLoad": "Failed to load"
   },
   "chromeExtension": {
     "badge": "Browser Extension",
