@@ -581,9 +581,9 @@ export default function InterviewPrepPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="relative flex items-center justify-center mb-4">
-        {/* 开始练习按钮 - 左侧 */}
-        <div className="absolute left-0">
+      <div className="mb-4 flex flex-col gap-3 md:relative md:flex-row md:items-center md:justify-center">
+        {/* 开始练习按钮 - 小屏幕第一行，大屏幕左侧 */}
+        <div className="md:absolute md:left-0">
           {getMaterialsByCategory(selectedCategory).length > 0 && (
             <Button
               color="primary"
@@ -597,7 +597,7 @@ export default function InterviewPrepPage() {
           )}
         </div>
 
-        {/* Tabs - 中间 */}
+        {/* Tabs - 小屏幕第二行，大屏幕中间 */}
         <Tabs
           color="primary"
           radius="full"
@@ -609,12 +609,12 @@ export default function InterviewPrepPage() {
           ))}
         </Tabs>
 
-        {/* Filter - 右侧 */}
-        <div className="absolute right-0">
+        {/* Filter - 小屏幕第三行，大屏幕右侧 */}
+        <div className="md:absolute md:right-0">
           {allTags.length > 0 && (
             <Select
               aria-label={t("tagFilter")}
-              className="w-80"
+              className="w-full md:w-80"
               placeholder={t("tagFilterPlaceholder")}
               selectedKeys={selectedTagFilter ? [selectedTagFilter] : []}
               selectionMode="single"
