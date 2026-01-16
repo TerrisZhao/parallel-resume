@@ -5,6 +5,36 @@ import { eq, and } from "drizzle-orm";
 import { authOptions } from "@/lib/auth/config";
 import { db } from "@/lib/db/drizzle";
 import { interviewPreparationMaterials } from "@/lib/db/schema";
+import {
+  translateChineseToEnglish,
+  translateEnglishToChinese,
+} from "@/lib/translator/deepl";
+
+/**
+ * 检测文本是否包含中文字符
+ */
+function containsChinese(text: string): boolean {
+  return /[\u4e00-\u9fa5]/.test(text);
+}
+
+/**
+ * 翻译内容(中文翻译成英文,英文翻译成中文)
+ */
+async function translateContent(content: string): Promise<string | null> {
+  try {
+    if (containsChinese(content)) {
+      // 包含中文,翻译成英文
+      return await translateChineseToEnglish(content);
+    } else {
+      // 不包含中文,翻译成中文
+      return await translateEnglishToChinese(content);
+    }
+  } catch (error) {
+    console.error("Translation error:", error);
+    // 翻译失败时返回 null,不影响主流程
+    return null;
+  }
+}
 
 export async function PUT(
   request: NextRequest,
@@ -50,7 +80,13 @@ export async function PUT(
 
     if (title !== undefined) updateData.title = title;
     if (category !== undefined) updateData.category = category;
-    if (content !== undefined) updateData.content = content;
+    if (content !== undefined) {
+      updateData.content = content;
+      // 如果内容更新了,重新翻译
+      const translation = await translateContent(content);
+
+      updateData.translation = translation;
+    }
     if (order !== undefined) updateData.order = order;
 
     if (tags !== undefined) {

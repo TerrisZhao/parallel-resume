@@ -235,6 +235,9 @@ export const resumes = pgTable(
     website: varchar("website", { length: 255 }),
     summary: text("summary"),
     keySkills: json("key_skills").$type<string[]>().default([]), // JSON array
+    keySkillsSingleLine: boolean("key_skills_single_line")
+      .notNull()
+      .default(false), // 是否单行展示技能
     additionalInfo: text("additional_info"),
     themeColor: varchar("theme_color", { length: 20 }).default("#000000"), // 主题颜色
     preferredLanguage: varchar("preferred_language", { length: 5 }).default(
@@ -379,6 +382,7 @@ export const interviewPreparationMaterials = pgTable(
     title: varchar("title", { length: 255 }).notNull(), // 资料标题
     category: varchar("category", { length: 50 }).notNull(), // 分类：self_intro, project, work, qa
     content: text("content").notNull(), // 准备内容
+    translation: text("translation"), // 翻译内容（中文翻译成英文，或英文翻译成中文）
     // 用户自定义标签（用于分类和过滤）
     tags: json("tags").$type<string[]>().default([]),
     order: integer("order").notNull().default(0), // 显示顺序

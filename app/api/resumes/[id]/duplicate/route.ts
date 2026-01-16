@@ -57,6 +57,7 @@ export async function POST(
         website: originalResume.website,
         summary: originalResume.summary,
         keySkills: originalResume.keySkills,
+        keySkillsSingleLine: originalResume.keySkillsSingleLine,
         additionalInfo: originalResume.additionalInfo,
         themeColor: originalResume.themeColor,
       })

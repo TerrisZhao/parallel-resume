@@ -1083,6 +1083,7 @@ export default function ResumeEditPage({
     jobDescription: "",
     summary: "",
     keySkills: [],
+    keySkillsSingleLine: false,
     workExperience: [],
     education: [],
     projects: [],
@@ -1311,6 +1312,7 @@ export default function ResumeEditPage({
             jobDescription: resume.jobDescription || "",
             summary: resume.summary || "",
             keySkills: groupedSkills,
+            keySkillsSingleLine: resume.keySkillsSingleLine ?? false,
             workExperience: resume.workExperience || [],
             education: resume.education || [],
             projects: resume.projects || [],
@@ -1366,6 +1368,7 @@ export default function ResumeEditPage({
               jobDescription: data.jobDescription,
               summary: data.summary,
               keySkills: data.keySkills,
+              keySkillsSingleLine: data.keySkillsSingleLine,
               workExperience: data.workExperience,
               education: data.education,
               projects: data.projects,
@@ -2092,7 +2095,21 @@ export default function ResumeEditPage({
         <Card>
           <CardBody className="space-y-4">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">{t("keySkills")}</h3>
+              <div className="flex items-center gap-3">
+                <h3 className="text-lg font-semibold">{t("keySkills")}</h3>
+                <Switch
+                  size="sm"
+                  isSelected={resumeData.keySkillsSingleLine}
+                  onValueChange={(value) =>
+                    setResumeData({
+                      ...resumeData,
+                      keySkillsSingleLine: value,
+                    })
+                  }
+                >
+                  <span className="text-sm">{t("singleLineDisplay")}</span>
+                </Switch>
+              </div>
               <div className="flex items-center gap-2">
                 {isAiOptimizationEnabled && (
                   <Tooltip content={t("optimizeSkillGroupsTooltip")}>

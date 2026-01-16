@@ -136,8 +136,18 @@ function formatResumeAsTxt(resume: any, language: string): string {
     if (typeof resume.keySkills[0] === "string") {
       // Simple format: ["skill1", "skill2", ...]
       lines.push(resume.keySkills.join(", "));
+    } else if (resume.keySkillsSingleLine) {
+      // Grouped format with single line display: one skill per line
+      resume.keySkills.forEach((group: any) => {
+        if (group && group.groupName && Array.isArray(group.skills)) {
+          lines.push(`${group.groupName}:`);
+          group.skills.forEach((skill: string) => {
+            lines.push(`  • ${skill}`);
+          });
+        }
+      });
     } else {
-      // Grouped format: [{groupName: "...", skills: [...]}, ...]
+      // Grouped format - original display: [{groupName: "...", skills: [...]}, ...]
       resume.keySkills.forEach((group: any) => {
         if (group && group.groupName && Array.isArray(group.skills)) {
           lines.push(`${group.groupName}: ${group.skills.join(", ")}`);

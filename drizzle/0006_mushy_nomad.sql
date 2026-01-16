@@ -1,0 +1,1 @@
+ALTER TABLE "resumes" ADD COLUMN "key_skills_single_line" boolean DEFAULT false NOT NULL;

@@ -17,7 +17,7 @@ import { Input, Textarea } from "@heroui/input";
 import { Select, SelectItem } from "@heroui/select";
 import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
 import { addToast } from "@heroui/toast";
-import { Plus, Edit, Trash2, X, Sparkles } from "lucide-react";
+import { Plus, Edit, Trash2, X, Sparkles, Languages } from "lucide-react";
 import { Icon } from "@iconify/react";
 
 import { usePageHeader } from "../use-page-header";
@@ -29,6 +29,7 @@ interface PreparationMaterial {
   title: string;
   category: string;
   content: string;
+  translation?: string | null;
   tags?: string[];
   order: number;
   createdAt: string;
@@ -68,6 +69,10 @@ export default function InterviewPrepPage() {
   const [selectedTagFilter, setSelectedTagFilter] = useState<string | null>(
     null,
   );
+  // 跟踪哪些 material 显示翻译
+  const [showTranslationMap, setShowTranslationMap] = useState<
+    Record<number, boolean>
+  >({});
 
   // AI生成相关状态
   const [resumes, setResumes] = useState<any[]>([]);
@@ -331,6 +336,13 @@ export default function InterviewPrepPage() {
     });
   };
 
+  const toggleTranslation = (materialId: number) => {
+    setShowTranslationMap((prev) => ({
+      ...prev,
+      [materialId]: !prev[materialId],
+    }));
+  };
+
   const handleGenerateWithAI = async () => {
     // 验证
     if (!formData.title.trim()) {
@@ -540,6 +552,16 @@ export default function InterviewPrepPage() {
                   )}
                 </div>
                 <div className="flex gap-2">
+                  {material.translation && (
+                    <Button
+                      isIconOnly
+                      size="sm"
+                      variant="light"
+                      onPress={() => toggleTranslation(material.id)}
+                    >
+                      <Languages size={16} />
+                    </Button>
+                  )}
                   <Button
                     isIconOnly
                     size="sm"
@@ -561,6 +583,16 @@ export default function InterviewPrepPage() {
               </CardHeader>
               <CardBody>
                 <p className="whitespace-pre-wrap">{material.content}</p>
+                {showTranslationMap[material.id] && material.translation && (
+                  <div className="mt-4 pt-4 border-t border-divider">
+                    <p className="text-sm text-default-500 mb-2 font-medium">
+                      {t("translation")}:
+                    </p>
+                    <p className="whitespace-pre-wrap text-default-600">
+                      {material.translation}
+                    </p>
+                  </div>
+                )}
               </CardBody>
             </Card>
           ))

@@ -151,6 +151,7 @@ async function getResumeData(
       website: resume.website || "",
       summary: resume.summary || "",
       keySkills: resume.keySkills || [],
+      keySkillsSingleLine: resume.keySkillsSingleLine ?? false,
       workExperience: workExperience.map((exp: WorkExperience) => ({
         id: exp.id.toString(),
         company: exp.company,
@@ -322,7 +323,7 @@ export default async function PrintResumePage({
           }
 
           .name {
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 700;
             color: ${themeColor};
             margin-bottom: 8px;
@@ -547,8 +548,46 @@ export default async function PrintResumePage({
                       </span>
                     ))}
                   </div>
+                ) : resumeData.keySkillsSingleLine ? (
+                  // Single line display - one skill per line
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "8px",
+                    }}
+                  >
+                    {(resumeData.keySkills as any[]).map(
+                      (group, groupIndex) => (
+                        <div key={groupIndex}>
+                          <div
+                            style={{
+                              fontSize: "14px",
+                              fontWeight: 600,
+                              color: themeColor,
+                              marginBottom: "4px",
+                            }}
+                          >
+                            {group.groupName}:
+                          </div>
+                          {group.skills.map((skill: string, skillIndex: number) => (
+                            <div
+                              key={skillIndex}
+                              style={{
+                                fontSize: "14px",
+                                marginLeft: "16px",
+                                marginBottom: "2px",
+                              }}
+                            >
+                              • {skill}
+                            </div>
+                          ))}
+                        </div>
+                      ),
+                    )}
+                  </div>
                 ) : (
-                  // Grouped format
+                  // Grouped format - original display
                   <div
                     style={{
                       display: "flex",

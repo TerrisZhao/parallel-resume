@@ -5,6 +5,36 @@ import { eq, and, asc } from "drizzle-orm";
 import { authOptions } from "@/lib/auth/config";
 import { db } from "@/lib/db/drizzle";
 import { interviewPreparationMaterials } from "@/lib/db/schema";
+import {
+  translateChineseToEnglish,
+  translateEnglishToChinese,
+} from "@/lib/translator/deepl";
+
+/**
+ * 检测文本是否包含中文字符
+ */
+function containsChinese(text: string): boolean {
+  return /[\u4e00-\u9fa5]/.test(text);
+}
+
+/**
+ * 翻译内容(中文翻译成英文,英文翻译成中文)
+ */
+async function translateContent(content: string): Promise<string | null> {
+  try {
+    if (containsChinese(content)) {
+      // 包含中文,翻译成英文
+      return await translateChineseToEnglish(content);
+    } else {
+      // 不包含中文,翻译成中文
+      return await translateEnglishToChinese(content);
+    }
+  } catch (error) {
+    console.error("Translation error:", error);
+    // 翻译失败时返回 null,不影响主流程
+    return null;
+  }
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -77,6 +107,9 @@ export async function POST(request: NextRequest) {
       ? (tags.filter((tag) => typeof tag === "string") as string[])
       : [];
 
+    // 翻译内容
+    const translation = await translateContent(content);
+
     const [material] = await db
       .insert(interviewPreparationMaterials)
       .values({
@@ -84,6 +117,7 @@ export async function POST(request: NextRequest) {
         title,
         category,
         content,
+        translation,
         tags: safeTags,
         order,
       })

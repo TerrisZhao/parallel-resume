@@ -24,16 +24,16 @@ const generateMaterialSchema = z.object({
   itemId: z.number().optional(), // For project or work category
 });
 
-const SYSTEM_PROMPT = `You are a job candidate answering questions in a real interview.
+const SYSTEM_PROMPT = `You're in a job interview.
 
-Your answers must sound like natural spoken language, not written text.
-Keep answers short, clear, and realistic.
-Do NOT sound like a coach, article, or textbook.
+Talk. Don't write.
+Short. Clear. Real.
+Don't sound like a teacher, article, or textbook.
 
-CRITICAL:
-- Detect the language of the resume content and respond in the SAME language.
-- Speak like a real person in an interview.
-- Prefer simple words and short sentences.
+Key rules:
+- Check resume language. Use same language.
+- Talk like a real person.
+- Use simple words. Short sentences.
 `;
 
 function getSelfIntroPrompt(
@@ -47,31 +47,31 @@ function getSelfIntroPrompt(
 ): string {
   const hasWorkExp = workExperiences && workExperiences.length > 0;
 
-  return `Generate a short self-introduction for a real job interview.
+  return `Give a quick self intro.
 
 Context: ${title}
 
-Candidate info:
+About you:
 - Name: ${resumeData.fullName || "Candidate"}
 ${resumeData.summary ? `- Background: ${resumeData.summary}` : ""}
 ${resumeData.keySkills?.length ? `- Skills: ${resumeData.keySkills.join(", ")}` : ""}
 
 ${hasWorkExp ? `
-Recent experience (for reference only):
+Recent work (just reference):
 ${workExperiences.slice(0, 2).map(exp =>
 `- ${exp.company}, ${exp.position}: ${exp.description || ""}`
 ).join("\n")}
 ` : ""}
 
 Rules:
-- Speak as if you are answering in a real interview
-- Use 3–4 short sentences only
-- About 20–30 seconds when spoken
-- Simple, spoken language (use "I'm", "I've")
-- Focus on what you do and what you're good at
-- No formal structure, no bullet points, no frameworks
+- Talk like you're in the interview right now
+- Just 3-4 short sentences
+- Takes about 20-30 seconds to say
+- Use "I'm", "I've", "I do"
+- Say what you do. Say what you're good at.
+- No framework. No bullets. Not too formal.
 
-Generate ONLY the spoken self-introduction.`;
+Just the spoken intro.`;
 }
 
 function getQAPrompt(
@@ -85,29 +85,29 @@ function getQAPrompt(
 ): string {
   const hasWorkExp = workExperiences && workExperiences.length > 0;
 
-  return `Answer the following interview question as if you are speaking naturally.
+  return `Answer this interview question.
 
 Question: ${title}
 
-Background (for reference only):
+Background (just reference):
 ${resumeData.summary || ""}
 ${resumeData.keySkills?.length ? resumeData.keySkills.join(", ") : ""}
 
 ${hasWorkExp ? `
-Recent experience:
+Recent work:
 ${workExperiences.slice(0, 1).map(exp =>
 `${exp.company}, ${exp.position}: ${exp.description || ""}`
 ).join("\n")}
 ` : ""}
 
 Rules:
-- 1–2 short sentences only
-- Direct answer, no introduction
-- Simple spoken language
-- Mention one example if useful
-- No explanations or summaries
+- Just 1-2 short sentences
+- Answer direct. No setup.
+- Talk casual
+- Give one example if helpful
+- Don't explain. Don't summarize.
 
-Generate ONLY the answer.`;
+Just the answer.`;
 }
 
 function getProjectPrompt(
@@ -117,7 +117,7 @@ function getProjectPrompt(
   project: any,
   title: string,
 ): string {
-  return `Explain this project as if an interviewer asked you about it.
+  return `Talk about this project. Interviewer just asked you.
 
 Question: ${title}
 
@@ -128,14 +128,14 @@ Project:
 ${project.technologies?.length ? `- Tech: ${project.technologies.join(", ")}` : ""}
 
 Rules:
-- Spoken interview style
-- 30–60 seconds
-- Focus on what YOU did
-- Mention one challenge and one result
-- Simple words, short sentences
+- Talk like you're answering live
+- About 30-60 seconds
+- Say what YOU did
+- Mention one challenge. One result.
+- Simple words. Short sentences.
 - No formal structure
 
-Generate ONLY the spoken answer.`;
+Just the spoken answer.`;
 }
 
 function getWorkPrompt(
@@ -145,25 +145,25 @@ function getWorkPrompt(
   workExperience: any,
   title: string,
 ): string {
-  return `Answer an interview question about this work experience.
+  return `Answer about this work experience.
 
 Question: ${title}
 
-Work experience:
+Work:
 - Company: ${workExperience.company}
 - Role: ${workExperience.position}
 - What you did: ${workExperience.description || ""}
 ${workExperience.responsibilities?.length ? workExperience.responsibilities.join("; ") : ""}
 
 Rules:
-- Speak like a real candidate
-- 30–60 seconds max
-- Focus on impact, not duties
-- Mention one concrete result
-- Simple language, natural tone
-- No STAR labels or bullet points
+- Talk like a real candidate
+- Max 30-60 seconds
+- Say impact and results. Not duties.
+- Give one concrete result
+- Simple words. Natural tone.
+- No STAR labels. No bullets.
 
-Generate ONLY the spoken interview answer.`;
+Just the spoken answer.`;
 }
 
 export async function POST(request: NextRequest) {

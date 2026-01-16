@@ -38,10 +38,10 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
     >
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2" style={{ color: themeColor }}>
+        <h1 className="text-2xl font-bold mb-2" style={{ color: themeColor }}>
           {data.fullName || "Your Name"}
           {data.preferredName && (
-            <span className="text-xl font-normal ml-2 text-gray-700">
+            <span className="text-lg font-normal ml-2 text-gray-700">
               ({data.preferredName})
             </span>
           )}
@@ -120,8 +120,24 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                 </span>
               ))}
             </div>
+          ) : data.keySkillsSingleLine ? (
+            // Single line display - one skill per line
+            <div className="space-y-1">
+              {(data.keySkills as any[]).map((group, groupIndex) => (
+                <div key={groupIndex}>
+                  <div className="text-sm font-semibold mb-1" style={{ color: themeColor }}>
+                    {group.groupName}:
+                  </div>
+                  {group.skills.map((skill: string, skillIndex: number) => (
+                    <div key={skillIndex} className="text-sm ml-4">
+                      • {skill}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
           ) : (
-            // Grouped format
+            // Grouped format - original display
             <div className="space-y-2">
               {(data.keySkills as any[]).map((group, groupIndex) => (
                 <div key={groupIndex} className="text-sm">

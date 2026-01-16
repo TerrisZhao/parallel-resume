@@ -58,6 +58,7 @@ export interface ResumeData {
 
   // Key Skills
   keySkills: string[] | SkillGroup[];
+  keySkillsSingleLine?: boolean; // 是否单行展示技能
 
   // Work Experience
   workExperience: WorkExperience[];

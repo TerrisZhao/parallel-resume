@@ -73,6 +73,7 @@ export async function POST(request: NextRequest) {
         website: data?.website || "",
         summary: data?.summary || "",
         keySkills: data?.keySkills || [],
+        keySkillsSingleLine: data?.keySkillsSingleLine ?? false,
         additionalInfo: data?.additionalInfo || "",
         themeColor: data?.themeColor || "#1e40af",
       })
