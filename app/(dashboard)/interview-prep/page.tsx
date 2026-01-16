@@ -17,7 +17,7 @@ import { Input, Textarea } from "@heroui/input";
 import { Select, SelectItem } from "@heroui/select";
 import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
 import { addToast } from "@heroui/toast";
-import { Plus, Edit, Trash2, X, Sparkles, Languages } from "lucide-react";
+import { Plus, Edit, Trash2, X, Sparkles, Languages, Play, Pause } from "lucide-react";
 import { Icon } from "@iconify/react";
 
 import { usePageHeader } from "../use-page-header";
@@ -30,6 +30,7 @@ interface PreparationMaterial {
   category: string;
   content: string;
   translation?: string | null;
+  audioUrl?: string | null;
   tags?: string[];
   order: number;
   createdAt: string;
@@ -72,6 +73,14 @@ export default function InterviewPrepPage() {
   // 跟踪哪些 material 显示翻译
   const [showTranslationMap, setShowTranslationMap] = useState<
     Record<number, boolean>
+  >({});
+  // 跟踪哪些 material 正在播放音频
+  const [playingAudioMap, setPlayingAudioMap] = useState<
+    Record<number, boolean>
+  >({});
+  // 存储audio元素引用
+  const [audioElements, setAudioElements] = useState<
+    Record<number, HTMLAudioElement>
   >({});
 
   // AI生成相关状态
@@ -343,6 +352,54 @@ export default function InterviewPrepPage() {
     }));
   };
 
+  const toggleAudioPlayback = (materialId: number, audioUrl: string) => {
+    const isPlaying = playingAudioMap[materialId];
+
+    if (isPlaying) {
+      // 暂停播放
+      const audio = audioElements[materialId];
+      if (audio) {
+        audio.pause();
+      }
+      setPlayingAudioMap((prev) => ({
+        ...prev,
+        [materialId]: false,
+      }));
+    } else {
+      // 开始播放
+      let audio = audioElements[materialId];
+      if (!audio) {
+        audio = new Audio(audioUrl);
+        audio.addEventListener("ended", () => {
+          setPlayingAudioMap((prev) => ({
+            ...prev,
+            [materialId]: false,
+          }));
+        });
+        audio.addEventListener("error", (e) => {
+          console.error("Audio playback error:", e);
+          addToast({
+            title: t("audioPlaybackError"),
+            color: "danger",
+          });
+          setPlayingAudioMap((prev) => ({
+            ...prev,
+            [materialId]: false,
+          }));
+        });
+        setAudioElements((prev) => ({
+          ...prev,
+          [materialId]: audio!,
+        }));
+      }
+      audio.play();
+      setPlayingAudioMap((prev) => ({
+        ...prev,
+        [materialId]: true,
+      }));
+    }
+  };
+
   const handleGenerateWithAI = async () => {
     // 验证
     if (!formData.title.trim()) {
@@ -552,6 +609,17 @@ export default function InterviewPrepPage() {
                   )}
                 </div>
                 <div className="flex gap-2">
+                  {material.audioUrl && (
+                    <Button
+                      isIconOnly
+                      color={playingAudioMap[material.id] ? "primary" : "default"}
+                      size="sm"
+                      variant={playingAudioMap[material.id] ? "flat" : "light"}
+                      onPress={() => toggleAudioPlayback(material.id, material.audioUrl!)}
+                    >
+                      {playingAudioMap[material.id] ? <Pause size={16} /> : <Play size={16} />}
+                    </Button>
+                  )}
                   {material.translation && (
                     <Button
                       isIconOnly

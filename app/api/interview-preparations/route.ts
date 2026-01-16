@@ -9,6 +9,7 @@ import {
   translateChineseToEnglish,
   translateEnglishToChinese,
 } from "@/lib/translator/deepl";
+import { generateTTS } from "@/lib/tts/generator";
 
 /**
  * 检测文本是否包含中文字符
@@ -110,6 +111,20 @@ export async function POST(request: NextRequest) {
     // 翻译内容
     const translation = await translateContent(content);
 
+    // 如果内容是英文（不包含中文），生成TTS
+    let audioUrl: string | null = null;
+    if (!containsChinese(content)) {
+      try {
+        const ttsResult = await generateTTS(content);
+        if (ttsResult.success && ttsResult.url) {
+          audioUrl = ttsResult.url;
+        }
+      } catch (error) {
+        console.error("TTS generation error:", error);
+        // TTS生成失败不影响主流程
+      }
+    }
+
     const [material] = await db
       .insert(interviewPreparationMaterials)
       .values({
@@ -118,6 +133,7 @@ export async function POST(request: NextRequest) {
         category,
         content,
         translation,
+        audioUrl,
         tags: safeTags,
         order,
       })

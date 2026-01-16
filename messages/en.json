@@ -643,7 +643,8 @@
     "editSpecificPrep": "Edit Preparation",
     "deleteSpecificPrep": "Delete Preparation",
     "noSpecificPreps": "No preparation materials for this interview yet",
-    "noSpecificPrepsDescription": "Add preparation materials tailored for this specific interview"
+    "noSpecificPrepsDescription": "Add preparation materials tailored for this specific interview",
+    "audioPlaybackError": "Failed to play audio"
   },
   "chromeExtension": {
     "badge": "Browser Extension",

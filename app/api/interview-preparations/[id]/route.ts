@@ -9,6 +9,7 @@ import {
   translateChineseToEnglish,
   translateEnglishToChinese,
 } from "@/lib/translator/deepl";
+import { generateTTS } from "@/lib/tts/generator";
 
 /**
  * 检测文本是否包含中文字符
@@ -86,6 +87,22 @@ export async function PUT(
       const translation = await translateContent(content);
 
       updateData.translation = translation;
+
+      // 如果内容是英文（不包含中文），生成TTS
+      if (!containsChinese(content)) {
+        try {
+          const ttsResult = await generateTTS(content);
+          if (ttsResult.success && ttsResult.url) {
+            updateData.audioUrl = ttsResult.url;
+          }
+        } catch (error) {
+          console.error("TTS generation error:", error);
+          // TTS生成失败不影响主流程
+        }
+      } else {
+        // 如果内容变成中文了，清空audioUrl
+        updateData.audioUrl = null;
+      }
     }
     if (order !== undefined) updateData.order = order;
 

@@ -643,7 +643,8 @@
     "editSpecificPrep": "编辑准备内容",
     "deleteSpecificPrep": "删除准备内容",
     "noSpecificPreps": "暂无针对此面试的准备内容",
-    "noSpecificPrepsDescription": "添加专属于这个面试的准备内容"
+    "noSpecificPrepsDescription": "添加专属于这个面试的准备内容",
+    "audioPlaybackError": "音频播放失败"
   },
   "chromeExtension": {
     "badge": "浏览器扩展",

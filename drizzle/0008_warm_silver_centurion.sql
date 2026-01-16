@@ -1,0 +1,1 @@
+ALTER TABLE "interview_preparation_materials" ADD COLUMN "audio_url" varchar(500);

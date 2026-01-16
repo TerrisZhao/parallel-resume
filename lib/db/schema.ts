@@ -383,6 +383,7 @@ export const interviewPreparationMaterials = pgTable(
     category: varchar("category", { length: 50 }).notNull(), // 分类：self_intro, project, work, qa
     content: text("content").notNull(), // 准备内容
     translation: text("translation"), // 翻译内容（中文翻译成英文，或英文翻译成中文）
+    audioUrl: varchar("audio_url", { length: 500 }), // TTS音频URL（仅英文内容生成）
     // 用户自定义标签（用于分类和过滤）
     tags: json("tags").$type<string[]>().default([]),
     order: integer("order").notNull().default(0), // 显示顺序
