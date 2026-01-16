@@ -200,7 +200,7 @@ export default function PracticePage() {
       </div>
 
       {/* 主内容区域 */}
-      <div className="relative z-10 flex-1 flex items-center justify-center p-8 overflow-auto">
+      <div className="relative z-10 flex-1 flex items-start justify-center px-4 py-6 sm:p-8 overflow-auto">
         <div className="w-full max-w-4xl">
           <Card className="border-none shadow-lg bg-background/80 backdrop-blur-lg backdrop-saturate-150">
             <CardHeader className="flex justify-between items-center p-6">
